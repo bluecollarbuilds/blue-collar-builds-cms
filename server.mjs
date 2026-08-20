@@ -626,16 +626,29 @@ app.post('/api/save', authWrite, (req, res) => {
   res.json({ ok: true, saved: r.saved });
 });
 
+/* Stage the caller's edits as a draft and flag them for owner sign-off. Returns
+   false once it has already answered `res` with an error. Shared by
+   /api/submit-review and by /api/publish when a client is under the gate. */
+function stageForReview(req, res, pendingByPage) {
+  const name = get(req), s = sites[name];
+  const r = stageDraft(name, pendingByPage);
+  if (r.error) { res.status(400).json({ error: r.error, errors: r.errors }); return false; }
+  if (!hasDraft(s)) { res.status(400).json({ error: 'Nothing to submit.' }); return false; }
+  const note = String(req.body?.note || '').slice(0, 500);
+  setReview(name, { pending: true, by: req.role || 'client', at: new Date().toISOString(), note });
+  auditLog(name, { role: req.role || 'client', action: 'submit', note });
+  return true;
+}
+/* Is this request a client edit on a site whose owner must sign off first?
+   The editor already routes such clients to submit-review, but that is UI only —
+   this is what actually stops a hand-crafted request from skipping the queue. */
+const gatedClient = (req, s) => req.role === 'client' && !!s.access?.requireApproval;
+
 // Submit for review: a client stages edits + flags them for the owner to approve. Not live.
 app.post('/api/submit-review', authWrite, (req, res) => {
   const s = need(req, res); if (!s) return;
   const pendingByPage = (req.body?.pages && typeof req.body.pages === 'object') ? req.body.pages : {};
-  const r = stageDraft(get(req), pendingByPage);
-  if (r.error) return res.status(400).json({ error: r.error, errors: r.errors });
-  if (!hasDraft(s)) return res.status(400).json({ error: 'Nothing to submit.' });
-  const note = String(req.body?.note || '').slice(0, 500);
-  setReview(get(req), { pending: true, by: req.role || 'client', at: new Date().toISOString(), note });
-  auditLog(get(req), { role: req.role || 'client', action: 'submit', note });
+  if (!stageForReview(req, res, pendingByPage)) return;
   res.json({ ok: true });
 });
 app.get('/api/review', (req, res) => { const s = need(req, res); if (!s) return; res.json(getReview(get(req))); });
@@ -692,6 +705,12 @@ app.post('/api/forms/:site', (req, res) => {                 // PUBLIC — the l
 app.post('/api/publish', authWrite, async (req, res) => {
   const s = need(req, res); if (!s) return;
   const pendingByPage = (req.body?.pages && typeof req.body.pages === 'object') ? req.body.pages : {};
+  // Approval gate: a gated client never reaches the live site. Their edits stage
+  // as a draft and queue for the owner instead of publishing.
+  if (gatedClient(req, s)) {
+    if (!stageForReview(req, res, pendingByPage)) return;
+    return res.json({ ok: true, pendingReview: true });
+  }
   const r = applyAndCommit(get(req), pendingByPage, req.role);
   if (r.error) return res.status(400).json({ error: r.error, errors: r.errors });
   clearReview(get(req));                                   // an owner publish also clears any pending review

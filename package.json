@@ -2,10 +2,11 @@
   "name": "northline-cms",
   "version": "0.1.0",
   "type": "module",
-  "description": "AI-native CMS — clients edit their site by chatting; the AI never writes HTML, only safe ops against a locked content model.",
+  "description": "AI-native CMS \u2014 clients edit their site by chatting; the AI never writes HTML, only safe ops against a locked content model.",
   "scripts": {
     "build-model": "node build-model.mjs",
-    "start": "node --env-file-if-exists=.env server.mjs"
+    "start": "node --env-file-if-exists=.env server.mjs",
+    "test:approval": "bash test/run.sh"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.40.0",

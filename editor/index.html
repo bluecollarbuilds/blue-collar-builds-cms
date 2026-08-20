@@ -536,6 +536,8 @@ async function publish(){
   if(!Object.values(pendingByPage).some(m=>Object.keys(m).length)&&!hasDraft)return;
   $('#publishBtn').disabled=true;$('#saveStat').textContent='Publishing…';
   const r=await (await fetch('/api/publish?site='+SITE+KQ(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pages:pendingByPage})})).json();
+  if(r.pendingReview){pendingByPage={};hasDraft=true;reviewPending=true;updateBar();await loadPreview();
+    return toast('📤 Sent to the agency for approval — you\'ll be live once they sign off.',5000);}
   if(r.ok){pendingByPage={};hasDraft=false;updateBar();await loadPreview();await loadVersions();
     if(r.vercel&&r.vercel.ok)toast(`✓ Deployed to Vercel — <a href="${r.vercel.url}" target="_blank">view live ↗</a>`,4500);
     else if(r.vercel&&r.vercel.error)toast(`✓ Published · ⚠ Vercel: ${esc(r.vercel.error)}`,4500);
