@@ -1,0 +1,1368 @@
+{
+  "seq": 0,
+  "ts": "2026-05-31T09:05:53.928Z",
+  "summary": "Initial version",
+  "state": {
+    "order": [
+      "home"
+    ],
+    "home": "home",
+    "pagesMeta": {
+      "home": {
+        "title": "Home",
+        "path": "/"
+      }
+    },
+    "pages": {
+      "home": {
+        "template": "<!DOCTYPE html><html lang=\"en\"><head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\n<title data-cms=\"cms-150\">Northline — Websites engineered for businesses that ship</title>\n<meta name=\"description\" content=\"Northline is a web design and engineering studio. We design, build, and ship high-performance websites for ambitious businesses.\" data-cms=\"cms-151\">\n<meta name=\"theme-color\" content=\"#ffffff\">\n\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin=\"\">\n<link href=\"https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap\" rel=\"stylesheet\">\n\n<style>\n:root{\n  --bg: #ffffff;\n  --bg-soft: #fafafa;\n  --bg-tint: #f5f5f5;\n  --ink: #171717;\n  --ink-2: #4d4d4d;\n  --ink-3: #666666;\n  --ink-4: #808080;\n  --ink-5: #a3a3a3;\n  --line: #ebebeb;\n  --line-soft: rgba(0,0,0,0.06);\n  --ring: rgba(0,0,0,0.08);\n  --ring-strong: rgba(0,0,0,0.16);\n\n  --develop: #0a72ef;\n  --preview: #de1d8d;\n  --ship: #ff5b4f;\n  --link: #0072f5;\n  --focus: hsla(212,100%,48%,1);\n\n  --badge-bg: #ebf5ff;\n  --badge-fg: #0068d6;\n\n  --shadow-border: 0 0 0 1px var(--ring);\n  --shadow-card: 0 0 0 1px var(--ring), 0 2px 2px rgba(0,0,0,0.04), 0 8px 8px -8px rgba(0,0,0,0.04), inset 0 0 0 1px #fafafa;\n  --shadow-card-hover: 0 0 0 1px rgba(0,0,0,0.12), 0 4px 6px rgba(0,0,0,0.04), 0 16px 24px -12px rgba(0,0,0,0.10), inset 0 0 0 1px #fafafa;\n\n  --radius-2: 4px;\n  --radius-3: 6px;\n  --radius-4: 8px;\n  --radius-5: 12px;\n  --radius-6: 16px;\n  --radius-pill: 9999px;\n\n  --container: 1200px;\n  --gutter: 24px;\n}\n\n*{box-sizing:border-box}\nhtml,body{margin:0;padding:0}\nhtml{-webkit-text-size-adjust:100%;text-size-adjust:100%}\nbody{\n  font-family:\"Geist\", Arial, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\";\n  font-feature-settings:\"liga\" 1, \"calt\" 1;\n  background:var(--bg);\n  color:var(--ink);\n  -webkit-font-smoothing:antialiased;\n  -moz-osx-font-smoothing:grayscale;\n  font-size:16px;\n  line-height:1.5;\n}\n::selection{background:#171717;color:#fafafa}\nimg,svg{display:block;max-width:100%}\na{color:inherit;text-decoration:none}\nbutton{font:inherit;color:inherit;background:none;border:0;cursor:pointer}\n:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}\n\n/* ────────── Layout primitives ────────── */\n.container{max-width:var(--container);margin:0 auto;padding:0 var(--gutter)}\n.section{padding:120px 0;border-top:1px solid var(--line)}\n.section--tight{padding:88px 0}\n.section--flush{padding:0}\n.section--dark{background:#0a0a0a;color:#ededed;border-color:#1a1a1a}\n.eyebrow{\n  font-family:\"Geist Mono\", ui-monospace, Menlo, monospace;\n  font-size:12px;\n  font-weight:500;\n  text-transform:uppercase;\n  letter-spacing:0.06em;\n  color:var(--ink-3);\n}\n.section--dark .eyebrow{color:#9a9a9a}\n\n/* ────────── Type ────────── */\nh1,h2,h3,h4{margin:0;font-weight:600}\nh1{font-size:8.2rem;line-height:0.9;letter-spacing:-0.01em}\nh2{font-size:4.6rem;line-height:0.98;letter-spacing:0}\nh3{font-size:clamp(22px,2.4vw,32px);line-height:1.15;letter-spacing:-0.025em}\nh4{font-size:20px;line-height:1.3;letter-spacing:-0.015em}\np{margin:0;color:var(--ink-2)}\n.lead{font-size:clamp(18px,1.55vw,22px);line-height:1.55;color:var(--ink-2);max-width:62ch}\n.section--dark .lead{color:#a3a3a3}\n.mono{font-family:\"Geist Mono\",ui-monospace,Menlo,monospace}\n@media (max-width:980px){\n  h1{font-size:5.6rem}\n  h2{font-size:3.3rem}\n}\n@media (max-width:640px){\n  h1{font-size:3.6rem;line-height:0.96}\n  h2{font-size:2.4rem;line-height:1.04}\n}\n\n/* ────────── Buttons ────────── */\n.btn{\n  display:inline-flex;align-items:center;gap:8px;\n  height:42px;padding:0 18px;\n  border-radius:var(--radius-3);\n  font-size:14px;font-weight:500;line-height:1;\n  transition:background .15s ease, color .15s ease, box-shadow .15s ease, transform .15s ease;\n  white-space:nowrap;\n}\n.btn--primary{background:var(--ink);color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,0.06) inset}\n.btn--primary:hover{background:#000}\n.section--dark .btn--primary{background:#fff;color:#000}\n.section--dark .btn--primary:hover{background:#ededed}\n\n.btn--ghost{background:#fff;color:var(--ink);box-shadow:0 0 0 1px var(--line)}\n.btn--ghost:hover{box-shadow:0 0 0 1px rgba(0,0,0,0.18)}\n.section--dark .btn--ghost{background:transparent;color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,0.18)}\n.section--dark .btn--ghost:hover{box-shadow:0 0 0 1px rgba(255,255,255,0.32)}\n\n.btn--lg{height:50px;padding:0 24px;font-size:15px}\n\n.arrow{display:inline-block;transition:transform .2s ease}\n.btn:hover .arrow{transform:translateX(2px)}\n\n/* ────────── Pill / badge ────────── */\n.pill{\n  display:inline-flex;align-items:center;gap:6px;\n  height:28px;padding:0 12px;\n  border-radius:var(--radius-pill);\n  background:var(--badge-bg);color:var(--badge-fg);\n  font-size:12px;font-weight:500;\n  letter-spacing:-0.005em;\n}\n.pill--neutral{background:#fafafa;color:var(--ink-2);box-shadow:inset 0 0 0 1px var(--line)}\n.pill--dark{background:rgba(255,255,255,0.06);color:#cdcdcd;box-shadow:inset 0 0 0 1px rgba(255,255,255,0.10)}\n.pill .dot{width:6px;height:6px;border-radius:50%;background:currentColor}\n\n/* ────────── Nav ────────── */\n.nav{\n  position:sticky;top:0;z-index:50;\n  background:rgba(255,255,255,0.78);\n  backdrop-filter:saturate(180%) blur(14px);\n  -webkit-backdrop-filter:saturate(180%) blur(14px);\n  border-bottom:1px solid var(--line);\n}\n.nav__row{display:flex;align-items:center;gap:24px;height:64px}\n.nav__brand{display:flex;align-items:center;gap:8px;font-weight:600;letter-spacing:-0.025em;font-size:16px}\n.nav__brand svg{width:22px;height:22px}\n.nav__links{display:flex;align-items:center;gap:8px;margin-left:24px;flex:1}\n.nav__link{\n  padding:8px 12px;border-radius:var(--radius-3);\n  font-size:14px;font-weight:500;color:var(--ink-2);\n  transition:background .15s ease, color .15s ease;\n}\n.nav__link:hover{background:#f5f5f5;color:var(--ink)}\n.nav__cta{display:flex;align-items:center;gap:8px}\n@media (max-width:820px){\n  .nav__links{display:none}\n}\n\n/* ────────── Hero (white, single column) ────────── */\n.hero{\n  position:relative;\n  overflow:clip;\n  background:#fff;\n  color:var(--ink);\n}\n\n.hero__pin{\n  display:flex;\n  flex-direction:column;\n  padding:48px 0 80px;\n  min-height:calc(100svh - 64px);\n}\n@supports not (height:100svh){ .hero__pin{min-height:calc(100vh - 64px)} }\n\n.hero__stack{\n  display:grid;\n  grid-template-rows:auto 1fr;\n  height:100%;\n  gap:20px;\n  align-items:start;\n}\n\n.hero__copy{\n  text-align:center;\n  max-width:980px;\n  margin:0 auto;\n  display:flex;flex-direction:column;align-items:center;gap:0;\n  width:100%;\n}\n.hero h1{\n  font-size:clamp(44px,5.4vw,76px);\n  line-height:0.95;\n  letter-spacing:-0.045em;\n  margin-top:18px;\n  color:var(--ink);\n}\n.hero h1 em{\n  font-style:normal;\n  background:linear-gradient(90deg,#0a72ef 0%,#de1d8d 55%,#ff5b4f 100%);\n  -webkit-background-clip:text;background-clip:text;color:transparent;\n}\n.hero__subhead{\n  font-size:clamp(18px,1.6vw,24px);\n  line-height:1.3;\n  letter-spacing:-0.018em;\n  font-weight:500;\n  color:var(--ink-2);\n  margin-top:14px;\n  max-width:48ch;\n}\n.hero .lead{\n  font-size:clamp(15px,1.1vw,17px);\n  margin-top:10px;\n  max-width:54ch;\n  text-align:center;\n}\n.hero__cta{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:22px}\n\n.hero__visual{\n  position:relative;\n  width:100%;\n  min-height:0;\n  display:flex;\n  justify-content:center;\n  align-items:center;\n}\n.hero__video-shell{\n  position:relative;\n  height:100%;\n  max-height:100%;\n  aspect-ratio:5/4;        /* show full laptop body */\n  width:auto;\n  max-width:min(78%, 760px);\n  overflow:hidden;\n  background:#fff;\n}\n.hero__video{\n  width:100%;\n  height:100%;\n  display:block;\n  object-fit:cover;\n  /* keep full laptop visible, lifted slightly above centre */\n  object-position:center 50%;\n  background:#fff;\n  /* lift source's off-white toward pure white + fade edges into the page */\n  filter:brightness(1.05) contrast(1.02);\n  -webkit-mask-image: radial-gradient(ellipse 70% 82% at center 48%, #000 60%, transparent 95%);\n          mask-image: radial-gradient(ellipse 70% 82% at center 48%, #000 60%, transparent 95%);\n}\n.hero__progress{display:none}\n\n@media (max-width:1080px){\n  .hero__pin{padding:20px 0 24px}\n  .hero h1{font-size:clamp(40px,7vw,60px)}\n  .hero__video-shell{aspect-ratio:5/4}\n}\n@media (max-width:820px){\n  .hero{min-height:auto}\n  .hero__pin{position:relative;top:auto;height:auto;padding:40px 0 56px}\n  .hero__stack{height:auto;gap:32px}\n  .hero__visual{min-height:280px}\n  .hero__video-shell{height:auto;width:100%;aspect-ratio:5/4}\n}\n\n/* ────────── Logo strip (black) ────────── */\n.logos{\n  background:#0a0a0a;color:#fff;\n  padding:40px 0 48px;\n  position:relative;overflow:hidden;\n}\n.logos::before{\n  content:\"\";position:absolute;inset:0;\n  background:\n    radial-gradient(60% 100% at 50% 0%, rgba(255,255,255,0.04), transparent 60%);\n  pointer-events:none;\n}\n.logos__label{\n  text-align:center;color:#a3a3a3;\n  font-family:\"Geist Mono\",ui-monospace,Menlo,monospace;\n  font-size:13px;text-transform:uppercase;letter-spacing:0.10em;\n  margin-bottom:32px;position:relative;\n}\n.logos__row{\n  display:flex;align-items:center;justify-content:space-between;gap:32px;\n  position:relative;flex-wrap:wrap;row-gap:40px;\n}\n.logos__row a{\n  display:flex;align-items:center;justify-content:center;\n  flex:1 1 0;min-width:96px;\n}\n.logos__row img{\n  width:auto;max-width:100%;height:40px;object-fit:contain;\n  opacity:.65;\n  filter:brightness(0) invert(1);\n  transition:opacity .25s ease, filter .25s ease, transform .25s ease;\n}\n.logos__row a:hover img,\n.logos__row a:focus-visible img,\n.logos__row a:active img{\n  opacity:1;\n  filter:none;            /* reveal native brand colour */\n  transform:translateY(-1px);\n}\n/* Brands whose native logo is black — keep them white on hover so they don't disappear on the dark band */\n.logos__row a[data-dark]:hover img,\n.logos__row a[data-dark]:focus-visible img,\n.logos__row a[data-dark]:active img{\n  filter:brightness(0) invert(1);\n  opacity:1;\n}\n@media (max-width:1080px){\n  .logos__row{flex-wrap:wrap;justify-content:center;gap:32px 40px}\n  .logos__row a{flex:0 0 calc(25% - 40px)}\n}\n@media (max-width:540px){\n  .logos__row a{flex:0 0 calc(33.333% - 28px)}\n  .logos__row{gap:24px 28px}\n}\n\n/* ────────── Workflow pipeline ────────── */\n.pipeline{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:56px}\n.pipe{\n  background:#fff;border-radius:var(--radius-5);padding:32px;\n  box-shadow:var(--shadow-card);\n  position:relative;overflow:hidden;\n  transition:box-shadow .25s ease, transform .25s ease;\n}\n.pipe:hover{box-shadow:var(--shadow-card-hover);transform:translateY(-2px)}\n.pipe__label{\n  display:inline-flex;align-items:center;gap:10px;\n  font-family:\"Geist Mono\",ui-monospace,Menlo,monospace;\n  font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;\n  margin-bottom:20px;\n}\n.pipe__index{\n  width:24px;height:24px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;\n  font-size:11px;color:#fff;\n}\n.pipe--develop .pipe__label{color:var(--develop)} .pipe--develop .pipe__index{background:var(--develop)}\n.pipe--preview .pipe__label{color:var(--preview)} .pipe--preview .pipe__index{background:var(--preview)}\n.pipe--ship    .pipe__label{color:var(--ship)}    .pipe--ship    .pipe__index{background:var(--ship)}\n.pipe h3{letter-spacing:-0.03em;margin-bottom:10px}\n.pipe p{font-size:15px;line-height:1.55}\n.pipe::after{\n  content:\"\";position:absolute;left:0;right:0;bottom:0;height:3px;\n}\n.pipe--develop::after{background:linear-gradient(90deg,var(--develop),transparent)}\n.pipe--preview::after{background:linear-gradient(90deg,var(--preview),transparent)}\n.pipe--ship::after{background:linear-gradient(90deg,var(--ship),transparent)}\n@media (max-width:820px){.pipeline{grid-template-columns:1fr}}\n\n/* ────────── Services grid ────────── */\n.grid{display:grid;gap:24px}\n.grid--3{grid-template-columns:repeat(3,1fr)}\n.grid--4{grid-template-columns:repeat(4,1fr)}\n@media (max-width:1080px){.grid--3,.grid--4{grid-template-columns:repeat(2,1fr)}}\n@media (max-width:640px){.grid--3,.grid--4{grid-template-columns:1fr}}\n\n.svc{\n  position:relative;background:#fff;border-radius:var(--radius-5);padding:32px;\n  box-shadow:var(--shadow-card);\n  transition:box-shadow .25s ease, transform .25s ease;\n}\n.svc:hover{box-shadow:var(--shadow-card-hover);transform:translateY(-2px)}\n.svc__icon{\n  width:44px;height:44px;border-radius:10px;\n  display:flex;align-items:center;justify-content:center;\n  background:#fafafa;box-shadow:inset 0 0 0 1px var(--line);\n  color:var(--ink);margin-bottom:22px;\n}\n.svc--blue    .svc__icon{background:rgba(10,114,239,.10);color:#0a72ef;box-shadow:inset 0 0 0 1px rgba(10,114,239,.18)}\n.svc--purple  .svc__icon{background:rgba(121,40,202,.10);color:#7928ca;box-shadow:inset 0 0 0 1px rgba(121,40,202,.18)}\n.svc--pink    .svc__icon{background:rgba(222,29,141,.10);color:#de1d8d;box-shadow:inset 0 0 0 1px rgba(222,29,141,.18)}\n.svc--red     .svc__icon{background:rgba(255,91,79,.10); color:#ff5b4f;box-shadow:inset 0 0 0 1px rgba(255,91,79,.18)}\n.svc--cyan    .svc__icon{background:rgba(0,112,243,.10); color:#0070f3;box-shadow:inset 0 0 0 1px rgba(0,112,243,.18)}\n.svc--magenta .svc__icon{background:rgba(235,54,127,.10);color:#eb367f;box-shadow:inset 0 0 0 1px rgba(235,54,127,.18)}\n.svc h4{margin-bottom:8px;letter-spacing:-0.02em}\n.svc p{font-size:15px;line-height:1.5;color:var(--ink-3)}\n\n/* ────────── Section header ────────── */\n.s-head{display:flex;flex-direction:column;gap:14px;max-width:820px}\n.s-head h2{margin-top:4px}\n.s-head + .grid, .s-head + .pipeline, .s-head + .work, .s-head + .stats, .s-head + .pricing, .s-head + .testimonials, .s-head + .faq{margin-top:56px}\n\n/* ────────── Stats ────────── */\n.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-radius:20px;overflow:hidden;background:#fff;box-shadow:var(--shadow-card)}\n.stat{padding:56px 32px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:18px;min-width:0}\n.stat:last-child{border-right:0}\n.stat__num{font-size:clamp(48px,5.6vw,80px);font-weight:600;letter-spacing:-0.05em;line-height:0.95;color:var(--ink);white-space:nowrap}\n.stat__num em{font-style:normal;color:var(--ship)}\n.stat__num .sub{font-size:.4em;color:var(--ink-4);font-weight:500;letter-spacing:-0.02em;margin-left:2px}\n.stat__label{color:var(--ink-3);font-size:14px;letter-spacing:-0.005em}\n@media (max-width:920px){.stats{grid-template-columns:repeat(2,1fr)}.stat:nth-child(2){border-right:0}.stat:nth-child(1),.stat:nth-child(2){border-bottom:1px solid var(--line)}}\n@media (max-width:520px){.stats{grid-template-columns:1fr}.stat{border-right:0;border-bottom:1px solid var(--line)}.stat:last-child{border-bottom:0}}\n\n/* ────────── Featured work ────────── */\n.work{display:grid;grid-template-columns:1.4fr 1fr;gap:24px}\n.work__main, .work__side{\n  border-radius:var(--radius-6);overflow:hidden;\n  box-shadow:var(--shadow-card);\n  background:#fff;display:flex;flex-direction:column;\n  transition:box-shadow .25s ease, transform .25s ease;\n  min-height:380px;\n}\n.work__main:hover,.work__side:hover{box-shadow:var(--shadow-card-hover);transform:translateY(-2px)}\n.work__art{\n  flex:1;position:relative;border-bottom:1px solid var(--line);\n  overflow:hidden;min-height:240px;\n}\n.work__art--a{background:radial-gradient(60% 80% at 30% 30%,#ff5b4f33,transparent 65%),radial-gradient(60% 80% at 80% 80%,#de1d8d33,transparent 60%),#0a0a0a}\n.work__art--b{background:radial-gradient(50% 70% at 70% 30%,#0a72ef30,transparent 60%),#fafafa}\n.work__art--c{background:linear-gradient(160deg,#fafafa,#ebebeb)}\n\n/* realistic mini website mock */\n.mock{\n  position:absolute;left:32px;right:32px;bottom:0;\n  height:78%;background:#fff;border-radius:10px 10px 0 0;\n  box-shadow:0 0 0 1px rgba(0,0,0,0.08), 0 -16px 36px rgba(0,0,0,0.12);\n  overflow:hidden;display:flex;flex-direction:column;\n}\n.mock--side{left:24px;right:24px;height:70%}\n.mock__bar{height:30px;background:#fafafa;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px;padding:0 12px}\n.mock__bar i{width:8px;height:8px;border-radius:50%;display:block}\n.mock__bar i:nth-child(1){background:#ff5b4f}\n.mock__bar i:nth-child(2){background:#ffbd2e}\n.mock__bar i:nth-child(3){background:#27c93f}\n.mock__bar .url{margin-left:10px;background:#fff;height:18px;width:60%;max-width:220px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--line)}\n.mock__nav{height:36px;padding:0 16px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);background:#fff}\n.mock__nav .logo{width:14px;height:14px;background:#171717;border-radius:3px;clip-path:polygon(50% 0,100% 100%,0 100%)}\n.mock__nav .ln{height:7px;border-radius:3px;background:#ebebeb}\n.mock__nav .ln.w-12{width:36px} .mock__nav .ln.w-10{width:28px} .mock__nav .ln.w-14{width:44px}\n.mock__nav .cta{margin-left:auto;height:18px;width:60px;background:#171717;border-radius:4px}\n.mock__hero{padding:18px 16px 14px;display:flex;flex-direction:column;gap:8px}\n.mock__hero .h{height:13px;border-radius:4px;background:#171717}\n.mock__hero .h.w-90{width:88%}\n.mock__hero .h.w-70{width:68%}\n.mock__hero .sub{height:7px;border-radius:3px;background:#cfcfcf;width:60%;margin-top:2px}\n.mock__hero .ctas{display:flex;gap:6px;margin-top:6px}\n.mock__hero .ctas span{height:18px;width:62px;border-radius:4px;background:#171717}\n.mock__hero .ctas span:nth-child(2){background:#fff;box-shadow:inset 0 0 0 1px var(--line)}\n.mock__cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px 16px 14px}\n.mock__cards .c{height:46px;border-radius:6px;background:#fafafa;box-shadow:inset 0 0 0 1px var(--line)}\n.mock__cards .c--accent{background:linear-gradient(135deg,#0a72ef22,#de1d8d22)}\n\n.work__meta{padding:24px 28px;display:flex;flex-direction:column;gap:8px}\n.work__cat{\n  font-family:\"Geist Mono\",ui-monospace,Menlo,monospace;\n  font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-3)\n}\n.work__title{font-size:18px;font-weight:600;letter-spacing:-0.025em}\n.work__copy{color:var(--ink-3);font-size:14px;line-height:1.5}\n.work__side-grid{display:grid;grid-template-rows:1fr 1fr;gap:24px}\n@media (max-width:920px){.work{grid-template-columns:1fr}.work__side-grid{grid-template-rows:auto;grid-template-columns:1fr 1fr}}\n@media (max-width:600px){.work__side-grid{grid-template-columns:1fr}}\n\n/* ────────── Pricing ────────── */\n.pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:stretch}\n@media (max-width:920px){.pricing{grid-template-columns:1fr}}\n.tier{\n  position:relative;background:#fff;border-radius:var(--radius-5);\n  padding:36px 32px;display:flex;flex-direction:column;gap:18px;\n  box-shadow:var(--shadow-card);\n}\n.tier--featured{\n  background:#0a0a0a;color:#fff;\n  box-shadow:0 0 0 1px rgba(255,255,255,0.08), 0 24px 60px -20px rgba(10,114,239,0.30);\n  transform:translateY(-8px);\n}\n.tier--featured .tier__price strong{color:#fff}\n.tier--featured .tier__list li{color:#cfcfcf}\n.tier--featured .tier__list li::before{background:#fff}\n.tier--featured .tier__copy{color:#a3a3a3}\n.tier__name{display:flex;align-items:center;justify-content:space-between;gap:8px}\n.tier__name h3{font-size:24px;letter-spacing:-0.025em}\n.tier--featured .pill{background:rgba(10,114,239,0.18);color:#9bc1ff;box-shadow:none}\n.tier__price{display:flex;align-items:baseline;gap:8px}\n.tier__price strong{font-size:48px;font-weight:600;letter-spacing:-0.045em;line-height:1;color:var(--ink)}\n.tier__price span{color:var(--ink-3);font-size:14px}\n.tier--featured .tier__price span{color:#a3a3a3}\n.tier__copy{color:var(--ink-3);font-size:14px;line-height:1.55}\n.tier__list{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:11px;flex:1}\n.tier__list li{font-size:14px;color:var(--ink-2);display:flex;gap:10px;align-items:flex-start}\n.tier__list li::before{content:\"\";flex:0 0 16px;width:16px;height:16px;border-radius:50%;background:#171717;background-image:url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>\");background-repeat:no-repeat;background-position:center;margin-top:2px}\n.tier__cta{margin-top:8px}\n.tier__cta .btn{width:100%;justify-content:center}\n\n/* ────────── Testimonials ────────── */\n.testimonials{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}\n@media (max-width:920px){.testimonials{grid-template-columns:1fr}}\n.t-card{\n  background:#fff;border-radius:var(--radius-5);padding:32px;\n  box-shadow:var(--shadow-card);\n  display:flex;flex-direction:column;gap:18px;\n  position:relative;\n}\n.t-card__quote{\n  font-family:\"Geist Mono\",monospace;font-size:18px;color:var(--ink-5);\n  line-height:1;\n}\n.t-card blockquote{margin:0;font-size:17px;line-height:1.55;letter-spacing:-0.012em;color:var(--ink)}\n.t-card cite{font-style:normal;display:flex;align-items:center;gap:12px;margin-top:auto}\n.t-avatar{\n  width:44px;height:44px;border-radius:50%;\n  overflow:hidden;flex:0 0 44px;\n  box-shadow:0 0 0 1px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);\n  background:linear-gradient(135deg,#ebebeb,#cfcfcf);\n}\n.t-avatar img{width:100%;height:100%;object-fit:cover;display:block}\n.t-meta{font-size:13px;color:var(--ink-3);line-height:1.4}\n.t-meta strong{display:block;color:var(--ink);font-weight:500}\n\n/* ────────── FAQ ────────── */\n.faq{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:0;border-radius:16px;overflow:hidden;background:#fff;box-shadow:var(--shadow-card)}\n.faq details{border-top:1px solid var(--line);padding:0}\n.faq details:first-child{border-top:0}\n.faq summary{\n  cursor:pointer;list-style:none;\n  padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:24px;\n  font-size:17px;font-weight:500;letter-spacing:-0.018em;color:var(--ink);\n}\n.faq summary::-webkit-details-marker{display:none}\n.faq summary .plus{\n  width:24px;height:24px;border-radius:6px;\n  background:#fafafa;box-shadow:inset 0 0 0 1px var(--line);\n  display:flex;align-items:center;justify-content:center;color:var(--ink-2);\n  transition:transform .2s ease, background .2s ease, color .2s ease, box-shadow .2s ease;\n  flex:0 0 24px;font-family:\"Geist Mono\",monospace;font-size:14px;line-height:1;\n}\n.faq details[open] .plus{transform:rotate(45deg);background:#171717;color:#fff;box-shadow:none}\n.faq__a{padding:0 28px 24px;color:var(--ink-2);font-size:15px;line-height:1.65;max-width:64ch}\n\n/* ────────── CTA banner ────────── */\n.banner{\n  position:relative;overflow:hidden;\n  background:#0a0a0a;color:#fff;\n  border-radius:24px;\n  padding:80px 56px;\n  display:grid;grid-template-columns:1.4fr auto;gap:32px;align-items:center;\n  box-shadow:0 0 0 1px rgba(255,255,255,0.06);\n}\n.banner::before{\n  content:\"\";position:absolute;inset:-30%;\n  background:\n    radial-gradient(40% 60% at 20% 80%, rgba(10,114,239,.30), transparent 60%),\n    radial-gradient(40% 60% at 80% 20%, rgba(255,91,79,.28), transparent 60%);\n  filter:blur(40px);opacity:.9;pointer-events:none;\n}\n.banner > *{position:relative;z-index:1}\n.banner h2{color:#fff}\n.banner p{color:#cfcfcf;max-width:48ch;margin-top:14px}\n.banner__cta{display:flex;gap:12px;flex-wrap:wrap;justify-content:flex-end}\n@media (max-width:820px){\n  .banner{grid-template-columns:1fr;padding:48px 28px;border-radius:18px}\n  .banner__cta{justify-content:flex-start}\n}\n\n/* ────────── Footer ────────── */\n.footer{padding:80px 0 32px;border-top:1px solid var(--line);background:#fff}\n.footer__top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:32px}\n@media (max-width:820px){.footer__top{grid-template-columns:1fr 1fr;gap:32px}}\n.footer__brand{display:flex;flex-direction:column;gap:14px;max-width:340px}\n.footer__brand .nav__brand{font-size:18px}\n.footer__brand p{font-size:14px;color:var(--ink-3)}\n.footer__col h5{margin:0 0 14px;font-size:13px;font-weight:500;color:var(--ink);font-family:\"Geist Mono\",monospace;text-transform:uppercase;letter-spacing:0.08em}\n.footer__col ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}\n.footer__col a{font-size:14px;color:var(--ink-3)}\n.footer__col a:hover{color:var(--ink)}\n.footer__bottom{\n  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;\n  margin-top:48px;padding-top:24px;border-top:1px solid var(--line);\n  font-size:13px;color:var(--ink-3);\n}\n.footer__status{display:inline-flex;align-items:center;gap:8px}\n.status-dot{width:8px;height:8px;border-radius:50%;background:#27c93f;box-shadow:0 0 0 4px rgba(39,201,63,0.18)}\n\n/* tiny utilities */\n.muted{color:var(--ink-3)}\n</style>\n</head>\n<body data-cms-collection=\"col1\">\n\n<!-- ============== NAV ============== -->\n<header class=\"nav\">\n  <div class=\"container nav__row\">\n    <a class=\"nav__brand\" href=\"#top\" aria-label=\"Northline home\" data-cms=\"cms-1\">\n      <svg viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\">\n        <path d=\"M3 20 L12 4 L21 20 Z\" fill=\"#171717\"></path>\n        <path d=\"M12 4 L21 20\" stroke=\"#fff\" stroke-width=\"1.5\"></path>\n      </svg>\n      Northline\n    </a>\n    <nav class=\"nav__links\" aria-label=\"Primary\" data-cms-collection=\"col2\">\n      <a class=\"nav__link\" href=\"#services\" data-cms=\"cms-2\" data-cms-item=\"col2\">Services</a>\n      <a class=\"nav__link\" href=\"#work\" data-cms=\"cms-3\" data-cms-item=\"col2\">Work</a>\n      <a class=\"nav__link\" href=\"#process\" data-cms=\"cms-4\" data-cms-item=\"col2\">Process</a>\n      <a class=\"nav__link\" href=\"#pricing\" data-cms=\"cms-5\" data-cms-item=\"col2\">Pricing</a>\n      <a class=\"nav__link\" href=\"#faq\" data-cms=\"cms-6\" data-cms-item=\"col2\">FAQ</a>\n    </nav>\n    <div class=\"nav__cta\">\n      <a class=\"btn btn--ghost\" href=\"#login\" aria-label=\"Client login\" data-cms=\"cms-7\">Client login</a>\n      <a class=\"btn btn--primary\" href=\"#contact\" data-cms=\"cms-8\">Start a project <span class=\"arrow\" aria-hidden=\"true\">→</span></a>\n    </div>\n  </div>\n</header>\n\n<!-- ============== HERO (white) ============== -->\n<section class=\"hero\" id=\"top\" aria-labelledby=\"hero-title\">\n  <div class=\"hero__pin\">\n    <div class=\"container hero__stack\">\n      <div class=\"hero__copy\">\n        <span class=\"pill pill--neutral\" data-cms=\"cms-9\"><span class=\"dot\" style=\"background:#27c93f\"></span> Booking projects for Q3 2026</span>\n        <h1 id=\"hero-title\">\n          <em data-cms=\"cms-10\">Websites</em> built for<br>businesses that ship.\n        </h1>\n        <h2 class=\"hero__subhead\" data-cms=\"cms-11\">Design, code, and motion for serious launches.</h2>\n        <div class=\"hero__cta\">\n          <a class=\"btn btn--primary btn--lg\" href=\"#contact\" data-cms=\"cms-12\">Book an intro call <span class=\"arrow\" aria-hidden=\"true\">→</span></a>\n          <a class=\"btn btn--ghost btn--lg\" href=\"#work\" data-cms=\"cms-13\">See selected work</a>\n        </div>\n      </div>\n\n      <div class=\"hero__visual\">\n        <div class=\"hero__video-shell\">\n          <img class=\"hero__video\" src=\"assets/hero-laptop-poster.jpg\" alt=\"Northline product dashboard preview\" width=\"800\" height=\"1066\" data-cms-img=\"cms-138\">\n        </div>\n      </div>\n    </div>\n  </div>\n</section>\n\n<!-- ============== TRUST LOGOS (black) — REPLACE WITH YOUR CLIENT LOGOS ============== -->\n<section class=\"logos\" aria-label=\"Selected clients\">\n  <div class=\"container\">\n    <div class=\"logos__label\">Trusted by teams shipping at</div>\n    <div class=\"logos__row\" data-cms-collection=\"col3\">\n      <a href=\"#\" aria-label=\"Vercel\" data-dark=\"\" data-cms-item=\"col3\"><img src=\"https://cdn.simpleicons.org/vercel\" alt=\"Vercel\" data-cms-img=\"cms-139\"></a>\n      <a href=\"#\" aria-label=\"Stripe\" data-cms-item=\"col3\"><img src=\"https://cdn.simpleicons.org/stripe\" alt=\"Stripe\" data-cms-img=\"cms-140\"></a>\n      <a href=\"#\" aria-label=\"Linear\" data-cms-item=\"col3\"><img src=\"https://cdn.simpleicons.org/linear\" alt=\"Linear\" data-cms-img=\"cms-141\"></a>\n      <a href=\"#\" aria-label=\"Notion\" data-dark=\"\" data-cms-item=\"col3\"><img src=\"https://cdn.simpleicons.org/notion\" alt=\"Notion\" data-cms-img=\"cms-142\"></a>\n      <a href=\"#\" aria-label=\"Figma\" data-cms-item=\"col3\"><img src=\"https://cdn.simpleicons.org/figma\" alt=\"Figma\" data-cms-img=\"cms-143\"></a>\n      <a href=\"#\" aria-label=\"Shopify\" data-cms-item=\"col3\"><img src=\"https://cdn.simpleicons.org/shopify\" alt=\"Shopify\" data-cms-img=\"cms-144\"></a>\n      <a href=\"#\" aria-label=\"Framer\" data-dark=\"\" data-cms-item=\"col3\"><img src=\"https://cdn.simpleicons.org/framer\" alt=\"Framer\" data-cms-img=\"cms-145\"></a>\n      <a href=\"#\" aria-label=\"Loom\" data-cms-item=\"col3\"><img src=\"https://cdn.simpleicons.org/loom\" alt=\"Loom\" data-cms-img=\"cms-146\"></a>\n    </div>\n  </div>\n</section>\n\n<!-- ============== PROCESS / PIPELINE ============== -->\n<section class=\"section\" id=\"process\" aria-labelledby=\"process-title\" data-cms-item=\"col1\">\n  <div class=\"container\">\n    <div class=\"s-head\">\n      <span class=\"eyebrow\" data-cms=\"cms-14\">// Process</span>\n      <h2 id=\"process-title\" data-cms=\"cms-15\">Three stages.</h2>\n      <p class=\"lead\" data-cms=\"cms-16\">Every Northline engagement runs the same focused pipeline. You always know which stage you're in and when the next deploy lands.</p>\n    </div>\n\n    <div class=\"pipeline\">\n      <article class=\"pipe pipe--develop\">\n        <div class=\"pipe__label\"><span class=\"pipe__index\" data-cms=\"cms-17\">01</span> Discover</div>\n        <h3 data-cms=\"cms-18\">Strategy &amp; positioning</h3>\n        <p data-cms=\"cms-19\">Two weeks of structured research: business goals, audience interviews, competitor teardowns, and a measurable success target for the site.</p>\n      </article>\n      <article class=\"pipe pipe--preview\">\n        <div class=\"pipe__label\"><span class=\"pipe__index\" data-cms=\"cms-20\">02</span> Design</div>\n        <h3 data-cms=\"cms-21\">Brand, UX &amp; UI</h3>\n        <p data-cms=\"cms-22\">Sitemap to high-fidelity Figma. Daily Loom updates, async approvals, and a working prototype before a single line of production code.</p>\n      </article>\n      <article class=\"pipe pipe--ship\">\n        <div class=\"pipe__label\"><span class=\"pipe__index\" data-cms=\"cms-23\">03</span> Ship</div>\n        <h3 data-cms=\"cms-24\">Engineering &amp; deploy</h3>\n        <p data-cms=\"cms-25\">Built in Next.js on Vercel. Component library, CMS, analytics, A/B testing, accessibility audit, and a calm cutover — usually inside 4 weeks.</p>\n      </article>\n    </div>\n  </div>\n</section>\n\n<!-- ============== SERVICES ============== -->\n<section class=\"section\" id=\"services\" aria-labelledby=\"services-title\" data-cms-item=\"col1\">\n  <div class=\"container\">\n    <div class=\"s-head\">\n      <span class=\"eyebrow\" data-cms=\"cms-26\">// Services</span>\n      <h2 id=\"services-title\" data-cms=\"cms-27\">What we build.</h2>\n      <p class=\"lead\" data-cms=\"cms-28\">A small, senior team. You work directly with the people designing and building your site — no account managers, no handoffs.</p>\n    </div>\n\n    <div class=\"grid grid--3\">\n      <article class=\"svc svc--blue\">\n        <div class=\"svc__icon\" aria-hidden=\"true\">\n          <svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"14\" rx=\"1.5\"></rect><path d=\"M3 8h18\"></path><path d=\"M7 12h6\"></path></svg>\n        </div>\n        <h4 data-cms=\"cms-29\">Marketing websites</h4>\n        <p data-cms=\"cms-30\">Conversion-led homepages, product pages and landings.</p>\n      </article>\n\n      <article class=\"svc svc--purple\">\n        <div class=\"svc__icon\" aria-hidden=\"true\">\n          <svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"16 18 22 12 16 6\"></polyline><polyline points=\"8 6 2 12 8 18\"></polyline></svg>\n        </div>\n        <h4 data-cms=\"cms-31\">Product &amp; SaaS UI</h4>\n        <p data-cms=\"cms-32\">Marketing-quality product UI without slowing your roadmap.</p>\n      </article>\n\n      <article class=\"svc svc--pink\">\n        <div class=\"svc__icon\" aria-hidden=\"true\">\n          <svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 2 L19 6 V18 L12 22 L5 18 V6 Z\"></path><path d=\"M5 6 L12 10 L19 6\"></path><path d=\"M12 10 V22\"></path></svg>\n        </div>\n        <h4 data-cms=\"cms-33\">Brand systems</h4>\n        <p data-cms=\"cms-34\">Identity, type and tokens — built as a working system.</p>\n      </article>\n\n      <article class=\"svc svc--red\">\n        <div class=\"svc__icon\" aria-hidden=\"true\">\n          <svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"></circle><path d=\"M3 12h18\"></path><path d=\"M12 3a14 14 0 0 1 0 18\"></path><path d=\"M12 3a14 14 0 0 0 0 18\"></path></svg>\n        </div>\n        <h4 data-cms=\"cms-35\">SEO &amp; performance</h4>\n        <p data-cms=\"cms-36\">Core Web Vitals and SEO baked in from day one.</p>\n      </article>\n\n      <article class=\"svc svc--cyan\">\n        <div class=\"svc__icon\" aria-hidden=\"true\">\n          <svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 14a8 8 0 0 1 16 0\"></path><path d=\"M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-4\"></path><path d=\"M9 14v6\"></path><path d=\"M15 14v6\"></path></svg>\n        </div>\n        <h4 data-cms=\"cms-37\">Webflow &amp; CMS</h4>\n        <p data-cms=\"cms-38\">Pixel-perfect Webflow your marketing team can edit.</p>\n      </article>\n\n      <article class=\"svc svc--magenta\">\n        <div class=\"svc__icon\" aria-hidden=\"true\">\n          <svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 12h4l3 -8 4 16 3 -8h4\"></path></svg>\n        </div>\n        <h4 data-cms=\"cms-39\">Growth retainer</h4>\n        <p data-cms=\"cms-40\">Ongoing senior design + dev capacity. Pause any time.</p>\n      </article>\n    </div>\n  </div>\n</section>\n\n<!-- ============== STATS ============== -->\n<section class=\"section\" aria-labelledby=\"stats-title\" data-cms-item=\"col1\">\n  <div class=\"container\">\n    <div class=\"s-head\">\n      <span class=\"eyebrow\" data-cms=\"cms-41\">// Results</span>\n      <h2 id=\"stats-title\" data-cms=\"cms-42\">By the numbers.</h2>\n    </div>\n    <div class=\"stats\">\n      <div class=\"stat\">\n        <div class=\"stat__num\">62</div>\n        <div class=\"stat__label\">Sites shipped</div>\n      </div>\n      <div class=\"stat\">\n        <div class=\"stat__num\"><em data-cms=\"cms-43\">+118%</em></div>\n        <div class=\"stat__label\">Median lift in inbound</div>\n      </div>\n      <div class=\"stat\">\n        <div class=\"stat__num\">96<span class=\"sub\" data-cms=\"cms-44\">/100</span></div>\n        <div class=\"stat__label\">Avg. Lighthouse score</div>\n      </div>\n      <div class=\"stat\">\n        <div class=\"stat__num\">4.9<span class=\"sub\">★</span></div>\n        <div class=\"stat__label\">Average rating</div>\n      </div>\n    </div>\n  </div>\n</section>\n\n<!-- ============== FEATURED WORK ============== -->\n<section class=\"section\" id=\"work\" aria-labelledby=\"work-title\" data-cms-item=\"col1\">\n  <div class=\"container\">\n    <div class=\"s-head\">\n      <span class=\"eyebrow\" data-cms=\"cms-45\">// Selected work</span>\n      <h2 id=\"work-title\" data-cms=\"cms-46\">Recent projects.</h2>\n      <p class=\"lead\" data-cms=\"cms-47\">A small selection — full case studies, including metrics and what didn't work, available on request.</p>\n    </div>\n\n    <div class=\"work\">\n      <a class=\"work__main\" href=\"#case-helio\">\n        <div class=\"work__art work__art--a\" aria-hidden=\"true\">\n          <div class=\"mock\">\n            <div class=\"mock__bar\"><i></i><i></i><i></i><span class=\"url\"></span></div>\n            <div class=\"mock__nav\">\n              <span class=\"logo\"></span>\n              <span class=\"ln w-12\"></span><span class=\"ln w-10\"></span><span class=\"ln w-14\"></span><span class=\"ln w-10\"></span>\n              <span class=\"cta\"></span>\n            </div>\n            <div class=\"mock__hero\">\n              <span class=\"h w-90\"></span>\n              <span class=\"h w-70\"></span>\n              <span class=\"sub\"></span>\n              <span class=\"ctas\"><span></span><span></span></span>\n            </div>\n            <div class=\"mock__cards\">\n              <span class=\"c c--accent\"></span><span class=\"c\"></span><span class=\"c\"></span>\n            </div>\n          </div>\n        </div>\n        <div class=\"work__meta\">\n          <span class=\"work__cat\" data-cms=\"cms-48\">Case study · SaaS marketing site</span>\n          <span class=\"work__title\" data-cms=\"cms-49\">Helio Labs — rebuilt in 5 weeks, +212% trial signups</span>\n          <span class=\"work__copy\" data-cms=\"cms-50\">Brand refresh, headless CMS migration, and a marketing site that lets the founders ship a new landing page every Tuesday.</span>\n        </div>\n      </a>\n\n      <div class=\"work__side-grid\" data-cms-collection=\"col4\">\n        <a class=\"work__side\" href=\"#case-northvine\" data-cms-item=\"col4\">\n          <div class=\"work__art work__art--b\" aria-hidden=\"true\">\n            <div class=\"mock mock--side\">\n              <div class=\"mock__bar\"><i></i><i></i><i></i><span class=\"url\"></span></div>\n              <div class=\"mock__nav\">\n                <span class=\"logo\"></span>\n                <span class=\"ln w-10\"></span><span class=\"ln w-12\"></span><span class=\"ln w-10\"></span>\n                <span class=\"cta\"></span>\n              </div>\n              <div class=\"mock__hero\">\n                <span class=\"h w-90\"></span>\n                <span class=\"sub\"></span>\n                <span class=\"ctas\"><span></span><span></span></span>\n              </div>\n            </div>\n          </div>\n          <div class=\"work__meta\">\n            <span class=\"work__cat\" data-cms=\"cms-51\">B2B fintech</span>\n            <span class=\"work__title\" data-cms=\"cms-52\">Northvine — 0 → Series A</span>\n            <span class=\"work__copy\" data-cms=\"cms-53\">Identity, website and pitch site for an enterprise fintech.</span>\n          </div>\n        </a>\n\n        <a class=\"work__side\" href=\"#case-fieldnote\" data-cms-item=\"col4\">\n          <div class=\"work__art work__art--c\" aria-hidden=\"true\">\n            <div class=\"mock mock--side\">\n              <div class=\"mock__bar\"><i></i><i></i><i></i><span class=\"url\"></span></div>\n              <div class=\"mock__nav\">\n                <span class=\"logo\"></span>\n                <span class=\"ln w-12\"></span><span class=\"ln w-10\"></span><span class=\"ln w-14\"></span>\n                <span class=\"cta\"></span>\n              </div>\n              <div class=\"mock__hero\">\n                <span class=\"h w-90\"></span>\n                <span class=\"sub\"></span>\n                <span class=\"ctas\"><span></span><span></span></span>\n              </div>\n            </div>\n          </div>\n          <div class=\"work__meta\">\n            <span class=\"work__cat\" data-cms=\"cms-54\">D2C product · Shopify Plus</span>\n            <span class=\"work__title\" data-cms=\"cms-55\">Fieldnote — +37% conversion</span>\n            <span class=\"work__copy\" data-cms=\"cms-56\">A storefront tuned for thumb-scroll, with a +37% conversion lift in month one.</span>\n          </div>\n        </a>\n      </div>\n    </div>\n  </div>\n</section>\n\n<!-- ============== PRICING ============== -->\n<section class=\"section\" id=\"pricing\" aria-labelledby=\"pricing-title\" data-cms-item=\"col1\">\n  <div class=\"container\">\n    <div class=\"s-head\">\n      <span class=\"eyebrow\" data-cms=\"cms-57\">// Pricing</span>\n      <h2 id=\"pricing-title\" data-cms=\"cms-58\">Three ways in.</h2>\n      <p class=\"lead\" data-cms=\"cms-59\">Fixed-scope, milestone-billed, and clearly priced. Most projects start with a paid 2-week discovery — applied as credit if you continue.</p>\n    </div>\n\n    <div class=\"pricing\" data-cms-collection=\"col5\">\n      <article class=\"tier\" data-cms-item=\"col5\">\n        <div class=\"tier__name\">\n          <h3 data-cms=\"cms-60\">Launchpad</h3>\n          <span class=\"pill pill--neutral\" data-cms=\"cms-61\"><span class=\"dot\"></span> 4 weeks</span>\n        </div>\n        <p class=\"tier__copy\" data-cms=\"cms-62\">For founders launching v1 — a sharp, honest marketing site without the agency overhead.</p>\n        <div class=\"tier__price\"><strong data-cms=\"cms-63\">£12k</strong><span data-cms=\"cms-64\">fixed-fee</span></div>\n        <ul class=\"tier__list\" data-cms-collection=\"col6\">\n          <li data-cms=\"cms-65\" data-cms-item=\"col6\">Up to 8 pages, fully responsive</li>\n          <li data-cms=\"cms-66\" data-cms-item=\"col6\">Brand &amp; messaging refresh</li>\n          <li data-cms=\"cms-67\" data-cms-item=\"col6\">Webflow or Next.js delivery</li>\n          <li data-cms=\"cms-68\" data-cms-item=\"col6\">Analytics, SEO &amp; CMS setup</li>\n          <li data-cms=\"cms-69\" data-cms-item=\"col6\">Two weeks of post-launch support</li>\n        </ul>\n        <div class=\"tier__cta\">\n          <a class=\"btn btn--ghost btn--lg\" href=\"#contact\" data-cms=\"cms-70\">Talk about Launchpad <span class=\"arrow\" aria-hidden=\"true\">→</span></a>\n        </div>\n      </article>\n\n      <article class=\"tier tier--featured\" aria-label=\"Most popular tier\">\n        <div class=\"tier__name\">\n          <h3 data-cms=\"cms-71\">Studio</h3>\n          <span class=\"pill\" data-cms=\"cms-72\">Most popular</span>\n        </div>\n        <p class=\"tier__copy\" data-cms=\"cms-73\">Our default. A full design system, marketing site and component library that future teams can keep shipping with.</p>\n        <div class=\"tier__price\"><strong data-cms=\"cms-74\">£32k</strong><span data-cms=\"cms-75\">from · 6–8 weeks</span></div>\n        <ul class=\"tier__list\" data-cms-collection=\"col7\">\n          <li data-cms=\"cms-76\" data-cms-item=\"col7\">Strategy, brand, UX, UI &amp; build</li>\n          <li data-cms=\"cms-77\" data-cms-item=\"col7\">Up to 20 pages + reusable components</li>\n          <li data-cms=\"cms-78\" data-cms-item=\"col7\">Headless CMS &amp; editor onboarding</li>\n          <li data-cms=\"cms-79\" data-cms-item=\"col7\">Performance &amp; accessibility audit</li>\n          <li data-cms=\"cms-80\" data-cms-item=\"col7\">30 days of post-launch retainer</li>\n        </ul>\n        <div class=\"tier__cta\">\n          <a class=\"btn btn--primary btn--lg\" href=\"#contact\" data-cms=\"cms-81\">Start with Studio <span class=\"arrow\" aria-hidden=\"true\">→</span></a>\n        </div>\n      </article>\n\n      <article class=\"tier\" data-cms-item=\"col5\">\n        <div class=\"tier__name\">\n          <h3 data-cms=\"cms-82\">Growth retainer</h3>\n          <span class=\"pill pill--neutral\" data-cms=\"cms-83\"><span class=\"dot\"></span> Monthly</span>\n        </div>\n        <p class=\"tier__copy\" data-cms=\"cms-84\">For teams that have launched and now need a pair of senior hands every week — design, dev, experiments, and accountability.</p>\n        <div class=\"tier__price\"><strong data-cms=\"cms-85\">£6k</strong><span data-cms=\"cms-86\">/ month · pause any time</span></div>\n        <ul class=\"tier__list\" data-cms-collection=\"col8\">\n          <li data-cms=\"cms-87\" data-cms-item=\"col8\">2 senior hours / business day</li>\n          <li data-cms=\"cms-88\" data-cms-item=\"col8\">Roadmap &amp; A/B test backlog</li>\n          <li data-cms=\"cms-89\" data-cms-item=\"col8\">Monthly performance review</li>\n          <li data-cms=\"cms-90\" data-cms-item=\"col8\">Slack-shared design + dev capacity</li>\n          <li data-cms=\"cms-91\" data-cms-item=\"col8\">One landing page / experiment / week</li>\n        </ul>\n        <div class=\"tier__cta\">\n          <a class=\"btn btn--ghost btn--lg\" href=\"#contact\" data-cms=\"cms-92\">Talk about retainer <span class=\"arrow\" aria-hidden=\"true\">→</span></a>\n        </div>\n      </article>\n    </div>\n  </div>\n</section>\n\n<!-- ============== TESTIMONIALS ============== -->\n<section class=\"section\" aria-labelledby=\"t-title\" data-cms-item=\"col1\">\n  <div class=\"container\">\n    <div class=\"s-head\">\n      <span class=\"eyebrow\" data-cms=\"cms-93\">// Testimonials</span>\n      <h2 id=\"t-title\" data-cms=\"cms-94\">What clients say.</h2>\n    </div>\n\n    <div class=\"testimonials\" data-cms-collection=\"col9\">\n      <figure class=\"t-card\" data-cms-item=\"col9\">\n        <span class=\"t-card__quote\" aria-hidden=\"true\">“</span>\n        <blockquote data-cms=\"cms-95\">Northline shipped our v2 in five weeks. We spent the previous nine months trying to brief two other agencies. Trial signups doubled in the first month.</blockquote>\n        <cite>\n          <span class=\"t-avatar\"><img src=\"https://randomuser.me/api/portraits/women/68.jpg\" alt=\"\" loading=\"lazy\" data-cms-img=\"cms-147\"></span>\n          <span class=\"t-meta\"><strong data-cms=\"cms-96\">Maya Dahl</strong>Co-founder &amp; CEO, Helio Labs</span>\n        </cite>\n      </figure>\n      <figure class=\"t-card\" data-cms-item=\"col9\">\n        <span class=\"t-card__quote\" aria-hidden=\"true\">“</span>\n        <blockquote data-cms=\"cms-97\">The polish is the obvious part. The less obvious part is how disciplined the process is. We always knew what was being approved and when it would deploy.</blockquote>\n        <cite>\n          <span class=\"t-avatar\"><img src=\"https://randomuser.me/api/portraits/men/32.jpg\" alt=\"\" loading=\"lazy\" data-cms-img=\"cms-148\"></span>\n          <span class=\"t-meta\"><strong data-cms=\"cms-98\">James Roe</strong>Head of Marketing, Northvine</span>\n        </cite>\n      </figure>\n      <figure class=\"t-card\" data-cms-item=\"col9\">\n        <span class=\"t-card__quote\" aria-hidden=\"true\">“</span>\n        <blockquote data-cms=\"cms-99\">They don't redesign for the sake of it. Every change came with a measurable hypothesis. Our PDP page is finally pulling its weight.</blockquote>\n        <cite>\n          <span class=\"t-avatar\"><img src=\"https://randomuser.me/api/portraits/women/44.jpg\" alt=\"\" loading=\"lazy\" data-cms-img=\"cms-149\"></span>\n          <span class=\"t-meta\"><strong data-cms=\"cms-100\">Sara Kapoor</strong>Director of E-commerce, Fieldnote</span>\n        </cite>\n      </figure>\n    </div>\n  </div>\n</section>\n\n<!-- ============== FAQ ============== -->\n<section class=\"section\" id=\"faq\" aria-labelledby=\"faq-title\" data-cms-item=\"col1\">\n  <div class=\"container\">\n    <div class=\"s-head\">\n      <span class=\"eyebrow\" data-cms=\"cms-101\">// FAQ</span>\n      <h2 id=\"faq-title\" data-cms=\"cms-102\">Common questions.</h2>\n    </div>\n\n    <div class=\"faq\" data-cms-collection=\"col10\">\n      <details data-cms-item=\"col10\">\n        <summary data-cms=\"cms-103\">How long does a typical project take?<span class=\"plus\" aria-hidden=\"true\">+</span></summary>\n        <div class=\"faq__a\">Launchpad runs four weeks. A standard Studio engagement is six to eight weeks from kickoff to live deploy, and we publish a public Linear board so you can see exactly where every milestone sits.</div>\n      </details>\n      <details data-cms-item=\"col10\">\n        <summary data-cms=\"cms-104\">Do you work with companies outside the UK?<span class=\"plus\" aria-hidden=\"true\">+</span></summary>\n        <div class=\"faq__a\">Yes. Roughly 60% of our clients are in the US and EU. We schedule one short overlap window each day and run async on Loom, Figma and Linear for everything else.</div>\n      </details>\n      <details data-cms-item=\"col10\">\n        <summary data-cms=\"cms-105\">Can we keep editing the site after launch?<span class=\"plus\" aria-hidden=\"true\">+</span></summary>\n        <div class=\"faq__a\">Absolutely — that's the whole point. We hand over a CMS your marketing team can actually use, plus a 60-minute editor training session. Most Studio clients ship a new page within their first week.</div>\n      </details>\n      <details data-cms-item=\"col10\">\n        <summary data-cms=\"cms-106\">What stack do you build on?<span class=\"plus\" aria-hidden=\"true\">+</span></summary>\n        <div class=\"faq__a\">For most marketing sites: Next.js, Tailwind, and a headless CMS (Sanity or Contentful), deployed on Vercel. Where speed-to-edit matters more than custom interactions, we build in Webflow.</div>\n      </details>\n      <details data-cms-item=\"col10\">\n        <summary data-cms=\"cms-107\">Will we work directly with the people building the site?<span class=\"plus\" aria-hidden=\"true\">+</span></summary>\n        <div class=\"faq__a\">Always. There are no account managers at Northline. You get a dedicated designer, a dedicated engineer, and a project lead — and you talk to them in a shared Slack channel from day one.</div>\n      </details>\n      <details data-cms-item=\"col10\">\n        <summary data-cms=\"cms-108\">What if we already have a brand we like?<span class=\"plus\" aria-hidden=\"true\">+</span></summary>\n        <div class=\"faq__a\">Even better. Roughly half of our projects start from an existing identity. We'll audit it for screen and code, fix the gaps, and turn it into a working design system.</div>\n      </details>\n    </div>\n  </div>\n</section>\n\n<!-- ============== CTA ============== -->\n<section class=\"section\" id=\"contact\" aria-labelledby=\"cta-title\" data-cms-item=\"col1\">\n  <div class=\"container\">\n    <div class=\"banner\">\n      <div>\n        <h2 id=\"cta-title\" style=\"font-size:clamp(32px,4.4vw,52px);letter-spacing:-0.045em\" data-cms=\"cms-109\">Let's build.</h2>\n        <p data-cms=\"cms-110\">Send us a line about the business, the timeline, and what good looks like. We reply within one business day — usually the same morning.</p>\n      </div>\n      <div class=\"banner__cta\">\n        <a class=\"btn btn--primary btn--lg\" href=\"mailto:hello@northline.studio\" data-cms=\"cms-111\">hello@northline.studio</a>\n        <a class=\"btn btn--ghost btn--lg\" href=\"#book\" data-cms=\"cms-112\">Book an intro call</a>\n      </div>\n    </div>\n  </div>\n</section>\n\n<!-- ============== FOOTER ============== -->\n<footer class=\"footer\" aria-labelledby=\"footer-title\">\n  <h2 id=\"footer-title\" style=\"position:absolute;left:-9999px\" data-cms=\"cms-113\">Site footer</h2>\n  <div class=\"container\">\n    <div class=\"footer__top\" data-cms-collection=\"col11\">\n      <div class=\"footer__brand\">\n        <a class=\"nav__brand\" href=\"#top\" data-cms=\"cms-114\">\n          <svg viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\">\n            <path d=\"M3 20 L12 4 L21 20 Z\" fill=\"#171717\"></path>\n            <path d=\"M12 4 L21 20\" stroke=\"#fff\" stroke-width=\"1.5\"></path>\n          </svg>\n          Northline\n        </a>\n        <p data-cms=\"cms-115\">A studio of designers and engineers shipping high-performance websites for ambitious businesses. Based in London, working everywhere.</p>\n      </div>\n      <div class=\"footer__col\" data-cms-item=\"col11\">\n        <h5 data-cms=\"cms-116\">Studio</h5>\n        <ul data-cms-collection=\"col12\">\n          <li data-cms-item=\"col12\"><a href=\"#services\" data-cms=\"cms-117\">Services</a></li>\n          <li data-cms-item=\"col12\"><a href=\"#work\" data-cms=\"cms-118\">Work</a></li>\n          <li data-cms-item=\"col12\"><a href=\"#process\" data-cms=\"cms-119\">Process</a></li>\n          <li data-cms-item=\"col12\"><a href=\"#pricing\" data-cms=\"cms-120\">Pricing</a></li>\n        </ul>\n      </div>\n      <div class=\"footer__col\" data-cms-item=\"col11\">\n        <h5 data-cms=\"cms-121\">Resources</h5>\n        <ul data-cms-collection=\"col13\">\n          <li data-cms-item=\"col13\"><a href=\"#\" data-cms=\"cms-122\">Journal</a></li>\n          <li data-cms-item=\"col13\"><a href=\"#\" data-cms=\"cms-123\">Design system</a></li>\n          <li data-cms-item=\"col13\"><a href=\"#\" data-cms=\"cms-124\">Performance audit</a></li>\n          <li data-cms-item=\"col13\"><a href=\"#\" data-cms=\"cms-125\">Hire us</a></li>\n        </ul>\n      </div>\n      <div class=\"footer__col\" data-cms-item=\"col11\">\n        <h5 data-cms=\"cms-126\">Contact</h5>\n        <ul data-cms-collection=\"col14\">\n          <li data-cms-item=\"col14\"><a href=\"mailto:hello@northline.studio\" data-cms=\"cms-127\">hello@northline.studio</a></li>\n          <li data-cms-item=\"col14\"><a href=\"#\" data-cms=\"cms-128\">Book a call</a></li>\n          <li data-cms-item=\"col14\"><a href=\"#\" data-cms=\"cms-129\">@northlinestudio</a></li>\n          <li data-cms-item=\"col14\"><a href=\"#\" data-cms=\"cms-130\">LinkedIn</a></li>\n        </ul>\n      </div>\n      <div class=\"footer__col\" data-cms-item=\"col11\">\n        <h5 data-cms=\"cms-131\">Legal</h5>\n        <ul data-cms-collection=\"col15\">\n          <li data-cms-item=\"col15\"><a href=\"#\" data-cms=\"cms-132\">Privacy</a></li>\n          <li data-cms-item=\"col15\"><a href=\"#\" data-cms=\"cms-133\">Terms</a></li>\n          <li data-cms-item=\"col15\"><a href=\"#\" data-cms=\"cms-134\">Accessibility</a></li>\n          <li data-cms-item=\"col15\"><a href=\"#\" data-cms=\"cms-135\">Cookies</a></li>\n        </ul>\n      </div>\n    </div>\n    <div class=\"footer__bottom\">\n      <span class=\"footer__status\" data-cms=\"cms-136\"><span class=\"status-dot\" aria-hidden=\"true\"></span> All systems operational</span>\n      <span data-cms=\"cms-137\">© 2026 Northline Studio Ltd. Made on Earth.</span>\n    </div>\n  </div>\n</footer>\n\n\n\n</body></html>",
+        "schema": {
+          "cms-1": {
+            "type": "text",
+            "label": "Link: \"Northline\"",
+            "group": "Header",
+            "rich": false,
+            "allow": []
+          },
+          "cms-2": {
+            "type": "text",
+            "label": "Link: \"Services\"",
+            "group": "Nav",
+            "rich": false,
+            "allow": []
+          },
+          "cms-3": {
+            "type": "text",
+            "label": "Link: \"Work\"",
+            "group": "Nav",
+            "rich": false,
+            "allow": []
+          },
+          "cms-4": {
+            "type": "text",
+            "label": "Link: \"Process\"",
+            "group": "Nav",
+            "rich": false,
+            "allow": []
+          },
+          "cms-5": {
+            "type": "text",
+            "label": "Link: \"Pricing\"",
+            "group": "Nav",
+            "rich": false,
+            "allow": []
+          },
+          "cms-6": {
+            "type": "text",
+            "label": "Link: \"FAQ\"",
+            "group": "Nav",
+            "rich": false,
+            "allow": []
+          },
+          "cms-7": {
+            "type": "text",
+            "label": "Link: \"Client login\"",
+            "group": "Header",
+            "rich": false,
+            "allow": []
+          },
+          "cms-8": {
+            "type": "text",
+            "label": "Link: \"Start a project\"",
+            "group": "Header",
+            "rich": true,
+            "allow": [
+              "span"
+            ]
+          },
+          "cms-9": {
+            "type": "text",
+            "label": "Text: \"Booking projects for Q3 2026\"",
+            "group": "Top",
+            "rich": true,
+            "allow": [
+              "span"
+            ]
+          },
+          "cms-10": {
+            "type": "text",
+            "label": "Text: \"Websites\"",
+            "group": "Top",
+            "rich": false,
+            "allow": []
+          },
+          "cms-11": {
+            "type": "text",
+            "label": "Heading: \"Design, code, and motion for serious…\"",
+            "group": "Top",
+            "rich": false,
+            "allow": []
+          },
+          "cms-12": {
+            "type": "text",
+            "label": "Link: \"Book an intro call\"",
+            "group": "Top",
+            "rich": true,
+            "allow": [
+              "span"
+            ]
+          },
+          "cms-13": {
+            "type": "text",
+            "label": "Link: \"See selected work\"",
+            "group": "Top",
+            "rich": false,
+            "allow": []
+          },
+          "cms-14": {
+            "type": "text",
+            "label": "Text: \"// Process\"",
+            "group": "Process",
+            "rich": false,
+            "allow": []
+          },
+          "cms-15": {
+            "type": "text",
+            "label": "Heading: \"Three stages.\"",
+            "group": "Process",
+            "rich": false,
+            "allow": []
+          },
+          "cms-16": {
+            "type": "text",
+            "label": "Text: \"Every Northline engagement runs the …\"",
+            "group": "Process",
+            "rich": false,
+            "allow": []
+          },
+          "cms-17": {
+            "type": "text",
+            "label": "Text: \"01\"",
+            "group": "Process",
+            "rich": false,
+            "allow": []
+          },
+          "cms-18": {
+            "type": "text",
+            "label": "Heading: \"Strategy & positioning\"",
+            "group": "Process",
+            "rich": false,
+            "allow": []
+          },
+          "cms-19": {
+            "type": "text",
+            "label": "Text: \"Two weeks of structured research: bu…\"",
+            "group": "Process",
+            "rich": false,
+            "allow": []
+          },
+          "cms-20": {
+            "type": "text",
+            "label": "Text: \"02\"",
+            "group": "Process",
+            "rich": false,
+            "allow": []
+          },
+          "cms-21": {
+            "type": "text",
+            "label": "Heading: \"Brand, UX & UI\"",
+            "group": "Process",
+            "rich": false,
+            "allow": []
+          },
+          "cms-22": {
+            "type": "text",
+            "label": "Text: \"Sitemap to high-fidelity Figma. Dail…\"",
+            "group": "Process",
+            "rich": false,
+            "allow": []
+          },
+          "cms-23": {
+            "type": "text",
+            "label": "Text: \"03\"",
+            "group": "Process",
+            "rich": false,
+            "allow": []
+          },
+          "cms-24": {
+            "type": "text",
+            "label": "Heading: \"Engineering & deploy\"",
+            "group": "Process",
+            "rich": false,
+            "allow": []
+          },
+          "cms-25": {
+            "type": "text",
+            "label": "Text: \"Built in Next.js on Vercel. Componen…\"",
+            "group": "Process",
+            "rich": false,
+            "allow": []
+          },
+          "cms-26": {
+            "type": "text",
+            "label": "Text: \"// Services\"",
+            "group": "Services",
+            "rich": false,
+            "allow": []
+          },
+          "cms-27": {
+            "type": "text",
+            "label": "Heading: \"What we build.\"",
+            "group": "Services",
+            "rich": false,
+            "allow": []
+          },
+          "cms-28": {
+            "type": "text",
+            "label": "Text: \"A small, senior team. You work direc…\"",
+            "group": "Services",
+            "rich": false,
+            "allow": []
+          },
+          "cms-29": {
+            "type": "text",
+            "label": "Heading: \"Marketing websites\"",
+            "group": "Services",
+            "rich": false,
+            "allow": []
+          },
+          "cms-30": {
+            "type": "text",
+            "label": "Text: \"Conversion-led homepages, product pa…\"",
+            "group": "Services",
+            "rich": false,
+            "allow": []
+          },
+          "cms-31": {
+            "type": "text",
+            "label": "Heading: \"Product & SaaS UI\"",
+            "group": "Services",
+            "rich": false,
+            "allow": []
+          },
+          "cms-32": {
+            "type": "text",
+            "label": "Text: \"Marketing-quality product UI without…\"",
+            "group": "Services",
+            "rich": false,
+            "allow": []
+          },
+          "cms-33": {
+            "type": "text",
+            "label": "Heading: \"Brand systems\"",
+            "group": "Services",
+            "rich": false,
+            "allow": []
+          },
+          "cms-34": {
+            "type": "text",
+            "label": "Text: \"Identity, type and tokens — built as…\"",
+            "group": "Services",
+            "rich": false,
+            "allow": []
+          },
+          "cms-35": {
+            "type": "text",
+            "label": "Heading: \"SEO & performance\"",
+            "group": "Services",
+            "rich": false,
+            "allow": []
+          },
+          "cms-36": {
+            "type": "text",
+            "label": "Text: \"Core Web Vitals and SEO baked in fro…\"",
+            "group": "Services",
+            "rich": false,
+            "allow": []
+          },
+          "cms-37": {
+            "type": "text",
+            "label": "Heading: \"Webflow & CMS\"",
+            "group": "Services",
+            "rich": false,
+            "allow": []
+          },
+          "cms-38": {
+            "type": "text",
+            "label": "Text: \"Pixel-perfect Webflow your marketing…\"",
+            "group": "Services",
+            "rich": false,
+            "allow": []
+          },
+          "cms-39": {
+            "type": "text",
+            "label": "Heading: \"Growth retainer\"",
+            "group": "Services",
+            "rich": false,
+            "allow": []
+          },
+          "cms-40": {
+            "type": "text",
+            "label": "Text: \"Ongoing senior design + dev capacity…\"",
+            "group": "Services",
+            "rich": false,
+            "allow": []
+          },
+          "cms-41": {
+            "type": "text",
+            "label": "Text: \"// Results\"",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-42": {
+            "type": "text",
+            "label": "Heading: \"By the numbers.\"",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-43": {
+            "type": "text",
+            "label": "Text: \"+118%\"",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-44": {
+            "type": "text",
+            "label": "Text: \"/100\"",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-45": {
+            "type": "text",
+            "label": "Text: \"// Selected work\"",
+            "group": "Work",
+            "rich": false,
+            "allow": []
+          },
+          "cms-46": {
+            "type": "text",
+            "label": "Heading: \"Recent projects.\"",
+            "group": "Work",
+            "rich": false,
+            "allow": []
+          },
+          "cms-47": {
+            "type": "text",
+            "label": "Text: \"A small selection — full case studie…\"",
+            "group": "Work",
+            "rich": false,
+            "allow": []
+          },
+          "cms-48": {
+            "type": "text",
+            "label": "Text: \"Case study · SaaS marketing site\"",
+            "group": "Work",
+            "rich": false,
+            "allow": []
+          },
+          "cms-49": {
+            "type": "text",
+            "label": "Text: \"Helio Labs — rebuilt in 5 weeks, +21…\"",
+            "group": "Work",
+            "rich": false,
+            "allow": []
+          },
+          "cms-50": {
+            "type": "text",
+            "label": "Text: \"Brand refresh, headless CMS migratio…\"",
+            "group": "Work",
+            "rich": false,
+            "allow": []
+          },
+          "cms-51": {
+            "type": "text",
+            "label": "Text: \"B2B fintech\"",
+            "group": "Work",
+            "rich": false,
+            "allow": []
+          },
+          "cms-52": {
+            "type": "text",
+            "label": "Text: \"Northvine — 0 → Series A\"",
+            "group": "Work",
+            "rich": false,
+            "allow": []
+          },
+          "cms-53": {
+            "type": "text",
+            "label": "Text: \"Identity, website and pitch site for…\"",
+            "group": "Work",
+            "rich": false,
+            "allow": []
+          },
+          "cms-54": {
+            "type": "text",
+            "label": "Text: \"D2C product · Shopify Plus\"",
+            "group": "Work",
+            "rich": false,
+            "allow": []
+          },
+          "cms-55": {
+            "type": "text",
+            "label": "Text: \"Fieldnote — +37% conversion\"",
+            "group": "Work",
+            "rich": false,
+            "allow": []
+          },
+          "cms-56": {
+            "type": "text",
+            "label": "Text: \"A storefront tuned for thumb-scroll,…\"",
+            "group": "Work",
+            "rich": false,
+            "allow": []
+          },
+          "cms-57": {
+            "type": "text",
+            "label": "Text: \"// Pricing\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-58": {
+            "type": "text",
+            "label": "Heading: \"Three ways in.\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-59": {
+            "type": "text",
+            "label": "Text: \"Fixed-scope, milestone-billed, and c…\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-60": {
+            "type": "text",
+            "label": "Heading: \"Launchpad\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-61": {
+            "type": "text",
+            "label": "Text: \"4 weeks\"",
+            "group": "Pricing",
+            "rich": true,
+            "allow": [
+              "span"
+            ]
+          },
+          "cms-62": {
+            "type": "text",
+            "label": "Text: \"For founders launching v1 — a sharp,…\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-63": {
+            "type": "text",
+            "label": "Text: \"£12k\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-64": {
+            "type": "text",
+            "label": "Text: \"fixed-fee\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-65": {
+            "type": "text",
+            "label": "List item: \"Up to 8 pages, fully responsive\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-66": {
+            "type": "text",
+            "label": "List item: \"Brand & messaging refresh\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-67": {
+            "type": "text",
+            "label": "List item: \"Webflow or Next.js delivery\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-68": {
+            "type": "text",
+            "label": "List item: \"Analytics, SEO & CMS setup\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-69": {
+            "type": "text",
+            "label": "List item: \"Two weeks of post-launch support\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-70": {
+            "type": "text",
+            "label": "Link: \"Talk about Launchpad\"",
+            "group": "Pricing",
+            "rich": true,
+            "allow": [
+              "span"
+            ]
+          },
+          "cms-71": {
+            "type": "text",
+            "label": "Heading: \"Studio\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-72": {
+            "type": "text",
+            "label": "Text: \"Most popular\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-73": {
+            "type": "text",
+            "label": "Text: \"Our default. A full design system, m…\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-74": {
+            "type": "text",
+            "label": "Text: \"£32k\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-75": {
+            "type": "text",
+            "label": "Text: \"from · 6–8 weeks\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-76": {
+            "type": "text",
+            "label": "List item: \"Strategy, brand, UX, UI & build\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-77": {
+            "type": "text",
+            "label": "List item: \"Up to 20 pages + reusable components\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-78": {
+            "type": "text",
+            "label": "List item: \"Headless CMS & editor onboarding\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-79": {
+            "type": "text",
+            "label": "List item: \"Performance & accessibility audit\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-80": {
+            "type": "text",
+            "label": "List item: \"30 days of post-launch retainer\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-81": {
+            "type": "text",
+            "label": "Link: \"Start with Studio\"",
+            "group": "Pricing",
+            "rich": true,
+            "allow": [
+              "span"
+            ]
+          },
+          "cms-82": {
+            "type": "text",
+            "label": "Heading: \"Growth retainer\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-83": {
+            "type": "text",
+            "label": "Text: \"Monthly\"",
+            "group": "Pricing",
+            "rich": true,
+            "allow": [
+              "span"
+            ]
+          },
+          "cms-84": {
+            "type": "text",
+            "label": "Text: \"For teams that have launched and now…\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-85": {
+            "type": "text",
+            "label": "Text: \"£6k\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-86": {
+            "type": "text",
+            "label": "Text: \"/ month · pause any time\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-87": {
+            "type": "text",
+            "label": "List item: \"2 senior hours / business day\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-88": {
+            "type": "text",
+            "label": "List item: \"Roadmap & A/B test backlog\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-89": {
+            "type": "text",
+            "label": "List item: \"Monthly performance review\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-90": {
+            "type": "text",
+            "label": "List item: \"Slack-shared design + dev capacity\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-91": {
+            "type": "text",
+            "label": "List item: \"One landing page / experiment / week\"",
+            "group": "Pricing",
+            "rich": false,
+            "allow": []
+          },
+          "cms-92": {
+            "type": "text",
+            "label": "Link: \"Talk about retainer\"",
+            "group": "Pricing",
+            "rich": true,
+            "allow": [
+              "span"
+            ]
+          },
+          "cms-93": {
+            "type": "text",
+            "label": "Text: \"// Testimonials\"",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-94": {
+            "type": "text",
+            "label": "Heading: \"What clients say.\"",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-95": {
+            "type": "text",
+            "label": "Quote: \"Northline shipped our v2 in five wee…\"",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-96": {
+            "type": "text",
+            "label": "Text: \"Maya Dahl\"",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-97": {
+            "type": "text",
+            "label": "Quote: \"The polish is the obvious part. The …\"",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-98": {
+            "type": "text",
+            "label": "Text: \"James Roe\"",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-99": {
+            "type": "text",
+            "label": "Quote: \"They don't redesign for the sake of …\"",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-100": {
+            "type": "text",
+            "label": "Text: \"Sara Kapoor\"",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-101": {
+            "type": "text",
+            "label": "Text: \"// FAQ\"",
+            "group": "Faq",
+            "rich": false,
+            "allow": []
+          },
+          "cms-102": {
+            "type": "text",
+            "label": "Heading: \"Common questions.\"",
+            "group": "Faq",
+            "rich": false,
+            "allow": []
+          },
+          "cms-103": {
+            "type": "text",
+            "label": "Text: \"How long does a typical project take?\"",
+            "group": "Faq",
+            "rich": true,
+            "allow": [
+              "span"
+            ]
+          },
+          "cms-104": {
+            "type": "text",
+            "label": "Text: \"Do you work with companies outside t…\"",
+            "group": "Faq",
+            "rich": true,
+            "allow": [
+              "span"
+            ]
+          },
+          "cms-105": {
+            "type": "text",
+            "label": "Text: \"Can we keep editing the site after l…\"",
+            "group": "Faq",
+            "rich": true,
+            "allow": [
+              "span"
+            ]
+          },
+          "cms-106": {
+            "type": "text",
+            "label": "Text: \"What stack do you build on?\"",
+            "group": "Faq",
+            "rich": true,
+            "allow": [
+              "span"
+            ]
+          },
+          "cms-107": {
+            "type": "text",
+            "label": "Text: \"Will we work directly with the peopl…\"",
+            "group": "Faq",
+            "rich": true,
+            "allow": [
+              "span"
+            ]
+          },
+          "cms-108": {
+            "type": "text",
+            "label": "Text: \"What if we already have a brand we l…\"",
+            "group": "Faq",
+            "rich": true,
+            "allow": [
+              "span"
+            ]
+          },
+          "cms-109": {
+            "type": "text",
+            "label": "Heading: \"Let's build.\"",
+            "group": "Contact",
+            "rich": false,
+            "allow": []
+          },
+          "cms-110": {
+            "type": "text",
+            "label": "Text: \"Send us a line about the business, t…\"",
+            "group": "Contact",
+            "rich": false,
+            "allow": []
+          },
+          "cms-111": {
+            "type": "text",
+            "label": "Link: \"hello@northline.studio\"",
+            "group": "Contact",
+            "rich": false,
+            "allow": []
+          },
+          "cms-112": {
+            "type": "text",
+            "label": "Link: \"Book an intro call\"",
+            "group": "Contact",
+            "rich": false,
+            "allow": []
+          },
+          "cms-113": {
+            "type": "text",
+            "label": "Heading: \"Site footer\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-114": {
+            "type": "text",
+            "label": "Link: \"Northline\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-115": {
+            "type": "text",
+            "label": "Text: \"A studio of designers and engineers …\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-116": {
+            "type": "text",
+            "label": "Heading: \"Studio\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-117": {
+            "type": "text",
+            "label": "Link: \"Services\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-118": {
+            "type": "text",
+            "label": "Link: \"Work\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-119": {
+            "type": "text",
+            "label": "Link: \"Process\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-120": {
+            "type": "text",
+            "label": "Link: \"Pricing\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-121": {
+            "type": "text",
+            "label": "Heading: \"Resources\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-122": {
+            "type": "text",
+            "label": "Link: \"Journal\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-123": {
+            "type": "text",
+            "label": "Link: \"Design system\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-124": {
+            "type": "text",
+            "label": "Link: \"Performance audit\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-125": {
+            "type": "text",
+            "label": "Link: \"Hire us\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-126": {
+            "type": "text",
+            "label": "Heading: \"Contact\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-127": {
+            "type": "text",
+            "label": "Link: \"hello@northline.studio\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-128": {
+            "type": "text",
+            "label": "Link: \"Book a call\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-129": {
+            "type": "text",
+            "label": "Link: \"@northlinestudio\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-130": {
+            "type": "text",
+            "label": "Link: \"LinkedIn\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-131": {
+            "type": "text",
+            "label": "Heading: \"Legal\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-132": {
+            "type": "text",
+            "label": "Link: \"Privacy\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-133": {
+            "type": "text",
+            "label": "Link: \"Terms\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-134": {
+            "type": "text",
+            "label": "Link: \"Accessibility\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-135": {
+            "type": "text",
+            "label": "Link: \"Cookies\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-136": {
+            "type": "text",
+            "label": "Text: \"All systems operational\"",
+            "group": "Footer",
+            "rich": true,
+            "allow": [
+              "span"
+            ]
+          },
+          "cms-137": {
+            "type": "text",
+            "label": "Text: \"© 2026 Northline Studio Ltd. Made on…\"",
+            "group": "Footer",
+            "rich": false,
+            "allow": []
+          },
+          "cms-138": {
+            "type": "image",
+            "label": "Image: Northline product dashboard preview",
+            "group": "Top",
+            "rich": false,
+            "allow": []
+          },
+          "cms-139": {
+            "type": "image",
+            "label": "Image: Vercel",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-140": {
+            "type": "image",
+            "label": "Image: Stripe",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-141": {
+            "type": "image",
+            "label": "Image: Linear",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-142": {
+            "type": "image",
+            "label": "Image: Notion",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-143": {
+            "type": "image",
+            "label": "Image: Figma",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-144": {
+            "type": "image",
+            "label": "Image: Shopify",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-145": {
+            "type": "image",
+            "label": "Image: Framer",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-146": {
+            "type": "image",
+            "label": "Image: Loom",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-147": {
+            "type": "image",
+            "label": "Image: 68.jpg",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-148": {
+            "type": "image",
+            "label": "Image: 32.jpg",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-149": {
+            "type": "image",
+            "label": "Image: 44.jpg",
+            "group": "Page",
+            "rich": false,
+            "allow": []
+          },
+          "cms-150": {
+            "type": "text",
+            "label": "Browser tab title",
+            "group": "SEO & social",
+            "rich": false,
+            "allow": []
+          },
+          "cms-151": {
+            "type": "meta-attr",
+            "label": "Google meta description",
+            "group": "SEO & social",
+            "rich": false,
+            "allow": []
+          }
+        },
+        "content": {
+          "cms-1": "Northline",
+          "cms-2": "Services",
+          "cms-3": "Work",
+          "cms-4": "Process",
+          "cms-5": "Pricing",
+          "cms-6": "FAQ",
+          "cms-7": "Client login",
+          "cms-8": "Start a project <span class=\"arrow\" aria-hidden=\"true\">→</span>",
+          "cms-9": "<span class=\"dot\" style=\"background:#27c93f\"></span> Booking projects for Q3 2026",
+          "cms-10": "Websites",
+          "cms-11": "Design, code, and motion for serious launches.",
+          "cms-12": "Book an intro call <span class=\"arrow\" aria-hidden=\"true\">→</span>",
+          "cms-13": "See selected work",
+          "cms-14": "// Process",
+          "cms-15": "Three stages.",
+          "cms-16": "Every Northline engagement runs the same focused pipeline. You always know which stage you're in and when the next deploy lands.",
+          "cms-17": "01",
+          "cms-18": "Strategy & positioning",
+          "cms-19": "Two weeks of structured research: business goals, audience interviews, competitor teardowns, and a measurable success target for the site.",
+          "cms-20": "02",
+          "cms-21": "Brand, UX & UI",
+          "cms-22": "Sitemap to high-fidelity Figma. Daily Loom updates, async approvals, and a working prototype before a single line of production code.",
+          "cms-23": "03",
+          "cms-24": "Engineering & deploy",
+          "cms-25": "Built in Next.js on Vercel. Component library, CMS, analytics, A/B testing, accessibility audit, and a calm cutover — usually inside 4 weeks.",
+          "cms-26": "// Services",
+          "cms-27": "What we build.",
+          "cms-28": "A small, senior team. You work directly with the people designing and building your site — no account managers, no handoffs.",
+          "cms-29": "Marketing websites",
+          "cms-30": "Conversion-led homepages, product pages and landings.",
+          "cms-31": "Product & SaaS UI",
+          "cms-32": "Marketing-quality product UI without slowing your roadmap.",
+          "cms-33": "Brand systems",
+          "cms-34": "Identity, type and tokens — built as a working system.",
+          "cms-35": "SEO & performance",
+          "cms-36": "Core Web Vitals and SEO baked in from day one.",
+          "cms-37": "Webflow & CMS",
+          "cms-38": "Pixel-perfect Webflow your marketing team can edit.",
+          "cms-39": "Growth retainer",
+          "cms-40": "Ongoing senior design + dev capacity. Pause any time.",
+          "cms-41": "// Results",
+          "cms-42": "By the numbers.",
+          "cms-43": "+118%",
+          "cms-44": "/100",
+          "cms-45": "// Selected work",
+          "cms-46": "Recent projects.",
+          "cms-47": "A small selection — full case studies, including metrics and what didn't work, available on request.",
+          "cms-48": "Case study · SaaS marketing site",
+          "cms-49": "Helio Labs — rebuilt in 5 weeks, +212% trial signups",
+          "cms-50": "Brand refresh, headless CMS migration, and a marketing site that lets the founders ship a new landing page every Tuesday.",
+          "cms-51": "B2B fintech",
+          "cms-52": "Northvine — 0 → Series A",
+          "cms-53": "Identity, website and pitch site for an enterprise fintech.",
+          "cms-54": "D2C product · Shopify Plus",
+          "cms-55": "Fieldnote — +37% conversion",
+          "cms-56": "A storefront tuned for thumb-scroll, with a +37% conversion lift in month one.",
+          "cms-57": "// Pricing",
+          "cms-58": "Three ways in.",
+          "cms-59": "Fixed-scope, milestone-billed, and clearly priced. Most projects start with a paid 2-week discovery — applied as credit if you continue.",
+          "cms-60": "Launchpad",
+          "cms-61": "<span class=\"dot\"></span> 4 weeks",
+          "cms-62": "For founders launching v1 — a sharp, honest marketing site without the agency overhead.",
+          "cms-63": "£12k",
+          "cms-64": "fixed-fee",
+          "cms-65": "Up to 8 pages, fully responsive",
+          "cms-66": "Brand & messaging refresh",
+          "cms-67": "Webflow or Next.js delivery",
+          "cms-68": "Analytics, SEO & CMS setup",
+          "cms-69": "Two weeks of post-launch support",
+          "cms-70": "Talk about Launchpad <span class=\"arrow\" aria-hidden=\"true\">→</span>",
+          "cms-71": "Studio",
+          "cms-72": "Most popular",
+          "cms-73": "Our default. A full design system, marketing site and component library that future teams can keep shipping with.",
+          "cms-74": "£32k",
+          "cms-75": "from · 6–8 weeks",
+          "cms-76": "Strategy, brand, UX, UI & build",
+          "cms-77": "Up to 20 pages + reusable components",
+          "cms-78": "Headless CMS & editor onboarding",
+          "cms-79": "Performance & accessibility audit",
+          "cms-80": "30 days of post-launch retainer",
+          "cms-81": "Start with Studio <span class=\"arrow\" aria-hidden=\"true\">→</span>",
+          "cms-82": "Growth retainer",
+          "cms-83": "<span class=\"dot\"></span> Monthly",
+          "cms-84": "For teams that have launched and now need a pair of senior hands every week — design, dev, experiments, and accountability.",
+          "cms-85": "£6k",
+          "cms-86": "/ month · pause any time",
+          "cms-87": "2 senior hours / business day",
+          "cms-88": "Roadmap & A/B test backlog",
+          "cms-89": "Monthly performance review",
+          "cms-90": "Slack-shared design + dev capacity",
+          "cms-91": "One landing page / experiment / week",
+          "cms-92": "Talk about retainer <span class=\"arrow\" aria-hidden=\"true\">→</span>",
+          "cms-93": "// Testimonials",
+          "cms-94": "What clients say.",
+          "cms-95": "Northline shipped our v2 in five weeks. We spent the previous nine months trying to brief two other agencies. Trial signups doubled in the first month.",
+          "cms-96": "Maya Dahl",
+          "cms-97": "The polish is the obvious part. The less obvious part is how disciplined the process is. We always knew what was being approved and when it would deploy.",
+          "cms-98": "James Roe",
+          "cms-99": "They don't redesign for the sake of it. Every change came with a measurable hypothesis. Our PDP page is finally pulling its weight.",
+          "cms-100": "Sara Kapoor",
+          "cms-101": "// FAQ",
+          "cms-102": "Common questions.",
+          "cms-103": "How long does a typical project take?<span class=\"plus\" aria-hidden=\"true\">+</span>",
+          "cms-104": "Do you work with companies outside the UK?<span class=\"plus\" aria-hidden=\"true\">+</span>",
+          "cms-105": "Can we keep editing the site after launch?<span class=\"plus\" aria-hidden=\"true\">+</span>",
+          "cms-106": "What stack do you build on?<span class=\"plus\" aria-hidden=\"true\">+</span>",
+          "cms-107": "Will we work directly with the people building the site?<span class=\"plus\" aria-hidden=\"true\">+</span>",
+          "cms-108": "What if we already have a brand we like?<span class=\"plus\" aria-hidden=\"true\">+</span>",
+          "cms-109": "Let's build.",
+          "cms-110": "Send us a line about the business, the timeline, and what good looks like. We reply within one business day — usually the same morning.",
+          "cms-111": "hello@northline.studio",
+          "cms-112": "Book an intro call",
+          "cms-113": "Site footer",
+          "cms-114": "Northline",
+          "cms-115": "A studio of designers and engineers shipping high-performance websites for ambitious businesses. Based in London, working everywhere.",
+          "cms-116": "Studio",
+          "cms-117": "Services",
+          "cms-118": "Work",
+          "cms-119": "Process",
+          "cms-120": "Pricing",
+          "cms-121": "Resources",
+          "cms-122": "Journal",
+          "cms-123": "Design system",
+          "cms-124": "Performance audit",
+          "cms-125": "Hire us",
+          "cms-126": "Contact",
+          "cms-127": "hello@northline.studio",
+          "cms-128": "Book a call",
+          "cms-129": "@northlinestudio",
+          "cms-130": "LinkedIn",
+          "cms-131": "Legal",
+          "cms-132": "Privacy",
+          "cms-133": "Terms",
+          "cms-134": "Accessibility",
+          "cms-135": "Cookies",
+          "cms-136": "<span class=\"status-dot\" aria-hidden=\"true\"></span> All systems operational",
+          "cms-137": "© 2026 Northline Studio Ltd. Made on Earth.",
+          "cms-138": "assets/hero-laptop-poster.jpg",
+          "cms-139": "https://cdn.simpleicons.org/vercel",
+          "cms-140": "https://cdn.simpleicons.org/stripe",
+          "cms-141": "https://cdn.simpleicons.org/linear",
+          "cms-142": "https://cdn.simpleicons.org/notion",
+          "cms-143": "https://cdn.simpleicons.org/figma",
+          "cms-144": "https://cdn.simpleicons.org/shopify",
+          "cms-145": "https://cdn.simpleicons.org/framer",
+          "cms-146": "https://cdn.simpleicons.org/loom",
+          "cms-147": "https://randomuser.me/api/portraits/women/68.jpg",
+          "cms-148": "https://randomuser.me/api/portraits/men/32.jpg",
+          "cms-149": "https://randomuser.me/api/portraits/women/44.jpg",
+          "cms-150": "Northline — Websites engineered for businesses that ship",
+          "cms-151": "Northline is a web design and engineering studio. We design, build, and ship high-performance websites for ambitious businesses."
+        },
+        "sections": [
+          "header",
+          "nav",
+          "#top",
+          "#process",
+          "#services",
+          "#work",
+          "#pricing",
+          "#faq",
+          "#contact",
+          "footer"
+        ],
+        "collections": [
+          {
+            "id": "col1",
+            "count": 8,
+            "itemTag": "section",
+            "label": "Page items"
+          },
+          {
+            "id": "col2",
+            "count": 5,
+            "itemTag": "a",
+            "label": "nav items"
+          },
+          {
+            "id": "col3",
+            "count": 8,
+            "itemTag": "a",
+            "label": "Page items"
+          },
+          {
+            "id": "col4",
+            "count": 2,
+            "itemTag": "a",
+            "label": "work items"
+          },
+          {
+            "id": "col5",
+            "count": 2,
+            "itemTag": "article",
+            "label": "pricing items"
+          },
+          {
+            "id": "col6",
+            "count": 5,
+            "itemTag": "li",
+            "label": "pricing items"
+          },
+          {
+            "id": "col7",
+            "count": 5,
+            "itemTag": "li",
+            "label": "pricing items"
+          },
+          {
+            "id": "col8",
+            "count": 5,
+            "itemTag": "li",
+            "label": "pricing items"
+          },
+          {
+            "id": "col9",
+            "count": 3,
+            "itemTag": "figure",
+            "label": "Page items"
+          },
+          {
+            "id": "col10",
+            "count": 6,
+            "itemTag": "details",
+            "label": "faq items"
+          },
+          {
+            "id": "col11",
+            "count": 4,
+            "itemTag": "div",
+            "label": "footer items"
+          },
+          {
+            "id": "col12",
+            "count": 4,
+            "itemTag": "li",
+            "label": "footer items"
+          },
+          {
+            "id": "col13",
+            "count": 4,
+            "itemTag": "li",
+            "label": "footer items"
+          },
+          {
+            "id": "col14",
+            "count": 4,
+            "itemTag": "li",
+            "label": "footer items"
+          },
+          {
+            "id": "col15",
+            "count": 4,
+            "itemTag": "li",
+            "label": "footer items"
+          }
+        ]
+      }
+    }
+  }
+}

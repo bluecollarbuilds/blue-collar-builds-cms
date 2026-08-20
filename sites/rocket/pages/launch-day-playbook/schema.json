@@ -1,0 +1,93 @@
+{
+  "cms-1": {
+    "type": "text",
+    "label": "Text: \"rocket\"",
+    "group": "Header",
+    "rich": false,
+    "allow": []
+  },
+  "cms-2": {
+    "type": "text",
+    "label": "Link: \"Home\"",
+    "group": "Nav",
+    "rich": false,
+    "allow": []
+  },
+  "cms-3": {
+    "type": "text",
+    "label": "Link: \"About\"",
+    "group": "Nav",
+    "rich": false,
+    "allow": []
+  },
+  "cms-4": {
+    "type": "text",
+    "label": "Link: \"Pricing\"",
+    "group": "Nav",
+    "rich": false,
+    "allow": []
+  },
+  "cms-5": {
+    "type": "text",
+    "label": "Text: \"Launch\"",
+    "group": "Header",
+    "rich": false,
+    "allow": []
+  },
+  "cms-6": {
+    "type": "text",
+    "label": "Text: \"Article\"",
+    "group": "Main",
+    "rich": false,
+    "allow": []
+  },
+  "cms-7": {
+    "type": "text",
+    "label": "Heading: \"Launch Day Playbook\"",
+    "group": "Main",
+    "rich": false,
+    "allow": []
+  },
+  "cms-8": {
+    "type": "text",
+    "label": "Text: \"By Your Name · 5 min read\"",
+    "group": "Main",
+    "rich": false,
+    "allow": []
+  },
+  "cms-9": {
+    "type": "text",
+    "label": "Text: \"Write your opening paragraph here. S…\"",
+    "group": "Main",
+    "rich": false,
+    "allow": []
+  },
+  "cms-10": {
+    "type": "text",
+    "label": "Heading: \"A subheading\"",
+    "group": "Main",
+    "rich": false,
+    "allow": []
+  },
+  "cms-11": {
+    "type": "text",
+    "label": "Text: \"Keep writing your article. Click any…\"",
+    "group": "Main",
+    "rich": false,
+    "allow": []
+  },
+  "cms-12": {
+    "type": "text",
+    "label": "Text: \"Add as many paragraphs as you like.\"",
+    "group": "Main",
+    "rich": false,
+    "allow": []
+  },
+  "cms-13": {
+    "type": "text",
+    "label": "Browser tab title",
+    "group": "SEO & social",
+    "rich": false,
+    "allow": []
+  }
+}

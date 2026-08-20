@@ -1,0 +1,64 @@
+{
+  "sections": [
+    "header",
+    "nav",
+    "main",
+    "#hero",
+    "#partners",
+    "#features",
+    "#process",
+    "#showcase",
+    "#cta-band",
+    "footer"
+  ],
+  "collections": [
+    {
+      "id": "col1",
+      "count": 3,
+      "itemTag": "a",
+      "label": "nav items"
+    },
+    {
+      "id": "col2",
+      "count": 3,
+      "itemTag": "section",
+      "label": "main items"
+    },
+    {
+      "id": "col3",
+      "count": 2,
+      "itemTag": "section",
+      "label": "main items"
+    },
+    {
+      "id": "col4",
+      "count": 6,
+      "itemTag": "div",
+      "label": "partners items"
+    },
+    {
+      "id": "col5",
+      "count": 3,
+      "itemTag": "div",
+      "label": "features items"
+    },
+    {
+      "id": "col6",
+      "count": 3,
+      "itemTag": "button",
+      "label": "process items"
+    },
+    {
+      "id": "col7",
+      "count": 4,
+      "itemTag": "div",
+      "label": "process items"
+    },
+    {
+      "id": "col8",
+      "count": 4,
+      "itemTag": "div",
+      "label": "showcase items"
+    }
+  ]
+}

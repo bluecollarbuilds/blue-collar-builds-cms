@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI CMS — How it works</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0a;--panel:#111113;--panel2:#17171a;--line:#26262b;--ink:#f2f2f2;--ink2:#a0a0a8;--ink3:#6e6e76;
+    --blue:#0a72ef;--pink:#de1d8d;--red:#ff5b4f;--green:#27c93f;--amber:#f59e0b;
+    --grad:linear-gradient(90deg,#0a72ef,#de1d8d 55%,#ff5b4f);}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:"Geist",system-ui,Arial;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .mono{font-family:"Geist Mono",ui-monospace,Menlo,monospace}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 26px}
+  /* hero */
+  .hero{text-align:center;padding:84px 26px 30px}
+  .hero .kick{font-family:"Geist Mono",monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3)}
+  .hero h1{font-size:clamp(34px,6vw,62px);line-height:1.02;letter-spacing:-.035em;font-weight:700;margin:16px 0 0}
+  .hero h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:var(--ink2);font-size:18px;max-width:620px;margin:18px auto 0}
+  .hero .tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+  .tag{font-size:12.5px;padding:6px 13px;border-radius:999px;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink2)}
+  section{padding:46px 0;border-top:1px solid var(--line)}
+  .sh{font-family:"Geist Mono",monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+  h2{font-size:clamp(24px,3.4vw,32px);letter-spacing:-.025em;margin:0 0 26px;font-weight:600}
+  /* problem→solution */
+  .ps{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .ps .b{border-radius:16px;padding:24px;font-size:15px}
+  .ps .prob{background:linear-gradient(180deg,rgba(255,91,79,.08),transparent);box-shadow:inset 0 0 0 1px rgba(255,91,79,.3)}
+  .ps .sol{background:linear-gradient(180deg,rgba(39,201,63,.08),transparent);box-shadow:inset 0 0 0 1px rgba(39,201,63,.35)}
+  .ps h3{margin:0 0 10px;font-size:17px} .ps p{color:var(--ink2);margin:0}
+  /* journey */
+  .journey{display:flex;flex-direction:column;gap:0}
+  .step{display:grid;grid-template-columns:54px 1fr;gap:18px;padding:14px 0;position:relative}
+  .step .n{width:42px;height:42px;border-radius:11px;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px}
+  .step:not(:last-child) .n::after{content:"";position:absolute;left:21px;top:56px;bottom:-14px;width:2px;background:linear-gradient(180deg,var(--line),transparent)}
+  .step .who{font-family:"Geist Mono",monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:999px;margin-left:10px;vertical-align:middle}
+  .who.you{background:rgba(10,114,239,.16);color:#9bc1ff} .who.client{background:rgba(222,29,141,.16);color:#f3a6d4}
+  .step h3{margin:0 0 4px;font-size:17px;font-weight:600;display:flex;align-items:center}
+  .step p{margin:0;color:var(--ink2);font-size:14.5px}
+  .step code{font-family:"Geist Mono",monospace;font-size:12.5px;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line);padding:2px 7px;border-radius:6px;color:#9bc1ff}
+  /* lanes */
+  .lanes{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .lane{border-radius:16px;padding:22px;background:var(--panel)}
+  .lane.you{box-shadow:inset 0 0 0 1px rgba(10,114,239,.4)} .lane.client{box-shadow:inset 0 0 0 1px rgba(222,29,141,.4)}
+  .lane h3{margin:0 0 4px;font-size:18px} .lane .role{font-size:12.5px;color:var(--ink3);margin-bottom:14px}
+  .lane ul{margin:0;padding-left:18px;color:var(--ink2);font-size:14.5px} .lane li{margin:7px 0}
+  /* cards */
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .card{background:var(--panel);border-radius:14px;box-shadow:inset 0 0 0 1px var(--line);padding:18px}
+  .card .ic{font-size:20px} .card h4{margin:10px 0 5px;font-size:15px} .card p{margin:0;color:var(--ink2);font-size:13px}
+  /* safety */
+  .safe{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .safe .b{border-radius:14px;padding:18px;background:linear-gradient(180deg,rgba(255,91,79,.06),transparent);box-shadow:inset 0 0 0 1px rgba(255,91,79,.28)}
+  .safe h4{margin:0 0 6px;font-size:14.5px} .safe p{margin:0;color:var(--ink2);font-size:13px}
+  /* table */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;border-radius:14px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
+  td,th{padding:12px 16px;text-align:left;border-bottom:1px solid var(--line)} th{font-family:"Geist Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3)}
+  td:first-child{color:var(--ink2)} tr:last-child td{border-bottom:0} .win{color:var(--green);font-weight:500}
+  /* money */
+  .money{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:center}
+  .money .big{font-size:clamp(30px,5vw,46px);font-weight:700;letter-spacing:-.03em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .money p{color:var(--ink2);font-size:15px;margin:6px 0 0}
+  footer{text-align:center;padding:50px 26px;color:var(--ink3);font-size:13px;border-top:1px solid var(--line)}
+  @media(max-width:760px){.ps,.lanes,.cards,.safe,.money{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div class="kick">The AI CMS · how it works</div>
+    <h1>Build it once.<br>Your client <em>runs it</em> forever.</h1>
+    <p>You build the website. They edit it themselves — by clicking text or just typing what they want. It can't break, every change is saved, and you never touch it again.</p>
+    <div class="tags"><span class="tag">✏️ Click-to-edit</span><span class="tag">💬 Chat edits</span><span class="tag">📄 Multi-page</span><span class="tag">🛡️ Can't break it</span><span class="tag">🕘 Full undo</span><span class="tag">🤝 Hands-off handoff</span></div>
+  </div>
+
+  <div class="wrap">
+
+  <section>
+    <div class="sh">// the problem we kill</div>
+    <div class="ps">
+      <div class="b prob"><h3>😩 Today</h3><p>You build a gorgeous site, hand it over — and now you're the client's unpaid support desk. "Can you change this price?" "Swap this photo?" Every tiny edit comes back to you. The agency model leaks time forever.</p></div>
+      <div class="b sol"><h3>✅ With the AI CMS</h3><p>You hand the client a link. They click any text and type, or describe the change in plain English. It publishes safely in seconds. You're free — and you bill a monthly fee for hosting + the editor.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sh">// from you → to your client</div>
+    <h2>The journey, start to finish</h2>
+    <div class="journey">
+      <div class="step"><div class="n">1</div><div><h3>You build the website<span class="who you">you</span></h3><p>Any tool, any framework — Google AI Studio, Claude, static HTML, React. However you already work.</p></div></div>
+      <div class="step"><div class="n">2</div><div><h3>Ingest it into the CMS<span class="who you">you</span></h3><p>Point the CMS at the finished site. It auto-detects every editable thing — text, images, prices, sections, SEO tags. Zero setup.</p></div></div>
+      <div class="step"><div class="n">3</div><div><h3>Hand off — generate a client link<span class="who you">you</span></h3><p>One click in the Agency Console mints a private <code>magic link</code> scoped to that one site. No passwords.</p></div></div>
+      <div class="step"><div class="n">4</div><div><h3>Send the link to your client<span class="who you">you</span></h3><p>That's the whole handoff. They open it and see their site with a friendly editor — nothing technical.</p></div></div>
+      <div class="step"><div class="n">5</div><div><h3>Client edits, themselves<span class="who client">client</span></h3><p>Click any text → type. Swap an image. Add a page. Tweak the Google description. Or just ask: <em>"make the headline punchier."</em></p></div></div>
+      <div class="step"><div class="n">6</div><div><h3>They hit Publish — live in seconds<span class="who client">client</span></h3><p>Changes go live instantly and safely. If they ever regret one, one click rolls back to any earlier version.</p></div></div>
+      <div class="step"><div class="n">7</div><div><h3>You collect monthly — hands-off<span class="who you">you</span></h3><p>Hosting + the self-serve editor is your recurring fee. You did the work once; the income keeps coming.</p></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sh">// who does what</div>
+    <div class="lanes">
+      <div class="lane you"><h3>🛠️ You (the agency)</h3><div class="role">Build · hand off · get paid</div><ul><li>Build the site your way</li><li>Ingest + hand off in minutes</li><li>Set what's editable vs locked</li><li>Bill a monthly retainer</li><li>Never do free edits again</li></ul></div>
+      <div class="lane client"><h3>👩‍💼 Your client</h3><div class="role">Edit · publish · self-serve</div><ul><li>One simple editor link</li><li>Click text or chat to edit</li><li>Add / remove pages &amp; sections</li><li>Publish instantly, safely</li><li>Undo anything, anytime</li></ul></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sh">// what your client can actually do</div>
+    <div class="cards">
+      <div class="card"><div class="ic">✏️</div><h4>Click-to-edit</h4><p>Click any headline, paragraph, button or price and just type. No dashboard to learn.</p></div>
+      <div class="card"><div class="ic">💬</div><h4>Chat edits</h4><p>"Change the hours to open till 8pm." The AI makes the change; the safety layer checks it.</p></div>
+      <div class="card"><div class="ic">🖼️</div><h4>Swap images</h4><p>Click any image to drop in a new one.</p></div>
+      <div class="card"><div class="ic">📄</div><h4>Pages</h4><p>Add, rename, delete or reorder pages — like WordPress, minus the mess.</p></div>
+      <div class="card"><div class="ic">🔎</div><h4>SEO tags</h4><p>Edit the Google description + social-share cards from one tidy panel.</p></div>
+      <div class="card"><div class="ic">🕘</div><h4>Version history</h4><p>Every publish is saved. Jump back to any point with one click.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sh">// why a non-technical client can't break it</div>
+    <h2>Safe by design</h2>
+    <div class="safe">
+      <div class="b"><h4>🧊 Frozen layout</h4><p>The client only fills in content slots. They can never touch the code, CSS or structure — so the design stays perfect.</p></div>
+      <div class="b"><h4>🛡️ The Guardian</h4><p>Every change — click, chat or AI — passes one safety check before publish. No broken pages, no injected code.</p></div>
+      <div class="b"><h4>⏱️ Always reversible</h4><p>Bad edit? One-click undo to any previous version. Nothing is ever lost.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sh">// why it beats the alternatives</div>
+    <table>
+      <tr><th>Option</th><th>The catch</th></tr>
+      <tr><td>WordPress</td><td>Plugins, updates, real risk of breaking the site. Client becomes an admin.</td></tr>
+      <tr><td>Webflow / Wix</td><td>A whole tool to learn — clients freeze and call you anyway.</td></tr>
+      <tr><td>Coming back to you</td><td>Slow, costs them money, makes you the bottleneck.</td></tr>
+      <tr><td class="win">AI CMS handoff</td><td class="win">Edit in seconds, can't break anything, full undo, nothing to learn.</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <div class="sh">// the business</div>
+    <div class="money">
+      <div><div class="big">£X build + £149/mo</div><p>Charge a one-time build fee, then a small monthly for hosting + the self-serve editor.</p></div>
+      <div><div class="big">≈ £18k / yr</div><p>Just 10 clients on a £149/mo care plan — recurring, on top of every build fee. You stop trading time for edits.</p></div>
+    </div>
+  </section>
+
+  </div>
+  <footer>AI CMS · build once, hand off, stay hands-off &nbsp;·&nbsp; the client edits the live site — you keep the recurring revenue</footer>
+</body>
+</html>

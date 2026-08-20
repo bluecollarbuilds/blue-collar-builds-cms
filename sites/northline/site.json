@@ -1,0 +1,12 @@
+{
+  "order": [
+    "home"
+  ],
+  "home": "home",
+  "pages": {
+    "home": {
+      "title": "Home",
+      "path": "/"
+    }
+  }
+}

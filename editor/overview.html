@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Northline CMS — How it works</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0c;--panel:#141418;--panel2:#1c1c22;--panel3:#26262e;--line:#2c2c34;--ink:#f1f1f3;--ink2:#a3a3ad;--ink3:#6e6e78;--blue:#0a72ef;--green:#27c93f;--amber:#f59e0b;--red:#ff5b4f;
+    --grad:linear-gradient(90deg,#0a72ef,#de1d8d 55%,#ff5b4f);--send:linear-gradient(140deg,#fb6fbb,#a05cf0 52%,#5a8cf6);}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:"Geist",system-ui,Arial;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .mono{font-family:"Geist Mono",ui-monospace,Menlo,monospace}
+  .wrap{max-width:980px;margin:0 auto;padding:60px 26px 110px}
+  .eyebrow{font-family:"Geist Mono",monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px}
+  h1{font-size:clamp(34px,5.4vw,56px);letter-spacing:-.035em;margin:0 0 14px;font-weight:700;line-height:1.02}
+  h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{color:var(--ink2);font-size:18px;margin:0;max-width:640px}
+  .status-pill{display:inline-flex;align-items:center;gap:8px;margin-top:22px;background:rgba(39,201,63,.1);box-shadow:inset 0 0 0 1px rgba(39,201,63,.4);color:#9be8ab;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:500}
+  .status-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(39,201,63,.18)}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink3);margin:64px 0 18px;font-family:"Geist Mono",monospace;display:flex;align-items:center;gap:10px}
+  h2::before{content:"";width:22px;height:2px;border-radius:2px;background:var(--grad)}
+  .card{background:var(--panel);border-radius:16px;box-shadow:inset 0 0 0 1px var(--line);padding:22px 24px}
+  /* pipeline */
+  .pipe{display:flex;flex-direction:column;gap:0}
+  .step{display:flex;gap:18px;position:relative;padding-bottom:26px}
+  .step:not(:last-child)::after{content:"";position:absolute;left:21px;top:46px;bottom:-2px;width:2px;background:linear-gradient(180deg,var(--line),transparent)}
+  .step .num{flex:0 0 44px;width:44px;height:44px;border-radius:13px;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line);display:flex;align-items:center;justify-content:center;font-size:20px;z-index:1}
+  .step .num.g{background:var(--grad);box-shadow:none}
+  .step .b{flex:1;padding-top:2px}
+  .step h3{margin:0 0 3px;font-size:17px;font-weight:600}
+  .step p{margin:0;color:var(--ink2);font-size:14.5px}
+  .step .who{display:inline-block;font-size:10.5px;font-family:"Geist Mono",monospace;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-left:8px;vertical-align:2px}
+  .who.owner{background:rgba(10,114,239,.16);color:#9bc1ff}.who.client{background:rgba(222,29,141,.16);color:#f5a8d6}.who.auto{background:rgba(39,201,63,.14);color:#9be8ab}
+  code{font-family:"Geist Mono",monospace;font-size:12.5px;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line);padding:2px 7px;border-radius:6px;color:#9bc1ff}
+  /* grids */
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}
+  .tile{background:var(--panel);border-radius:14px;box-shadow:inset 0 0 0 1px var(--line);padding:18px 19px}
+  .tile .ic{font-size:20px;margin-bottom:9px;display:block}
+  .tile h4{margin:0 0 5px;font-size:15px;font-weight:600}
+  .tile p{margin:0;color:var(--ink2);font-size:13.5px}
+  /* roles */
+  .role{box-shadow:inset 0 0 0 1px var(--line)}
+  .role.owner{box-shadow:inset 0 0 0 1px rgba(10,114,239,.45)}.role.client{box-shadow:inset 0 0 0 1px rgba(222,29,141,.45)}
+  .role h3{margin:0 0 3px;font-size:17px;display:flex;align-items:center;gap:9px}
+  .role .sub{font-size:12px;color:var(--ink3);margin-bottom:13px}
+  .role ul{margin:0;padding-left:18px;color:var(--ink2);font-size:14px}.role li{margin:7px 0}
+  /* safety */
+  .stack{display:flex;flex-direction:column;gap:10px}
+  .guard{display:flex;gap:15px;align-items:flex-start;background:var(--panel);border-radius:13px;box-shadow:inset 0 0 0 1px var(--line);padding:16px 18px}
+  .guard .n{flex:0 0 30px;width:30px;height:30px;border-radius:9px;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line);display:flex;align-items:center;justify-content:center;font-size:15px}
+  .guard h4{margin:0 0 2px;font-size:15px}.guard p{margin:0;color:var(--ink2);font-size:13.5px}
+  .guard b{color:var(--ink)}
+  /* deploy diagram */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
+  .node{flex:1;min-width:170px;background:var(--panel);border-radius:14px;box-shadow:inset 0 0 0 1px var(--line);padding:18px}
+  .node .t{font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px}.node .d{font-size:12.5px;color:var(--ink3);margin-top:5px;line-height:1.5}
+  .arr{display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:22px;flex:0 0 40px}
+  /* status box */
+  .statusbox{background:linear-gradient(180deg,rgba(10,114,239,.08),transparent);box-shadow:inset 0 0 0 1px rgba(10,114,239,.35)}
+  .live-row{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .live-row:last-child{border:0}.live-row .s{flex:0 0 auto;font-size:15px}
+  .live-row .x{margin-left:auto;font-size:11px;font-family:"Geist Mono",monospace;color:var(--ink3)}
+  .pending{box-shadow:inset 0 0 0 1px rgba(245,158,11,.4);background:linear-gradient(180deg,rgba(245,158,11,.08),transparent)}
+  .pending h3{margin:0 0 6px;font-size:16px;color:#ffd9a8}
+  .pending p{margin:0 0 8px;color:var(--ink2);font-size:14px}.pending p:last-child{margin:0}
+  .b{color:var(--ink)} b{color:var(--ink)}
+  .foot{margin-top:64px;padding-top:22px;border-top:1px solid var(--line);color:var(--ink3);font-size:13px;text-align:center}
+  .links{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+  .lnk{display:inline-flex;align-items:center;gap:7px;text-decoration:none;font-size:13px;font-weight:500;color:var(--ink);background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line);border-radius:9px;padding:9px 14px}
+  .lnk:hover{box-shadow:inset 0 0 0 1.5px var(--blue);color:#fff}
+  @media(max-width:720px){.g2,.g3,.flow{grid-template-columns:1fr;flex-direction:column}.arr{transform:rotate(90deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">Northline CMS · system overview</div>
+  <h1>One editor. Every client's site.<br><em>Nobody breaks anything.</em></h1>
+  <p class="lede">You build the site however you like. You give the client a password to their own editor. They change their content — by clicking or just chatting — and it goes live on your Vercel. You decide whether it publishes instantly or waits for your approval.</p>
+  <span class="status-pill"><span class="dot"></span> Running locally on <code style="background:none;box-shadow:none;color:#9be8ab;padding:0">localhost:4321</code> · everything below is built &amp; working</span>
+
+  <!-- THE FLOW -->
+  <h2>How it works — 3 steps</h2>
+  <div class="pipe">
+    <div class="step"><div class="num">🗄️</div><div class="b"><h3>Set up your CMS &amp; connect your database <span class="who owner">one-time</span></h3><p>Stand up the dashboard and connect it to your database (MongoDB) — where every site, version, password &amp; form submission lives. This is the key part of setup: connect it once and your data is safe, central and portable across any host.</p></div></div>
+    <div class="step"><div class="num">▲</div><div class="b"><h3>Deploy it → your live dashboard <span class="who owner">one-time</span></h3><p>The whole CMS is one private code repo. Deploy it to a host and your dashboard becomes a real, always-on URL you log into from anywhere — your command center for every client. You only ever do Steps 1 &amp; 2 once.</p></div></div>
+    <div class="step"><div class="num g">🌐</div><div class="b"><h3>Ingest a website &amp; hand it off <span class="who auto">repeatable</span></h3><p>Paste the live URL of a site you've already built → it's instantly editable inside your dashboard. If it belongs to a client, set a password and send them the link. They edit their own site by clicking or chatting; it publishes straight to their domain. You stay hands-off, but see &amp; control everything.</p></div></div>
+  </div>
+
+  <!-- SAFETY STACK -->
+  <h2>Why nothing ever breaks — the safety stack</h2>
+  <div class="stack">
+    <div class="guard"><div class="n">🧊</div><div><h4>Frozen template + content model</h4><p>The AI <b>never writes HTML or CSS.</b> It only emits structured "set this field to that value" operations against tagged slots. Structure is literally unreachable.</p></div></div>
+    <div class="guard"><div class="n">🛡️</div><div><h4>The Guardian</h4><p>Every change — click, chat, or layout — is validated before it's allowed: injection scan, tag allow-list, and a structural re-render that blocks anything that would make a section vanish.</p></div></div>
+    <div class="guard"><div class="n">📝</div><div><h4>Draft → publish (with optional approval)</h4><p>Three clear states: <b>Unsaved → Saved (private draft) → Published (live)</b>. Flip on per-site approval and client work waits for your ✓ before it can reach visitors.</p></div></div>
+    <div class="guard"><div class="n">🕘</div><div><h4>Versioned + reversible</h4><p>Every publish is an immutable snapshot. One-click rollback to any previous version. The activity log shows who changed what, when — your safety net even when clients self-publish.</p></div></div>
+    <div class="guard"><div class="n">🔐</div><div><h4>Password-scoped access</h4><p>You set a password per site; the client logs in on a clean gate (the secret never sits in a URL). Their login only ever opens <b>their one site</b> — never your other clients. You hold a master key that sees everything.</p></div></div>
+  </div>
+
+  <!-- ROLES -->
+  <h2>Two roles, one tool</h2>
+  <div class="grid g2">
+    <div class="card role owner"><h3>🛠️ You — the agency</h3><div class="sub">master key · sees &amp; controls everything</div><ul>
+      <li>Build &amp; ingest any client site</li>
+      <li>Edit anything, publish instantly</li>
+      <li><b>Set each client's password</b> + revoke anytime</li>
+      <li>Toggle <b>"require my approval"</b> per site</li>
+      <li>Connect Vercel · read the activity log + form inbox</li>
+    </ul></div>
+    <div class="card role client"><h3>👩‍💼 Each client</h3><div class="sub">password login · their site only</div><ul>
+      <li>Opens the link → enters their password</li>
+      <li>Click-to-edit + AI chat, on their site only</li>
+      <li><b>Publishes their own changes</b> (or submits for review)</li>
+      <li>Reads their own form submissions</li>
+      <li>Cannot see or touch any other client</li>
+    </ul></div>
+  </div>
+
+  <!-- WHAT THEY CAN DO -->
+  <h2>What the editor can do today</h2>
+  <div class="grid g3">
+    <div class="tile"><span class="ic">🖱️</span><h4>Click to edit</h4><p>Hover anything, click, type. Text, headings, buttons, images — inline.</p></div>
+    <div class="tile"><span class="ic">✦</span><h4>Edit by chat</h4><p>Describe a change in plain English; the AI plans it and the Guardian checks it.</p></div>
+    <div class="tile"><span class="ic">◳</span><h4>Section &amp; element select</h4><p>Click a block's background to highlight a whole section; fine-tune spacing, size &amp; alignment with bounded sliders.</p></div>
+    <div class="tile"><span class="ic">🔎</span><h4>Yoast-grade SEO</h4><p>Live Google preview + a focus-keyphrase score with red/amber/green checks. Title, description, OG, JSON-LD, sitemap &amp; robots auto-generate.</p></div>
+    <div class="tile"><span class="ic">📄</span><h4>Pages</h4><p>Add new pages (Blank or Article) that inherit the site's styling, each with a title + subheading.</p></div>
+    <div class="tile"><span class="ic">🖼️</span><h4>Images</h4><p>Upload straight from the computer or paste a URL — swapped live, served by the CMS.</p></div>
+    <div class="tile"><span class="ic">✉️</span><h4>Form inbox</h4><p>Live-site form submissions land in an in-product inbox — leads stay with you, no third-party tool.</p></div>
+    <div class="tile"><span class="ic">📑</span><h4>Sections navigator + devices</h4><p>Jump to any section; preview desktop / tablet / mobile before publishing.</p></div>
+    <div class="tile"><span class="ic">🕘</span><h4>Versions &amp; activity</h4><p>Undo/redo, full version history with rollback, and an audit timeline of every action.</p></div>
+    <div class="tile"><span class="ic">🔑</span><h4>Password access + roles</h4><p>Set a per-site password, a clean login gate for clients, and a one-click "require my approval" toggle.</p></div>
+  </div>
+
+  <!-- UNDER THE HOOD -->
+  <h2>Under the hood</h2>
+  <div class="grid g3">
+    <div class="tile"><span class="ic">🗄️</span><h4>Where content lives</h4><p>Plain files on your server — one folder per site, JSON for content. <b>No database to run.</b> Easy to back up, swap to Supabase/Mongo later if you scale.</p></div>
+    <div class="tile"><span class="ic">🛡️</span><h4>The Guardian = code, not AI</h4><p>Validation is deterministic — <b>no model, no API key, no cost.</b> An AI key is only for the optional "describe a change" chat. Click-edit works fully without one.</p></div>
+    <div class="tile"><span class="ic">🕘</span><h4>Version control</h4><p>Every publish writes an immutable snapshot. Roll back to any point, diff what changed, recover instantly — even if a client published it themselves.</p></div>
+  </div>
+
+  <!-- DEPLOY -->
+  <h2>How it reaches the live site (&amp; how SEO rides along)</h2>
+  <div class="flow">
+    <div class="node"><div class="t">🖥️ The CMS</div><div class="d">Runs on your server. Holds every client's content, drafts &amp; versions. Your command center.</div></div>
+    <div class="arr">→</div>
+    <div class="node"><div class="t">▲ Your Vercel</div><div class="d">Each client site = one Vercel project on your account. Publish renders the static bundle (pages + images + sitemap + SEO) and pushes a production deploy.</div></div>
+    <div class="arr">→</div>
+    <div class="node"><div class="t">🌍 Client's domain</div><div class="d">their-site.com updates within seconds. No Git, no rebuild, no agency involvement.</div></div>
+  </div>
+
+  <!-- STATUS -->
+  <h2>Where we are right now</h2>
+  <div class="card statusbox">
+    <div class="live-row"><span class="s">✅</span> <span>Ingest · click &amp; chat editing · Guardian validation</span><span class="x">live</span></div>
+    <div class="live-row"><span class="s">✅</span> <span>Password login per site · clean client login gate</span><span class="x">live</span></div>
+    <div class="live-row"><span class="s">✅</span> <span>Save → Publish · <b>optional</b> approval gate (your toggle)</span><span class="x">live</span></div>
+    <div class="live-row"><span class="s">✅</span> <span>Multi-page · sections · docked dials · images</span><span class="x">live</span></div>
+    <div class="live-row"><span class="s">✅</span> <span>Yoast-style SEO + JSON-LD + sitemap.xml + robots.txt</span><span class="x">live</span></div>
+    <div class="live-row"><span class="s">✅</span> <span>Versions &amp; rollback · activity log · form inbox</span><span class="x">live</span></div>
+    <div class="live-row"><span class="s">✅</span> <span>Vercel deploy pipeline (renders + pushes the bundle)</span><span class="x">built</span></div>
+  </div>
+  <div class="card pending" style="margin-top:14px">
+    <h3>⏳ The one thing left to switch on</h3>
+    <p>The Vercel deploy is fully coded but needs <b>your Vercel token</b> pasted once into the Agency Console (<code>/admin/?key=owner-dev</code> → ▲ Vercel hosting). I can't key in secrets myself.</p>
+    <p>The moment it's in, an approved Publish pushes the real site live — and we can read the deployed HTML back to confirm the content + SEO tags landed.</p>
+  </div>
+
+  <div class="links">
+    <a class="lnk" href="/editor/?site=rocket&key=owner-dev" target="_blank">→ Open the editor (rocket)</a>
+    <a class="lnk" href="/admin/?key=owner-dev" target="_blank">→ Agency console</a>
+    <a class="lnk" href="/editor/SETUP.html" target="_blank">→ Setup guide</a>
+  </div>
+
+  <div class="foot">Northline CMS · the AI-native client control center · built with AI Automations by Jack</div>
+</div>
+</body>
+</html>

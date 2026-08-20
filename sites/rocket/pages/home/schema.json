@@ -1,0 +1,685 @@
+{
+  "cms-1": {
+    "type": "text",
+    "label": "Text: \"rocket\"",
+    "group": "Header",
+    "rich": false,
+    "allow": []
+  },
+  "cms-2": {
+    "type": "text",
+    "label": "Link: \"Home\"",
+    "group": "Nav",
+    "rich": false,
+    "allow": []
+  },
+  "cms-3": {
+    "type": "text",
+    "label": "Link: \"About\"",
+    "group": "Nav",
+    "rich": false,
+    "allow": []
+  },
+  "cms-4": {
+    "type": "text",
+    "label": "Link: \"Pricing\"",
+    "group": "Nav",
+    "rich": false,
+    "allow": []
+  },
+  "cms-5": {
+    "type": "text",
+    "label": "Text: \"Launch\"",
+    "group": "Header",
+    "rich": false,
+    "allow": []
+  },
+  "cms-6": {
+    "type": "text",
+    "label": "Text: \"1.5k\"",
+    "group": "Hero",
+    "rich": false,
+    "allow": []
+  },
+  "cms-7": {
+    "type": "text",
+    "label": "Heading: \"Launch YourWebsite for $0\"",
+    "group": "Hero",
+    "rich": true,
+    "allow": [
+      "br"
+    ]
+  },
+  "cms-8": {
+    "type": "text",
+    "label": "Text: \"We craft high-performance websites f…\"",
+    "group": "Hero",
+    "rich": false,
+    "allow": []
+  },
+  "cms-9": {
+    "type": "text",
+    "label": "Text: \"Launch\"",
+    "group": "Hero",
+    "rich": false,
+    "allow": []
+  },
+  "cms-10": {
+    "type": "text",
+    "label": "Text: \"See specifications\"",
+    "group": "Hero",
+    "rich": false,
+    "allow": []
+  },
+  "cms-11": {
+    "type": "text",
+    "label": "Text: \"VERCEL\"",
+    "group": "Partners",
+    "rich": false,
+    "allow": []
+  },
+  "cms-12": {
+    "type": "text",
+    "label": "Text: \"stripe\"",
+    "group": "Partners",
+    "rich": false,
+    "allow": []
+  },
+  "cms-13": {
+    "type": "text",
+    "label": "Text: \"Linear\"",
+    "group": "Partners",
+    "rich": false,
+    "allow": []
+  },
+  "cms-14": {
+    "type": "text",
+    "label": "Text: \"supabase\"",
+    "group": "Partners",
+    "rich": false,
+    "allow": []
+  },
+  "cms-15": {
+    "type": "text",
+    "label": "Text: \"Figma\"",
+    "group": "Partners",
+    "rich": false,
+    "allow": []
+  },
+  "cms-16": {
+    "type": "text",
+    "label": "Text: \"RETOOL\"",
+    "group": "Partners",
+    "rich": false,
+    "allow": []
+  },
+  "cms-17": {
+    "type": "text",
+    "label": "Heading: \"The thinking.The building.The tracki…\"",
+    "group": "Features",
+    "rich": true,
+    "allow": [
+      "br"
+    ]
+  },
+  "cms-18": {
+    "type": "text",
+    "label": "Text: \"THREE CAPABILITIES • ONE SYSTEM\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-19": {
+    "type": "text",
+    "label": "Text: \"Start anywhere — Rocket carries ever…\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-20": {
+    "type": "text",
+    "label": "Text: \"01\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-21": {
+    "type": "text",
+    "label": "Text: \"Solve\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-22": {
+    "type": "text",
+    "label": "Heading: \"The thinking before the build.\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-23": {
+    "type": "text",
+    "label": "Text: \"Describe any market problem. Rocket …\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-24": {
+    "type": "text",
+    "label": "Text: \"Market Analysis\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-25": {
+    "type": "text",
+    "label": "Text: \"What to build\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-26": {
+    "type": "text",
+    "label": "Text: \"Growth\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-27": {
+    "type": "text",
+    "label": "Text: \"GTM Strategy\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-28": {
+    "type": "text",
+    "label": "Text: \"PRD direction\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-29": {
+    "type": "text",
+    "label": "Button: \"Explore Solve\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-30": {
+    "type": "text",
+    "label": "Text: \"02\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-31": {
+    "type": "text",
+    "label": "Text: \"Build\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-32": {
+    "type": "text",
+    "label": "Heading: \"Production-grade from first prompt.\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-33": {
+    "type": "text",
+    "label": "Text: \"Build with simple prompts using your…\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-34": {
+    "type": "text",
+    "label": "Text: \"Web Apps\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-35": {
+    "type": "text",
+    "label": "Text: \"Mobile Apps\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-36": {
+    "type": "text",
+    "label": "Text: \"Landing Pages\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-37": {
+    "type": "text",
+    "label": "Text: \"Saas\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-38": {
+    "type": "text",
+    "label": "Text: \"Internal Tool\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-39": {
+    "type": "text",
+    "label": "Text: \"Dashboard\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-40": {
+    "type": "text",
+    "label": "Button: \"Explore Build\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-41": {
+    "type": "text",
+    "label": "Text: \"03\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-42": {
+    "type": "text",
+    "label": "Text: \"Intelligence\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-43": {
+    "type": "text",
+    "label": "Heading: \"Know what your competition just did.\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-44": {
+    "type": "text",
+    "label": "Text: \"Track copy changes, price drops, or …\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-45": {
+    "type": "text",
+    "label": "Text: \"Continuous Monitoring\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-46": {
+    "type": "text",
+    "label": "Text: \"Product Signals\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-47": {
+    "type": "text",
+    "label": "Text: \"Sales Intel\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-48": {
+    "type": "text",
+    "label": "Text: \"Daily Briefs\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-49": {
+    "type": "text",
+    "label": "Text: \"Website Changes\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-50": {
+    "type": "text",
+    "label": "Button: \"Explore Intelligence\"",
+    "group": "Features",
+    "rich": false,
+    "allow": []
+  },
+  "cms-51": {
+    "type": "text",
+    "label": "Text: \"System Lifecycle\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-52": {
+    "type": "text",
+    "label": "Heading: \"The Framework.\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-53": {
+    "type": "text",
+    "label": "Text: \"Select a milestone below to audit ou…\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-54": {
+    "type": "text",
+    "label": "Text: \"01\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-55": {
+    "type": "text",
+    "label": "Text: \"Foundational Blueprints\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-56": {
+    "type": "text",
+    "label": "Text: \"02\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-57": {
+    "type": "text",
+    "label": "Text: \"Mathematical Alignment\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-58": {
+    "type": "text",
+    "label": "Text: \"03\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-59": {
+    "type": "text",
+    "label": "Text: \"Continuous Refinement\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-60": {
+    "type": "text",
+    "label": "Text: \"STAGE OVERVIEW • INTERACTIVE\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-61": {
+    "type": "text",
+    "label": "Text: \"ACTIVE_BLOCK: 01_PROC\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-62": {
+    "type": "text",
+    "label": "Heading: \"Foundational Blueprints\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-63": {
+    "type": "text",
+    "label": "Text: \"We establish clean mathematical sche…\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-64": {
+    "type": "text",
+    "label": "Text: \"Testing Checkpoint Checklist\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-65": {
+    "type": "text",
+    "label": "Text: \"CSS validation PASS\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-66": {
+    "type": "text",
+    "label": "Text: \"Speed scale >99%\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-67": {
+    "type": "text",
+    "label": "Text: \"Layout guidelines locked\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-68": {
+    "type": "text",
+    "label": "Text: \"Type scale locked\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-69": {
+    "type": "text",
+    "label": "Text: \"ESTIMATED DURATION: ~3-5 DAYS\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-70": {
+    "type": "text",
+    "label": "Text: \"STATUS: SECURE_STABLE\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-71": {
+    "type": "text",
+    "label": "Text: \"Corporate philosophy\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-72": {
+    "type": "text",
+    "label": "Heading: \"Layout is logic.\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-73": {
+    "type": "text",
+    "label": "Text: \"We believe in the power of negative …\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-74": {
+    "type": "text",
+    "label": "Text: \"Design Token Inspector\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-75": {
+    "type": "text",
+    "label": "Text: \"CLICK CODE TO COPY VALUE\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-76": {
+    "type": "text",
+    "label": "Text: \"--bg-canvas\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-77": {
+    "type": "text",
+    "label": "Text: \"(Core page background surface)\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-78": {
+    "type": "text",
+    "label": "Text: \"#f7f5f1\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-79": {
+    "type": "text",
+    "label": "Text: \"--ink-primary\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-80": {
+    "type": "text",
+    "label": "Text: \"(Main text typography weight)\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-81": {
+    "type": "text",
+    "label": "Text: \"#1e1c1a\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-82": {
+    "type": "text",
+    "label": "Text: \"--brand-primary\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-83": {
+    "type": "text",
+    "label": "Text: \"(Accent link focus highlighter)\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-84": {
+    "type": "text",
+    "label": "Text: \"#0057e6\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-85": {
+    "type": "text",
+    "label": "Text: \"--border-hairline\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-86": {
+    "type": "text",
+    "label": "Text: \"(Signature architectural draft line)\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-87": {
+    "type": "text",
+    "label": "Text: \"#d6d2cb\"",
+    "group": "Showcase",
+    "rich": false,
+    "allow": []
+  },
+  "cms-88": {
+    "type": "text",
+    "label": "Text: \"COMMISSION SYSTEM\"",
+    "group": "Cta Band",
+    "rich": false,
+    "allow": []
+  },
+  "cms-89": {
+    "type": "text",
+    "label": "Heading: \"Ready to launch your layout?\"",
+    "group": "Cta Band",
+    "rich": false,
+    "allow": []
+  },
+  "cms-90": {
+    "type": "text",
+    "label": "Text: \"Draft clean mathematical grids, lock…\"",
+    "group": "Cta Band",
+    "rich": false,
+    "allow": []
+  },
+  "cms-91": {
+    "type": "text",
+    "label": "Text: \"Launch\"",
+    "group": "Cta Band",
+    "rich": false,
+    "allow": []
+  },
+  "cms-92": {
+    "type": "text",
+    "label": "Text: \"ROCKET DESIGN PROTOCOLS\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-93": {
+    "type": "text",
+    "label": "Link: \"TOP_REF\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-94": {
+    "type": "text",
+    "label": "Text: \"© 2026 ROCKET TECHNOLOGIES — ALL SYS…\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-95": {
+    "type": "text",
+    "label": "Text: \"ROCKET\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-96": {
+    "type": "image",
+    "label": "Video poster",
+    "group": "Hero",
+    "rich": false,
+    "allow": []
+  },
+  "cms-97": {
+    "type": "text",
+    "label": "Browser tab title",
+    "group": "SEO & social",
+    "rich": false,
+    "allow": []
+  }
+}

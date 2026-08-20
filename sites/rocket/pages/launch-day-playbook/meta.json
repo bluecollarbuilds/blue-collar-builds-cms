@@ -1,0 +1,15 @@
+{
+  "sections": [
+    "header",
+    "nav",
+    "main"
+  ],
+  "collections": [
+    {
+      "id": "col1",
+      "count": 3,
+      "itemTag": "a",
+      "label": "nav items"
+    }
+  ]
+}

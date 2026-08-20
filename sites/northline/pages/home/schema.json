@@ -1,0 +1,1089 @@
+{
+  "cms-1": {
+    "type": "text",
+    "label": "Link: \"Northline\"",
+    "group": "Header",
+    "rich": false,
+    "allow": []
+  },
+  "cms-2": {
+    "type": "text",
+    "label": "Link: \"Services\"",
+    "group": "Nav",
+    "rich": false,
+    "allow": []
+  },
+  "cms-3": {
+    "type": "text",
+    "label": "Link: \"Work\"",
+    "group": "Nav",
+    "rich": false,
+    "allow": []
+  },
+  "cms-4": {
+    "type": "text",
+    "label": "Link: \"Process\"",
+    "group": "Nav",
+    "rich": false,
+    "allow": []
+  },
+  "cms-5": {
+    "type": "text",
+    "label": "Link: \"Pricing\"",
+    "group": "Nav",
+    "rich": false,
+    "allow": []
+  },
+  "cms-6": {
+    "type": "text",
+    "label": "Link: \"FAQ\"",
+    "group": "Nav",
+    "rich": false,
+    "allow": []
+  },
+  "cms-7": {
+    "type": "text",
+    "label": "Link: \"Client login\"",
+    "group": "Header",
+    "rich": false,
+    "allow": []
+  },
+  "cms-8": {
+    "type": "text",
+    "label": "Link: \"Start a project\"",
+    "group": "Header",
+    "rich": true,
+    "allow": [
+      "span"
+    ]
+  },
+  "cms-9": {
+    "type": "text",
+    "label": "Text: \"Booking projects for Q3 2026\"",
+    "group": "Top",
+    "rich": true,
+    "allow": [
+      "span"
+    ]
+  },
+  "cms-10": {
+    "type": "text",
+    "label": "Text: \"Websites\"",
+    "group": "Top",
+    "rich": false,
+    "allow": []
+  },
+  "cms-11": {
+    "type": "text",
+    "label": "Heading: \"Design, code, and motion for serious…\"",
+    "group": "Top",
+    "rich": false,
+    "allow": []
+  },
+  "cms-12": {
+    "type": "text",
+    "label": "Link: \"Book an intro call\"",
+    "group": "Top",
+    "rich": true,
+    "allow": [
+      "span"
+    ]
+  },
+  "cms-13": {
+    "type": "text",
+    "label": "Link: \"See selected work\"",
+    "group": "Top",
+    "rich": false,
+    "allow": []
+  },
+  "cms-14": {
+    "type": "text",
+    "label": "Text: \"// Process\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-15": {
+    "type": "text",
+    "label": "Heading: \"Three stages.\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-16": {
+    "type": "text",
+    "label": "Text: \"Every Northline engagement runs the …\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-17": {
+    "type": "text",
+    "label": "Text: \"01\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-18": {
+    "type": "text",
+    "label": "Heading: \"Strategy & positioning\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-19": {
+    "type": "text",
+    "label": "Text: \"Two weeks of structured research: bu…\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-20": {
+    "type": "text",
+    "label": "Text: \"02\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-21": {
+    "type": "text",
+    "label": "Heading: \"Brand, UX & UI\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-22": {
+    "type": "text",
+    "label": "Text: \"Sitemap to high-fidelity Figma. Dail…\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-23": {
+    "type": "text",
+    "label": "Text: \"03\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-24": {
+    "type": "text",
+    "label": "Heading: \"Engineering & deploy\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-25": {
+    "type": "text",
+    "label": "Text: \"Built in Next.js on Vercel. Componen…\"",
+    "group": "Process",
+    "rich": false,
+    "allow": []
+  },
+  "cms-26": {
+    "type": "text",
+    "label": "Text: \"// Services\"",
+    "group": "Services",
+    "rich": false,
+    "allow": []
+  },
+  "cms-27": {
+    "type": "text",
+    "label": "Heading: \"What we build.\"",
+    "group": "Services",
+    "rich": false,
+    "allow": []
+  },
+  "cms-28": {
+    "type": "text",
+    "label": "Text: \"A small, senior team. You work direc…\"",
+    "group": "Services",
+    "rich": false,
+    "allow": []
+  },
+  "cms-29": {
+    "type": "text",
+    "label": "Heading: \"Marketing websites\"",
+    "group": "Services",
+    "rich": false,
+    "allow": []
+  },
+  "cms-30": {
+    "type": "text",
+    "label": "Text: \"Conversion-led homepages, product pa…\"",
+    "group": "Services",
+    "rich": false,
+    "allow": []
+  },
+  "cms-31": {
+    "type": "text",
+    "label": "Heading: \"Product & SaaS UI\"",
+    "group": "Services",
+    "rich": false,
+    "allow": []
+  },
+  "cms-32": {
+    "type": "text",
+    "label": "Text: \"Marketing-quality product UI without…\"",
+    "group": "Services",
+    "rich": false,
+    "allow": []
+  },
+  "cms-33": {
+    "type": "text",
+    "label": "Heading: \"Brand systems\"",
+    "group": "Services",
+    "rich": false,
+    "allow": []
+  },
+  "cms-34": {
+    "type": "text",
+    "label": "Text: \"Identity, type and tokens — built as…\"",
+    "group": "Services",
+    "rich": false,
+    "allow": []
+  },
+  "cms-35": {
+    "type": "text",
+    "label": "Heading: \"SEO & performance\"",
+    "group": "Services",
+    "rich": false,
+    "allow": []
+  },
+  "cms-36": {
+    "type": "text",
+    "label": "Text: \"Core Web Vitals and SEO baked in fro…\"",
+    "group": "Services",
+    "rich": false,
+    "allow": []
+  },
+  "cms-37": {
+    "type": "text",
+    "label": "Heading: \"Webflow & CMS\"",
+    "group": "Services",
+    "rich": false,
+    "allow": []
+  },
+  "cms-38": {
+    "type": "text",
+    "label": "Text: \"Pixel-perfect Webflow your marketing…\"",
+    "group": "Services",
+    "rich": false,
+    "allow": []
+  },
+  "cms-39": {
+    "type": "text",
+    "label": "Heading: \"Growth retainer\"",
+    "group": "Services",
+    "rich": false,
+    "allow": []
+  },
+  "cms-40": {
+    "type": "text",
+    "label": "Text: \"Ongoing senior design + dev capacity…\"",
+    "group": "Services",
+    "rich": false,
+    "allow": []
+  },
+  "cms-41": {
+    "type": "text",
+    "label": "Text: \"// Results\"",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-42": {
+    "type": "text",
+    "label": "Heading: \"By the numbers.\"",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-43": {
+    "type": "text",
+    "label": "Text: \"+118%\"",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-44": {
+    "type": "text",
+    "label": "Text: \"/100\"",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-45": {
+    "type": "text",
+    "label": "Text: \"// Selected work\"",
+    "group": "Work",
+    "rich": false,
+    "allow": []
+  },
+  "cms-46": {
+    "type": "text",
+    "label": "Heading: \"Recent projects.\"",
+    "group": "Work",
+    "rich": false,
+    "allow": []
+  },
+  "cms-47": {
+    "type": "text",
+    "label": "Text: \"A small selection — full case studie…\"",
+    "group": "Work",
+    "rich": false,
+    "allow": []
+  },
+  "cms-48": {
+    "type": "text",
+    "label": "Text: \"Case study · SaaS marketing site\"",
+    "group": "Work",
+    "rich": false,
+    "allow": []
+  },
+  "cms-49": {
+    "type": "text",
+    "label": "Text: \"Helio Labs — rebuilt in 5 weeks, +21…\"",
+    "group": "Work",
+    "rich": false,
+    "allow": []
+  },
+  "cms-50": {
+    "type": "text",
+    "label": "Text: \"Brand refresh, headless CMS migratio…\"",
+    "group": "Work",
+    "rich": false,
+    "allow": []
+  },
+  "cms-51": {
+    "type": "text",
+    "label": "Text: \"B2B fintech\"",
+    "group": "Work",
+    "rich": false,
+    "allow": []
+  },
+  "cms-52": {
+    "type": "text",
+    "label": "Text: \"Northvine — 0 → Series A\"",
+    "group": "Work",
+    "rich": false,
+    "allow": []
+  },
+  "cms-53": {
+    "type": "text",
+    "label": "Text: \"Identity, website and pitch site for…\"",
+    "group": "Work",
+    "rich": false,
+    "allow": []
+  },
+  "cms-54": {
+    "type": "text",
+    "label": "Text: \"D2C product · Shopify Plus\"",
+    "group": "Work",
+    "rich": false,
+    "allow": []
+  },
+  "cms-55": {
+    "type": "text",
+    "label": "Text: \"Fieldnote — +37% conversion\"",
+    "group": "Work",
+    "rich": false,
+    "allow": []
+  },
+  "cms-56": {
+    "type": "text",
+    "label": "Text: \"A storefront tuned for thumb-scroll,…\"",
+    "group": "Work",
+    "rich": false,
+    "allow": []
+  },
+  "cms-57": {
+    "type": "text",
+    "label": "Text: \"// Pricing\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-58": {
+    "type": "text",
+    "label": "Heading: \"Three ways in.\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-59": {
+    "type": "text",
+    "label": "Text: \"Fixed-scope, milestone-billed, and c…\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-60": {
+    "type": "text",
+    "label": "Heading: \"Launchpad\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-61": {
+    "type": "text",
+    "label": "Text: \"4 weeks\"",
+    "group": "Pricing",
+    "rich": true,
+    "allow": [
+      "span"
+    ]
+  },
+  "cms-62": {
+    "type": "text",
+    "label": "Text: \"For founders launching v1 — a sharp,…\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-63": {
+    "type": "text",
+    "label": "Text: \"£12k\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-64": {
+    "type": "text",
+    "label": "Text: \"fixed-fee\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-65": {
+    "type": "text",
+    "label": "List item: \"Up to 8 pages, fully responsive\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-66": {
+    "type": "text",
+    "label": "List item: \"Brand & messaging refresh\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-67": {
+    "type": "text",
+    "label": "List item: \"Webflow or Next.js delivery\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-68": {
+    "type": "text",
+    "label": "List item: \"Analytics, SEO & CMS setup\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-69": {
+    "type": "text",
+    "label": "List item: \"Two weeks of post-launch support\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-70": {
+    "type": "text",
+    "label": "Link: \"Talk about Launchpad\"",
+    "group": "Pricing",
+    "rich": true,
+    "allow": [
+      "span"
+    ]
+  },
+  "cms-71": {
+    "type": "text",
+    "label": "Heading: \"Studio\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-72": {
+    "type": "text",
+    "label": "Text: \"Most popular\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-73": {
+    "type": "text",
+    "label": "Text: \"Our default. A full design system, m…\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-74": {
+    "type": "text",
+    "label": "Text: \"£32k\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-75": {
+    "type": "text",
+    "label": "Text: \"from · 6–8 weeks\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-76": {
+    "type": "text",
+    "label": "List item: \"Strategy, brand, UX, UI & build\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-77": {
+    "type": "text",
+    "label": "List item: \"Up to 20 pages + reusable components\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-78": {
+    "type": "text",
+    "label": "List item: \"Headless CMS & editor onboarding\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-79": {
+    "type": "text",
+    "label": "List item: \"Performance & accessibility audit\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-80": {
+    "type": "text",
+    "label": "List item: \"30 days of post-launch retainer\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-81": {
+    "type": "text",
+    "label": "Link: \"Start with Studio\"",
+    "group": "Pricing",
+    "rich": true,
+    "allow": [
+      "span"
+    ]
+  },
+  "cms-82": {
+    "type": "text",
+    "label": "Heading: \"Growth retainer\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-83": {
+    "type": "text",
+    "label": "Text: \"Monthly\"",
+    "group": "Pricing",
+    "rich": true,
+    "allow": [
+      "span"
+    ]
+  },
+  "cms-84": {
+    "type": "text",
+    "label": "Text: \"For teams that have launched and now…\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-85": {
+    "type": "text",
+    "label": "Text: \"£6k\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-86": {
+    "type": "text",
+    "label": "Text: \"/ month · pause any time\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-87": {
+    "type": "text",
+    "label": "List item: \"2 senior hours / business day\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-88": {
+    "type": "text",
+    "label": "List item: \"Roadmap & A/B test backlog\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-89": {
+    "type": "text",
+    "label": "List item: \"Monthly performance review\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-90": {
+    "type": "text",
+    "label": "List item: \"Slack-shared design + dev capacity\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-91": {
+    "type": "text",
+    "label": "List item: \"One landing page / experiment / week\"",
+    "group": "Pricing",
+    "rich": false,
+    "allow": []
+  },
+  "cms-92": {
+    "type": "text",
+    "label": "Link: \"Talk about retainer\"",
+    "group": "Pricing",
+    "rich": true,
+    "allow": [
+      "span"
+    ]
+  },
+  "cms-93": {
+    "type": "text",
+    "label": "Text: \"// Testimonials\"",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-94": {
+    "type": "text",
+    "label": "Heading: \"What clients say.\"",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-95": {
+    "type": "text",
+    "label": "Quote: \"Northline shipped our v2 in five wee…\"",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-96": {
+    "type": "text",
+    "label": "Text: \"Maya Dahl\"",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-97": {
+    "type": "text",
+    "label": "Quote: \"The polish is the obvious part. The …\"",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-98": {
+    "type": "text",
+    "label": "Text: \"James Roe\"",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-99": {
+    "type": "text",
+    "label": "Quote: \"They don't redesign for the sake of …\"",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-100": {
+    "type": "text",
+    "label": "Text: \"Sara Kapoor\"",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-101": {
+    "type": "text",
+    "label": "Text: \"// FAQ\"",
+    "group": "Faq",
+    "rich": false,
+    "allow": []
+  },
+  "cms-102": {
+    "type": "text",
+    "label": "Heading: \"Common questions.\"",
+    "group": "Faq",
+    "rich": false,
+    "allow": []
+  },
+  "cms-103": {
+    "type": "text",
+    "label": "Text: \"How long does a typical project take?\"",
+    "group": "Faq",
+    "rich": true,
+    "allow": [
+      "span"
+    ]
+  },
+  "cms-104": {
+    "type": "text",
+    "label": "Text: \"Do you work with companies outside t…\"",
+    "group": "Faq",
+    "rich": true,
+    "allow": [
+      "span"
+    ]
+  },
+  "cms-105": {
+    "type": "text",
+    "label": "Text: \"Can we keep editing the site after l…\"",
+    "group": "Faq",
+    "rich": true,
+    "allow": [
+      "span"
+    ]
+  },
+  "cms-106": {
+    "type": "text",
+    "label": "Text: \"What stack do you build on?\"",
+    "group": "Faq",
+    "rich": true,
+    "allow": [
+      "span"
+    ]
+  },
+  "cms-107": {
+    "type": "text",
+    "label": "Text: \"Will we work directly with the peopl…\"",
+    "group": "Faq",
+    "rich": true,
+    "allow": [
+      "span"
+    ]
+  },
+  "cms-108": {
+    "type": "text",
+    "label": "Text: \"What if we already have a brand we l…\"",
+    "group": "Faq",
+    "rich": true,
+    "allow": [
+      "span"
+    ]
+  },
+  "cms-109": {
+    "type": "text",
+    "label": "Heading: \"Let's build.\"",
+    "group": "Contact",
+    "rich": false,
+    "allow": []
+  },
+  "cms-110": {
+    "type": "text",
+    "label": "Text: \"Send us a line about the business, t…\"",
+    "group": "Contact",
+    "rich": false,
+    "allow": []
+  },
+  "cms-111": {
+    "type": "text",
+    "label": "Link: \"hello@northline.studio\"",
+    "group": "Contact",
+    "rich": false,
+    "allow": []
+  },
+  "cms-112": {
+    "type": "text",
+    "label": "Link: \"Book an intro call\"",
+    "group": "Contact",
+    "rich": false,
+    "allow": []
+  },
+  "cms-113": {
+    "type": "text",
+    "label": "Heading: \"Site footer\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-114": {
+    "type": "text",
+    "label": "Link: \"Northline\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-115": {
+    "type": "text",
+    "label": "Text: \"A studio of designers and engineers …\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-116": {
+    "type": "text",
+    "label": "Heading: \"Studio\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-117": {
+    "type": "text",
+    "label": "Link: \"Services\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-118": {
+    "type": "text",
+    "label": "Link: \"Work\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-119": {
+    "type": "text",
+    "label": "Link: \"Process\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-120": {
+    "type": "text",
+    "label": "Link: \"Pricing\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-121": {
+    "type": "text",
+    "label": "Heading: \"Resources\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-122": {
+    "type": "text",
+    "label": "Link: \"Journal\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-123": {
+    "type": "text",
+    "label": "Link: \"Design system\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-124": {
+    "type": "text",
+    "label": "Link: \"Performance audit\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-125": {
+    "type": "text",
+    "label": "Link: \"Hire us\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-126": {
+    "type": "text",
+    "label": "Heading: \"Contact\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-127": {
+    "type": "text",
+    "label": "Link: \"hello@northline.studio\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-128": {
+    "type": "text",
+    "label": "Link: \"Book a call\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-129": {
+    "type": "text",
+    "label": "Link: \"@northlinestudio\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-130": {
+    "type": "text",
+    "label": "Link: \"LinkedIn\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-131": {
+    "type": "text",
+    "label": "Heading: \"Legal\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-132": {
+    "type": "text",
+    "label": "Link: \"Privacy\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-133": {
+    "type": "text",
+    "label": "Link: \"Terms\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-134": {
+    "type": "text",
+    "label": "Link: \"Accessibility\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-135": {
+    "type": "text",
+    "label": "Link: \"Cookies\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-136": {
+    "type": "text",
+    "label": "Text: \"All systems operational\"",
+    "group": "Footer",
+    "rich": true,
+    "allow": [
+      "span"
+    ]
+  },
+  "cms-137": {
+    "type": "text",
+    "label": "Text: \"© 2026 Northline Studio Ltd. Made on…\"",
+    "group": "Footer",
+    "rich": false,
+    "allow": []
+  },
+  "cms-138": {
+    "type": "image",
+    "label": "Image: Northline product dashboard preview",
+    "group": "Top",
+    "rich": false,
+    "allow": []
+  },
+  "cms-139": {
+    "type": "image",
+    "label": "Image: Vercel",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-140": {
+    "type": "image",
+    "label": "Image: Stripe",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-141": {
+    "type": "image",
+    "label": "Image: Linear",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-142": {
+    "type": "image",
+    "label": "Image: Notion",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-143": {
+    "type": "image",
+    "label": "Image: Figma",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-144": {
+    "type": "image",
+    "label": "Image: Shopify",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-145": {
+    "type": "image",
+    "label": "Image: Framer",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-146": {
+    "type": "image",
+    "label": "Image: Loom",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-147": {
+    "type": "image",
+    "label": "Image: 68.jpg",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-148": {
+    "type": "image",
+    "label": "Image: 32.jpg",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-149": {
+    "type": "image",
+    "label": "Image: 44.jpg",
+    "group": "Page",
+    "rich": false,
+    "allow": []
+  },
+  "cms-150": {
+    "type": "text",
+    "label": "Browser tab title",
+    "group": "SEO & social",
+    "rich": false,
+    "allow": []
+  },
+  "cms-151": {
+    "type": "meta-attr",
+    "label": "Google meta description",
+    "group": "SEO & social",
+    "rich": false,
+    "allow": []
+  }
+}

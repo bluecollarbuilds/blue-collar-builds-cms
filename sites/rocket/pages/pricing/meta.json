@@ -1,0 +1,47 @@
+{
+  "sections": [
+    "header",
+    "nav",
+    "main",
+    "#hero",
+    "#tiers"
+  ],
+  "collections": [
+    {
+      "id": "col1",
+      "count": 3,
+      "itemTag": "a",
+      "label": "nav items"
+    },
+    {
+      "id": "col2",
+      "count": 2,
+      "itemTag": "section",
+      "label": "main items"
+    },
+    {
+      "id": "col3",
+      "count": 3,
+      "itemTag": "div",
+      "label": "tiers items"
+    },
+    {
+      "id": "col4",
+      "count": 4,
+      "itemTag": "li",
+      "label": "tiers items"
+    },
+    {
+      "id": "col5",
+      "count": 5,
+      "itemTag": "li",
+      "label": "tiers items"
+    },
+    {
+      "id": "col6",
+      "count": 4,
+      "itemTag": "li",
+      "label": "tiers items"
+    }
+  ]
+}

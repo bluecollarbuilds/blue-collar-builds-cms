@@ -1,0 +1,29 @@
+{
+  "sections": [
+    "header",
+    "nav",
+    "main",
+    "#hero",
+    "#values"
+  ],
+  "collections": [
+    {
+      "id": "col1",
+      "count": 3,
+      "itemTag": "a",
+      "label": "nav items"
+    },
+    {
+      "id": "col2",
+      "count": 2,
+      "itemTag": "section",
+      "label": "main items"
+    },
+    {
+      "id": "col3",
+      "count": 3,
+      "itemTag": "div",
+      "label": "values items"
+    }
+  ]
+}

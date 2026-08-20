@@ -1,0 +1,25 @@
+{
+  "order": [
+    "home",
+    "about",
+    "pricing"
+  ],
+  "home": "home",
+  "pages": {
+    "home": {
+      "title": "Home",
+      "path": "/"
+    },
+    "about": {
+      "title": "About",
+      "path": "/about"
+    },
+    "pricing": {
+      "title": "Pricing",
+      "path": "/pricing"
+    }
+  },
+  "vercel": {
+    "project": "rocket-client"
+  }
+}

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI CMS — Setup & Operating Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0c;--panel:#141418;--panel2:#1c1c22;--line:#2c2c34;--ink:#f1f1f3;--ink2:#a3a3ad;--ink3:#6e6e78;--blue:#0a72ef;--green:#27c93f;--grad:linear-gradient(90deg,#0a72ef,#de1d8d 55%,#ff5b4f);}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:"Geist",system-ui,Arial;line-height:1.6}
+  .mono{font-family:"Geist Mono",ui-monospace,Menlo,monospace}
+  .wrap{max-width:880px;margin:0 auto;padding:56px 26px 90px}
+  h1{font-size:clamp(30px,5vw,46px);letter-spacing:-.03em;margin:0 0 6px;font-weight:700}
+  h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{color:var(--ink2);font-size:17px;margin:0 0 8px;max-width:620px}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);margin:42px 0 14px;font-family:"Geist Mono",monospace}
+  .card{background:var(--panel);border-radius:16px;box-shadow:inset 0 0 0 1px var(--line);padding:22px 24px;margin-bottom:14px}
+  .rec{background:linear-gradient(180deg,rgba(10,114,239,.10),transparent);box-shadow:inset 0 0 0 1px rgba(10,114,239,.4)}
+  .rec h3{margin:0 0 8px;font-size:16px} .card p{margin:0;color:var(--ink2);font-size:14.5px} .card p+p{margin-top:9px}
+  b{color:var(--ink)}
+  .roles{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .role h3{margin:0 0 4px;font-size:16px;display:flex;align-items:center;gap:8px} .role .who{font-size:12px;color:var(--ink3);margin-bottom:12px}
+  .role ul{margin:0;padding-left:18px;color:var(--ink2);font-size:14px} .role li{margin:6px 0}
+  .owner{box-shadow:inset 0 0 0 1px rgba(10,114,239,.4)} .client{box-shadow:inset 0 0 0 1px rgba(222,29,141,.4)}
+  ol.steps{counter-reset:s;list-style:none;padding:0;margin:0}
+  ol.steps li{position:relative;padding:0 0 18px 50px;margin:0}
+  ol.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:-2px;width:34px;height:34px;border-radius:10px;background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+  ol.steps li:not(:last-child)::after{content:"";position:absolute;left:17px;top:38px;bottom:6px;width:2px;background:linear-gradient(180deg,var(--line),transparent)}
+  ol.steps h4{margin:0 0 3px;font-size:16px} ol.steps p{margin:0;color:var(--ink2);font-size:14px}
+  code{font-family:"Geist Mono",monospace;font-size:13px;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line);padding:2px 7px;border-radius:6px;color:#9bc1ff}
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap;margin:6px 0}
+  .node{flex:1;min-width:150px;background:var(--panel2);border-radius:13px;box-shadow:inset 0 0 0 1px var(--line);padding:16px 18px}
+  .node .t{font-weight:600;font-size:14.5px;display:flex;align-items:center;gap:7px} .node .d{font-size:12.5px;color:var(--ink3);margin-top:4px}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:20px;flex:0 0 36px}
+  .faq{border-top:1px solid var(--line);padding:16px 0} .faq:last-child{border-bottom:1px solid var(--line)}
+  .faq .q{font-weight:600;font-size:15px;margin-bottom:5px} .faq .a{color:var(--ink2);font-size:14px}
+  @media(max-width:720px){.roles,.flow{grid-template-columns:1fr;flex-direction:column}.arrow{transform:rotate(90deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>The <em>simplest</em> way to run this</h1>
+  <p class="lede">One CMS. Every client's website lives under it. You give each client one private login that edits only their site — and you have a master login that sees everything.</p>
+
+  <h2>// the recommendation (least complexity)</h2>
+  <div class="card rec">
+    <h3>✅ Use private editor links, not passwords</h3>
+    <p>Each client gets a <b>private link</b> (a long, unguessable URL) — that <b>is</b> their login. They bookmark it and edit their site. No passwords to set, forget, or reset; no "forgot password" emails to build; and a link can only ever open the <b>one</b> site it's scoped to.</p>
+    <p style="margin-top:9px;color:var(--ink3)">You can revoke or re-issue a client's link in one click. (If you ever truly want classic username + password, it can be added later — but it's more moving parts for the same security. Start simple.)</p>
+  </div>
+
+  <h2>// the structure</h2>
+  <div class="roles">
+    <div class="card role owner"><h3>🛠️ You — the owner</h3><div class="who">one master key · sees everything</div><ul><li>Log into the <b>Agency Console</b> with your owner key</li><li>See &amp; edit <b>every</b> client site</li><li>Build, ingest, hand off, connect Vercel</li><li>Issue / revoke client links</li></ul></div>
+    <div class="card role client"><h3>👩‍💼 Each client</h3><div class="who">one private link · their site only</div><ul><li>Opens their link → straight into their editor</li><li>Can edit <b>only their own</b> site</li><li>Click-to-edit, AI chat, publish</li><li>Cannot see or touch any other client</li></ul></div>
+  </div>
+
+  <h2>// how it's all connected</h2>
+  <div class="flow">
+    <div class="node"><div class="t">🖥️ The CMS</div><div class="d">Runs on your server/VPS. Holds every client's content + versions. Your command center.</div></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="t">▲ Your Vercel</div><div class="d">Each client site = one Vercel project on your account. Publish pushes the new version here.</div></div>
+    <div class="arrow">→</div>
+    <div class="node"><div class="t">🌍 Their live site</div><div class="d">their-domain.com — updates within seconds of the client hitting Publish.</div></div>
+  </div>
+
+  <h2>// one-time setup</h2>
+  <ol class="steps">
+    <li><h4>Run the CMS</h4><p><code>cd northline-cms && npm install && npm start</code> on your machine or a small VPS. Set your owner key with <code>ADMIN_KEY=yourSecret npm start</code> (defaults to <code>owner-dev</code> for local).</p></li>
+    <li><h4>Open the Agency Console</h4><p><code>/admin/?key=yourSecret</code> — this is your home base.</p></li>
+    <li><h4>Connect AI <span style="color:var(--ink3);font-weight:400">(optional)</span></h4><p>Paste an OpenRouter or Anthropic key so clients can edit by chatting. Click-to-edit works without it.</p></li>
+    <li><h4>Connect your Vercel</h4><p>Paste a Vercel token (from <code>vercel.com/account/tokens</code>). Now every Publish can deploy to your Vercel automatically.</p></li>
+  </ol>
+
+  <h2>// per client (the repeatable bit)</h2>
+  <ol class="steps">
+    <li><h4>Build the site</h4><p>However you already do — any tool, any framework.</p></li>
+    <li><h4>Ingest it</h4><p>Capture the finished site into the CMS — it auto-detects every editable thing. Zero setup.</p></li>
+    <li><h4>Link its Vercel project</h4><p>In the console, set which Vercel project this site deploys to.</p></li>
+    <li><h4>Create the client link</h4><p>One click → a private editor URL scoped to this site only.</p></li>
+    <li><h4>Send it &amp; walk away</h4><p>The client edits and publishes themselves — it deploys to your Vercel, their site updates. You do nothing further.</p></li>
+  </ol>
+
+  <h2>// FAQ</h2>
+  <div class="faq"><div class="q">Can a client see or edit another client's site?</div><div class="a">No. Their link is cryptographically scoped to exactly one site. There's no list of other sites, no shared dashboard.</div></div>
+  <div class="faq"><div class="q">What if a client breaks something?</div><div class="a">They can't. They only fill content slots (never code/layout), every change passes the Guardian, and every publish is a version they can one-click roll back.</div></div>
+  <div class="faq"><div class="q">Does it really update their live Vercel site?</div><div class="a">Yes — Publish renders the static site and pushes it to your Vercel as a new production deployment. No Git, no rebuild step.</div></div>
+  <div class="faq"><div class="q">Username + password instead of a link?</div><div class="a">Possible, but not recommended to start — it adds password storage, reset flows and support, for no extra security. The scoped link is simpler and just as safe.</div></div>
+  <div class="faq"><div class="q">Where does it cost money?</div><div class="a">Your server to run the CMS (tiny), your Vercel for hosting client sites, and optionally an AI key (pay-per-edit). Clients pay you a monthly fee.</div></div>
+</div>
+</body>
+</html>

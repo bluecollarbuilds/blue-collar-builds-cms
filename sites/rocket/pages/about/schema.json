@@ -1,0 +1,165 @@
+{
+  "cms-1": {
+    "type": "text",
+    "label": "Text: \"rocket\"",
+    "group": "Header",
+    "rich": false,
+    "allow": []
+  },
+  "cms-2": {
+    "type": "text",
+    "label": "Link: \"Home\"",
+    "group": "Nav",
+    "rich": false,
+    "allow": []
+  },
+  "cms-3": {
+    "type": "text",
+    "label": "Link: \"About\"",
+    "group": "Nav",
+    "rich": false,
+    "allow": []
+  },
+  "cms-4": {
+    "type": "text",
+    "label": "Link: \"Pricing\"",
+    "group": "Nav",
+    "rich": false,
+    "allow": []
+  },
+  "cms-5": {
+    "type": "text",
+    "label": "Text: \"Launch\"",
+    "group": "Header",
+    "rich": false,
+    "allow": []
+  },
+  "cms-6": {
+    "type": "text",
+    "label": "Text: \"// About Rocket\"",
+    "group": "Hero",
+    "rich": false,
+    "allow": []
+  },
+  "cms-7": {
+    "type": "text",
+    "label": "Heading: \"We engineer websites,not just decora…\"",
+    "group": "Hero",
+    "rich": true,
+    "allow": [
+      "br"
+    ]
+  },
+  "cms-8": {
+    "type": "text",
+    "label": "Text: \"Rocket is a small senior studio. We …\"",
+    "group": "Hero",
+    "rich": false,
+    "allow": []
+  },
+  "cms-9": {
+    "type": "text",
+    "label": "Text: \"// How we work\"",
+    "group": "Values",
+    "rich": false,
+    "allow": []
+  },
+  "cms-10": {
+    "type": "text",
+    "label": "Heading: \"Three principles.\"",
+    "group": "Values",
+    "rich": false,
+    "allow": []
+  },
+  "cms-11": {
+    "type": "text",
+    "label": "Text: \"01\"",
+    "group": "Values",
+    "rich": false,
+    "allow": []
+  },
+  "cms-12": {
+    "type": "text",
+    "label": "Text: \"Clarity\"",
+    "group": "Values",
+    "rich": false,
+    "allow": []
+  },
+  "cms-13": {
+    "type": "text",
+    "label": "Heading: \"Structure before style.\"",
+    "group": "Values",
+    "rich": false,
+    "allow": []
+  },
+  "cms-14": {
+    "type": "text",
+    "label": "Text: \"Every page starts as a clean grid an…\"",
+    "group": "Values",
+    "rich": false,
+    "allow": []
+  },
+  "cms-15": {
+    "type": "text",
+    "label": "Text: \"02\"",
+    "group": "Values",
+    "rich": false,
+    "allow": []
+  },
+  "cms-16": {
+    "type": "text",
+    "label": "Text: \"Speed\"",
+    "group": "Values",
+    "rich": false,
+    "allow": []
+  },
+  "cms-17": {
+    "type": "text",
+    "label": "Heading: \"Zero bloat shipped.\"",
+    "group": "Values",
+    "rich": false,
+    "allow": []
+  },
+  "cms-18": {
+    "type": "text",
+    "label": "Text: \"No heavy page-builders, no tracking …\"",
+    "group": "Values",
+    "rich": false,
+    "allow": []
+  },
+  "cms-19": {
+    "type": "text",
+    "label": "Text: \"03\"",
+    "group": "Values",
+    "rich": false,
+    "allow": []
+  },
+  "cms-20": {
+    "type": "text",
+    "label": "Text: \"Ownership\"",
+    "group": "Values",
+    "rich": false,
+    "allow": []
+  },
+  "cms-21": {
+    "type": "text",
+    "label": "Heading: \"You hold the keys.\"",
+    "group": "Values",
+    "rich": false,
+    "allow": []
+  },
+  "cms-22": {
+    "type": "text",
+    "label": "Text: \"We hand over a CMS you can run witho…\"",
+    "group": "Values",
+    "rich": false,
+    "allow": []
+  },
+  "cms-23": {
+    "type": "text",
+    "label": "Browser tab title",
+    "group": "SEO & social",
+    "rich": false,
+    "allow": []
+  }
+}

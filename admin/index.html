@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Agency Console · AI CMS</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0a0a0c;--panel:#141418;--panel-2:#1c1c22;--panel-3:#26262e;--line:#2c2c34;--ink:#f0f0f2;--ink-2:#a0a0a8;--ink-3:#6e6e78;--blue:#0a72ef;--green:#27c93f;--grad:linear-gradient(90deg,#0a72ef,#de1d8d 55%,#ff5b4f);}
+  *{box-sizing:border-box} body{margin:0;font-family:"Geist",system-ui,Arial;background:var(--bg);color:var(--ink);min-height:100vh;line-height:1.5}
+  .mono{font-family:"Geist Mono",ui-monospace,Menlo,monospace}
+  header{display:flex;align-items:center;gap:13px;padding:20px 30px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(10,10,12,.8);backdrop-filter:blur(12px);z-index:10}
+  header .logo{width:24px;height:24px} header h1{font-size:17px;font-weight:600;margin:0;letter-spacing:-.02em} header .tag{font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.09em;border-left:1px solid var(--line);padding-left:13px}
+  header .sp{flex:1} .keybox{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--ink-3)} .keybox input{background:var(--panel-2);border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:8px;color:var(--ink);padding:8px 11px;font:inherit;font-size:12px;width:150px}
+  .wrap{max-width:920px;margin:0 auto;padding:30px}
+  .card{background:var(--panel);border-radius:16px;box-shadow:inset 0 0 0 1px var(--line);padding:22px 24px;margin-bottom:18px}
+  .card h2{font-size:16px;margin:0 0 4px;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+  .sub{color:var(--ink-3);font-size:13.5px;margin:0 0 18px}
+  .btnp{border:2px solid transparent;border-radius:10px;background:linear-gradient(#fff,#fff) padding-box,var(--grad) border-box;color:#0a0a0a;font:600 13px/1 'Geist';padding:9px 17px;cursor:pointer;transition:transform .12s,filter .12s}.btnp:hover{filter:brightness(1.04);transform:translateY(-1px)}
+  .ghost{background:var(--panel-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);border:0;border-radius:9px;padding:9px 14px;font:500 13px 'Geist';cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}.ghost:hover{box-shadow:inset 0 0 0 1px #3a3a44}
+  /* AI key */
+  .provs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .prov{display:flex;align-items:center;gap:11px;padding:13px 15px;border-radius:12px;background:var(--panel-2);box-shadow:inset 0 0 0 1px var(--line);cursor:pointer}
+  .prov.on{box-shadow:inset 0 0 0 2px var(--blue);background:rgba(10,114,239,.08)}
+  .prov img{width:24px;height:24px;border-radius:6px} .prov .pn{font-weight:600;font-size:14px} .prov .pd{font-size:11.5px;color:var(--ink-3)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .fld{flex:1;min-width:200px} .fld label{display:block;font-size:12px;color:var(--ink-2);margin-bottom:5px} .fld input{width:100%;background:var(--panel-2);border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:9px;color:var(--ink);padding:10px 12px;font:inherit;font-size:13px} .fld input:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--blue)}
+  .stat{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--panel-2);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink-3)} .stat.ok{color:#9fe6ab;box-shadow:inset 0 0 0 1px rgba(39,201,63,.4)}
+  /* sites */
+  .site{background:var(--panel);border-radius:16px;box-shadow:inset 0 0 0 1px var(--line);padding:20px 24px;margin-bottom:16px}
+  .site .hd{display:flex;align-items:center;gap:11px;margin-bottom:3px} .site h3{font-size:18px;margin:0;letter-spacing:-.02em}
+  .pill{font-size:10.5px;padding:3px 9px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em} .pill.off{background:rgba(39,201,63,.14);color:#9fe6ab} .pill.dft{background:var(--panel-2);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink-3)}
+  .meta{font-size:12.5px;color:var(--ink-3);margin:0 0 15px} .acts{display:flex;flex-wrap:wrap;gap:9px}
+  .handoff{margin-top:15px;background:#0e0e12;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line);padding:15px 17px}
+  .handoff .ht{font-size:13px;font-weight:600;margin-bottom:3px} .handoff p{font-size:12.5px;color:var(--ink-3);margin:0 0 11px;line-height:1.5}
+  .handoff .lk{display:none} .handoff .lk.show{display:block} .handoff .lkrow{display:flex;gap:8px;margin-top:9px} .handoff input{flex:1;background:#000;border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:8px;color:#9bc1ff;padding:9px 11px;font-family:"Geist Mono",monospace;font-size:12px}
+  .appr{display:flex;align-items:center;gap:9px;margin-top:11px;font-size:12.5px;color:var(--ink-2);cursor:pointer}.appr input{flex:0 0 auto;width:16px;height:16px;accent-color:var(--blue);cursor:pointer}.appr span{line-height:1.4}
+  .empty{color:var(--ink-3);font-size:14px;padding:34px;text-align:center}
+</style>
+</head>
+<body>
+  <header>
+    <svg class="logo" viewBox="0 0 24 24" fill="none"><path d="M3 20 L12 4 L21 20 Z" fill="#f0f0f2"/><path d="M12 4 L21 20" stroke="#0a0a0c" stroke-width="1.5"/></svg>
+    <h1>Agency Console</h1><span class="tag">AI CMS</span><span class="sp"></span>
+    <div class="keybox">owner key <input id="key" placeholder="owner-dev"></div>
+  </header>
+  <div class="wrap">
+    <!-- AI key -->
+    <div class="card">
+      <h2>🤖 AI editing <span class="stat" id="aiStatus">…</span></h2>
+      <p class="sub">Powers the “describe a change” chat. Click-to-edit works without it. Your key is stored on your server and never shown again.</p>
+      <div class="provs" id="provs">
+        <div class="prov" data-p="anthropic"><img src="https://cdn.simpleicons.org/anthropic/d97757"><div><div class="pn">Anthropic</div><div class="pd">Claude — direct</div></div></div>
+        <div class="prov" data-p="openrouter"><img src="https://cdn.simpleicons.org/openrouter/8b8b8b" onerror="this.style.visibility='hidden'"><div><div class="pn">OpenRouter</div><div class="pd">Claude + many models</div></div></div>
+      </div>
+      <div class="row">
+        <div class="fld"><label>API key</label><input id="aiKey" type="password" placeholder="sk-ant-…  or  sk-or-…"></div>
+        <div class="fld" style="flex:0 0 230px"><label>Model</label><input id="aiModel" placeholder="latest Sonnet (default)"></div>
+        <button class="btnp" id="aiSave" style="align-self:flex-end">Save key</button>
+      </div>
+    </div>
+    <!-- Vercel -->
+    <div class="card">
+      <h2>▲ Vercel hosting <span class="stat" id="vcStatus">…</span></h2>
+      <p class="sub">Connect your Vercel once. Then every client <b>Publish</b> auto-deploys to that client's live Vercel site — no Git, no rebuilds. Create a token at <span class="mono">vercel.com/account/tokens</span>.</p>
+      <div class="row">
+        <div class="fld"><label>Vercel token</label><input id="vcToken" type="password" placeholder="paste your Vercel token"></div>
+        <div class="fld" style="flex:0 0 210px"><label>Team ID <span style="color:var(--ink-3)">(optional)</span></label><input id="vcTeam" placeholder="team_…  or leave blank"></div>
+        <button class="btnp" id="vcSave" style="align-self:flex-end">Connect</button>
+      </div>
+    </div>
+    <p class="sub" style="margin:26px 4px 14px;font-size:14px;color:var(--ink-2)">Every website you manage — add one, and if it belongs to a client, set a password to hand it over.</p>
+    <div class="card" style="margin-bottom:16px">
+      <h2 style="margin-top:0">➕ Add a website</h2>
+      <p class="sub" style="margin:0 0 13px;font-size:13px;color:var(--ink-3)">Paste the URL of a site you've already built &amp; deployed (we fetch it &amp; make it editable), or paste its HTML. It becomes an editable site in your dashboard. Set a password on its card below only if you're handing it to a client.</p>
+      <div class="lkrow"><input id="newName" placeholder="site name (e.g. acme)" style="flex:0 0 200px"><input id="newUrl" placeholder="https://the-site-you-built.com  (or leave blank & paste HTML below)"></div>
+      <textarea id="newHtml" placeholder="…or paste the page's HTML here" style="width:100%;margin-top:9px;min-height:64px;background:#000;border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:8px;color:var(--ink-2);padding:10px 11px;font-family:monospace;font-size:12px;resize:vertical"></textarea>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:11px"><button class="btnp" onclick="ingestSite()">Ingest site</button><span class="stat" id="ingestStat"></span></div>
+    </div>
+    <div id="list"><div class="empty">Loading…</div></div>
+  </div>
+<script>
+const $=s=>document.querySelector(s);const keyEl=$('#key');
+keyEl.value=new URLSearchParams(location.search).get('key')||localStorage.getItem('ownerKey')||'owner-dev';
+keyEl.oninput=()=>localStorage.setItem('ownerKey',keyEl.value);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));const origin=location.origin;
+let provider='anthropic';
+function selProv(p){provider=p;$('#provs').querySelectorAll('.prov').forEach(x=>x.classList.toggle('on',x.dataset.p===p));}
+$('#provs').querySelectorAll('.prov').forEach(el=>el.onclick=()=>selProv(el.dataset.p));
+
+async function load(){
+  const d=await (await fetch('/api/sites')).json();
+  const list=$('#list');
+  if(!d.sites.length){list.innerHTML='<div class="empty">No sites yet. Capture one into the CMS to begin.</div>';return;}
+  list.innerHTML=d.sites.map(s=>`
+    <div class="site" data-site="${esc(s.name)}">
+      <div class="hd"><h3>${esc(s.name)}</h3>${s.handedOff?`<span class="pill off">● live with client${s.client?' · '+esc(s.client):''}</span>`:'<span class="pill dft">not handed off</span>'}</div>
+      <div class="meta">${s.pages} page${s.pages!==1?'s':''} · ${s.versions} version${s.versions!==1?'s':''} in history</div>
+      <div class="acts">
+        <a class="ghost" href="/live/${encodeURIComponent(s.name)}" target="_blank">🌐 View live site</a>
+        <a class="ghost" href="/editor/?site=${encodeURIComponent(s.name)}&key=${encodeURIComponent(keyEl.value)}" target="_blank">✎ Open editor</a>
+        <button class="ghost" onclick="exportSite('${esc(s.name)}')">⤓ Export static</button>
+      </div>
+      <div class="handoff">
+        <div class="ht">🔑 Client access${s.handedOff?` · <span style="color:#9be8ab">● set${s.authMode==='password'?' (password)':''}</span>`:''}</div>
+        <p>Set a password, then send your client the plain editor link below — they type the password to get in. They can edit <b>only this site</b>. Re-set the password any time to instantly revoke the old one.</p>
+        <div class="lkrow"><input id="pw-${esc(s.name)}" type="text" placeholder="Set a password (min 4 chars)"><button class="btnp" onclick="setPw('${esc(s.name)}')">Set password</button></div>
+        <label class="appr"><input type="checkbox" id="ap-${esc(s.name)}" ${s.requireApproval?'checked':''} onchange="toggleApproval('${esc(s.name)}',this.checked)"> <span>Require my approval before their changes go live</span></label>
+        <div class="lk ${s.handedOff?'show':''}" id="lk-${esc(s.name)}"><div class="lkrow"><input readonly value="${s.handedOff?esc(origin)+'/editor/?site='+encodeURIComponent(s.name):''}"><button class="ghost" onclick="copy(this)">Copy link</button></div></div>
+        <button class="ghost" style="margin-top:9px;font-size:12px" onclick="handoff('${esc(s.name)}')">…or generate a one-click private link instead</button>
+      </div>
+      <div class="handoff" style="margin-top:11px">
+        <div class="ht">▲ Vercel project ${s.vercelUrl?`· <a href="${esc(s.vercelUrl)}" target="_blank" style="color:#9bc1ff;text-decoration:none">live ↗</a>`:''}</div>
+        <p>The Vercel project this site deploys to whenever it's published.</p>
+        <div class="lkrow"><input id="vc-${esc(s.name)}" value="${esc(s.vercelProject||'')}" placeholder="vercel-project-name"><button class="ghost" onclick="saveVercel('${esc(s.name)}',false)">Save</button><button class="btnp" onclick="saveVercel('${esc(s.name)}',true)">Save &amp; deploy</button></div>
+      </div>
+      <div class="handoff" style="margin-top:11px">
+        <div class="ht">↻ Re-sync design <span style="color:var(--ink-3);font-weight:400">— after you've redesigned the code</span></div>
+        <p>Rebuilt this site's design? Paste the new live URL (or its HTML) and we re-import it while <b>keeping every client edit</b> whose content still has a home in the new layout — so a code lift never destroys their work. It's saved as a version, so you can roll back.</p>
+        <div class="lkrow"><input id="rs-${esc(s.name)}" placeholder="https://your-redesigned-site.com  (or paste HTML)"><button class="btnp" onclick="resyncSite('${esc(s.name)}')">Re-sync &amp; keep edits</button></div>
+        <div id="rsout-${esc(s.name)}" style="display:none;margin-top:10px;font-size:12.5px;line-height:1.5"></div>
+      </div>
+    </div>`).join('');
+}
+async function resyncSite(name){
+  const val=$('#rs-'+name).value.trim(); if(!val){alert('Paste the new design URL or its HTML.');return;}
+  const isHtml=/<[a-z!]/i.test(val);
+  const out=$('#rsout-'+name); out.style.display='block'; out.style.color='var(--ink-3)'; out.textContent='Re-syncing & matching the client’s edits…';
+  const body={site:name}; if(isHtml)body.html=val; else body.url=val;
+  const r=await (await fetch('/api/resync',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify(body)})).json();
+  if(r.error){out.style.color='#ff8a7a';out.textContent='Error: '+r.error;return;}
+  out.style.color='#9be8ab';
+  out.innerHTML=`✓ Re-synced. Kept <b>${r.kept}</b> client edit${r.kept!==1?'s':''} on your new design.`+(r.dropped&&r.dropped.length?` <span style="color:#ffd9a8">· ${r.dropped.length} couldn’t be placed (slot removed) — review: ${r.dropped.map(d=>esc(d.value)).join(' · ')}</span>`:' Nothing lost.')+` <span style="color:var(--ink-3)">Saved as a version — roll back anytime.</span>`;
+  $('#rs-'+name).value='';
+  load();
+}
+async function ingestSite(){
+  const name=$('#newName').value.trim(), url=$('#newUrl').value.trim(), html=$('#newHtml').value.trim();
+  if(!name){alert('Give the site a short name (e.g. acme).');return;}
+  if(!url&&!html){alert('Paste a URL or some HTML.');return;}
+  const st=$('#ingestStat');st.textContent='Ingesting…';
+  const r=await (await fetch('/api/ingest',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({name,url:url||undefined,html:html||undefined})})).json();
+  if(r.error){st.textContent='';alert('Error: '+r.error);return;}
+  st.textContent=`✓ Captured ${r.fields} editable fields`;
+  $('#newName').value='';$('#newUrl').value='';$('#newHtml').value='';
+  load();
+}
+async function setPw(name){
+  const pw=$('#pw-'+name).value.trim();if(pw.length<4){alert('Password must be at least 4 characters.');return;}
+  const requireApproval=($('#ap-'+name)||{}).checked||false;
+  const clientName=prompt('Client name (shown on their login screen, optional):','')||'';
+  const r=await (await fetch('/api/admin/set-password',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({site:name,password:pw,clientName,requireApproval})})).json();
+  if(r.error){alert(r.error);return;}
+  alert('✓ Password set.\n\nSend your client:\n'+origin+r.loginLink+'\nPassword: '+pw);
+  load();
+}
+async function toggleApproval(name,on){
+  await fetch('/api/admin/approval',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({site:name,requireApproval:on})});
+}
+async function handoff(name){
+  const clientName=prompt('Client name (optional):','');if(clientName===null)return;
+  const r=await (await fetch('/api/admin/handoff',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({site:name,clientName})})).json();
+  if(r.error){alert(r.error);return;}
+  const box=$('#lk-'+name);box.classList.add('show');box.querySelector('input').value=origin+r.clientLink;load();
+}
+async function exportSite(name){
+  const r=await (await fetch('/api/admin/export',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({site:name})})).json();
+  alert(r.error?('Error: '+r.error):('Exported to:\n'+r.dir+'\n\n'+r.files.join(', ')+'\n\nReady to deploy (e.g. vercel deploy).'));
+}
+function copy(btn){const i=btn.parentElement.querySelector('input');i.select();document.execCommand('copy');btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1200);}
+async function loadAi(){
+  const r=await (await fetch('/api/admin/config',{headers:{'x-edit-key':keyEl.value}})).json();if(r.error)return;
+  $('#aiStatus').textContent=r.hasKey?('● connected · '+r.provider):'not connected — chat uses local matcher';$('#aiStatus').className='stat'+(r.hasKey?' ok':'');
+  selProv(r.provider&&r.provider!=='local'?r.provider:'anthropic');if(r.model)$('#aiModel').value=r.model;
+  $('#vcStatus').textContent=r.hasVercel?('● connected · '+(r.vercelAccount||'')):'not connected — publishes stay on the local preview';$('#vcStatus').className='stat'+(r.hasVercel?' ok':'');
+  if(r.vercelTeam)$('#vcTeam').value=r.vercelTeam;
+}
+$('#vcSave').onclick=async()=>{
+  $('#vcSave').textContent='Connecting…';
+  const r=await (await fetch('/api/admin/config',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({vercelToken:$('#vcToken').value,vercelTeam:$('#vcTeam').value||undefined})})).json();
+  $('#vcSave').textContent='Connect';
+  if(r.error){alert(r.error);return;}$('#vcToken').value='';loadAi();
+};
+async function saveVercel(name,deploy){
+  const project=document.querySelector('#vc-'+CSS.escape(name)).value.trim();
+  const r=await (await fetch('/api/admin/site-vercel',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({site:name,project,deploy})})).json();
+  if(r.error){alert(r.error);return;}
+  if(deploy){ if(r.deploy&&r.deploy.ok)alert('Deployed to Vercel:\n'+r.deploy.url); else if(r.deploy)alert('Deploy failed: '+r.deploy.error); else alert('Saved. Connect Vercel first to deploy.'); load(); }
+  else alert('Saved.');
+}
+$('#aiSave').onclick=async()=>{
+  const r=await (await fetch('/api/admin/config',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({provider,model:$('#aiModel').value||undefined,apiKey:$('#aiKey').value||undefined})})).json();
+  if(r.error){alert(r.error);return;}$('#aiKey').value='';$('#aiSave').textContent='Saved ✓';setTimeout(()=>$('#aiSave').textContent='Save key',1400);loadAi();
+};
+load();loadAi();
+</script>
+</body>
+</html>

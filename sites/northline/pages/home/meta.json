@@ -1,0 +1,107 @@
+{
+  "sections": [
+    "header",
+    "nav",
+    "#top",
+    "#process",
+    "#services",
+    "#work",
+    "#pricing",
+    "#faq",
+    "#contact",
+    "footer"
+  ],
+  "collections": [
+    {
+      "id": "col1",
+      "count": 8,
+      "itemTag": "section",
+      "label": "Page items"
+    },
+    {
+      "id": "col2",
+      "count": 5,
+      "itemTag": "a",
+      "label": "nav items"
+    },
+    {
+      "id": "col3",
+      "count": 8,
+      "itemTag": "a",
+      "label": "Page items"
+    },
+    {
+      "id": "col4",
+      "count": 2,
+      "itemTag": "a",
+      "label": "work items"
+    },
+    {
+      "id": "col5",
+      "count": 2,
+      "itemTag": "article",
+      "label": "pricing items"
+    },
+    {
+      "id": "col6",
+      "count": 5,
+      "itemTag": "li",
+      "label": "pricing items"
+    },
+    {
+      "id": "col7",
+      "count": 5,
+      "itemTag": "li",
+      "label": "pricing items"
+    },
+    {
+      "id": "col8",
+      "count": 5,
+      "itemTag": "li",
+      "label": "pricing items"
+    },
+    {
+      "id": "col9",
+      "count": 3,
+      "itemTag": "figure",
+      "label": "Page items"
+    },
+    {
+      "id": "col10",
+      "count": 6,
+      "itemTag": "details",
+      "label": "faq items"
+    },
+    {
+      "id": "col11",
+      "count": 4,
+      "itemTag": "div",
+      "label": "footer items"
+    },
+    {
+      "id": "col12",
+      "count": 4,
+      "itemTag": "li",
+      "label": "footer items"
+    },
+    {
+      "id": "col13",
+      "count": 4,
+      "itemTag": "li",
+      "label": "footer items"
+    },
+    {
+      "id": "col14",
+      "count": 4,
+      "itemTag": "li",
+      "label": "footer items"
+    },
+    {
+      "id": "col15",
+      "count": 4,
+      "itemTag": "li",
+      "label": "footer items"
+    }
+  ],
+  "ingestedFrom": null
+}

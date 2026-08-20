@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI CMS — Infrastructure Overview</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0a0a;--panel:#111113;--panel2:#17171a;--line:#26262b;--ink:#ededed;--ink2:#a0a0a8;--ink3:#6e6e76;
+    --blue:#0a72ef;--pink:#de1d8d;--red:#ff5b4f;--green:#27c93f;--amber:#f59e0b;--violet:#9d4edd;
+    --grad:linear-gradient(90deg,#0a72ef,#de1d8d 55%,#ff5b4f);
+  }
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:"Geist",system-ui,Arial;line-height:1.5}
+  .mono{font-family:"Geist Mono",ui-monospace,Menlo,monospace}
+  .wrap{max-width:1180px;margin:0 auto;padding:40px 28px 80px}
+  header{text-align:center;margin-bottom:8px}
+  header h1{font-size:34px;font-weight:600;letter-spacing:-.03em;margin:0}
+  header h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  header p{color:var(--ink2);font-size:15px;max-width:680px;margin:10px auto 0}
+
+  .lane{margin-top:34px}
+  .lane-h{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .lane-h .num{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:"Geist Mono",monospace;font-size:13px;font-weight:600;color:#fff;flex:0 0 30px}
+  .lane-h h2{font-size:17px;margin:0;letter-spacing:-.02em}
+  .lane-h .cap{color:var(--ink3);font-size:13px;font-family:"Geist Mono",monospace}
+  .l1 .num{background:var(--blue)} .l2 .num{background:var(--pink)} .l3 .num{background:var(--amber)} .l4 .num{background:var(--green)}
+
+  .row{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
+  .box{background:var(--panel);border-radius:13px;box-shadow:inset 0 0 0 1px var(--line);padding:16px 18px;min-width:150px;flex:1}
+  .box .t{font-size:14px;font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:7px}
+  .box .d{font-size:12.5px;color:var(--ink2);margin-top:4px}
+  .box .tag{font-family:"Geist Mono",monospace;font-size:10.5px;color:var(--ink3);margin-top:8px;display:block}
+  .box.accent{box-shadow:inset 0 0 0 1px rgba(10,114,239,.45)}
+  .box.guard{box-shadow:inset 0 0 0 1px rgba(255,91,79,.5);background:linear-gradient(180deg,rgba(255,91,79,.06),transparent)}
+  .box.live{box-shadow:inset 0 0 0 1px rgba(39,201,63,.5);background:linear-gradient(180deg,rgba(39,201,63,.06),transparent)}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--ink3);font-size:20px;flex:0 0 38px;align-self:center}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+  .actors{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:8px 0 4px}
+  .actor{background:var(--panel2);border-radius:13px;box-shadow:inset 0 0 0 1px var(--line);padding:16px 18px}
+  .actor .who{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+  .actor .role{font-size:12px;color:var(--ink2);margin-top:3px}
+  .actor .pill{font-family:"Geist Mono",monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:999px;margin-left:auto}
+  .pill.owner{background:rgba(10,114,239,.16);color:#9bc1ff} .pill.client{background:rgba(222,29,141,.16);color:#f3a6d4} .pill.visitor{background:rgba(39,201,63,.14);color:#9fe6ab}
+
+  .spine{margin-top:30px;background:linear-gradient(180deg,rgba(255,91,79,.07),transparent);border-radius:14px;box-shadow:inset 0 0 0 1px rgba(255,91,79,.35);padding:18px 22px}
+  .spine h3{margin:0 0 6px;font-size:15px;display:flex;align-items:center;gap:8px}
+  .spine p{margin:0;color:var(--ink2);font-size:13px}
+  .spine ul{margin:10px 0 0;padding-left:18px;color:var(--ink2);font-size:13px} .spine li{margin:3px 0}
+
+  .down{text-align:center;color:var(--ink3);font-size:22px;margin:6px 0}
+  .prod{margin-top:36px;border-radius:14px;background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+  .prod h3{margin:0;padding:15px 20px;font-size:14px;border-bottom:1px solid var(--line);letter-spacing:-.01em}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  td,th{padding:11px 20px;text-align:left;border-bottom:1px solid var(--line)} th{color:var(--ink3);font-weight:500;font-family:"Geist Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+  td:first-child{color:var(--ink2)} .yes{color:var(--green)}
+  tr:last-child td{border-bottom:0}
+  @media(max-width:760px){.row{flex-direction:column}.arrow{transform:rotate(90deg);flex-basis:24px}.actors{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>How the <em>AI CMS</em> connects</h1>
+    <p>Build any site → ingest it → hand the client a magic link → they edit the <b>live</b> site by clicking or chatting. Every change is safety-checked, versioned, and atomically deployed. The agency stays hands-off.</p>
+  </header>
+
+  <!-- ACTORS -->
+  <div class="actors">
+    <div class="actor"><div class="who">🛠️ Agency owner <span class="pill owner">owner</span></div><div class="role">Builds the site, ingests it, hands off the client link. Uses the <b>Agency Console</b> (/admin). Bills monthly.</div></div>
+    <div class="actor"><div class="who">👩‍💼 Client <span class="pill client">client</span></div><div class="role">Gets one magic-link editor. Edits only their site, can never touch code. Publishes + rolls back.</div></div>
+    <div class="actor"><div class="who">🌍 Visitors <span class="pill visitor">public</span></div><div class="role">See the fast static <b>live site</b> at /live/&lt;name&gt; (→ the client's custom domain).</div></div>
+  </div>
+
+  <!-- LANE 1: BUILD & INGEST -->
+  <div class="lane l1">
+    <div class="lane-h"><span class="num">1</span><h2>Build &amp; Ingest</h2><span class="cap">// any framework → frozen content model</span></div>
+    <div class="row">
+      <div class="box"><div class="t">🌐 Any website</div><div class="d">React · Vue · static HTML · AI builders. Rendered DOM is the input.</div><span class="tag">rocket-websites.vercel.app</span></div>
+      <div class="arrow">→</div>
+      <div class="box accent"><div class="t">🧲 autotag.mjs</div><div class="d">Auto-detects editable text, images &amp; repeatable <b>collections</b>. Zero per-site code.</div><span class="tag">POST /api/ingest</span></div>
+      <div class="arrow">→</div>
+      <div class="box"><div class="t">🧊 Content model</div><div class="d"><b>Frozen template</b> (structure+CSS locked) + content.json + schema + collections.</div><span class="tag">sites/&lt;name&gt;/</span></div>
+    </div>
+  </div>
+  <div class="down">↓</div>
+
+  <!-- LANE 2: EDIT -->
+  <div class="lane l2">
+    <div class="lane-h"><span class="num">2</span><h2>Edit</h2><span class="cap">// client, in plain English or by clicking</span></div>
+    <div class="row">
+      <div class="box"><div class="t">✎ Client editor</div><div class="d">Magic-link URL. Click any text → type. Or describe a change in chat.</div><span class="tag">/editor/?site=…&amp;key=…</span></div>
+      <div class="arrow">→</div>
+      <div class="box"><div class="t">🧠 Planner</div><div class="d">Turns plain English into a structured change-set. <b>Proposes only</b>.</div><span class="tag">Claude / local</span></div>
+      <div class="arrow">→</div>
+      <div class="box guard"><div class="t">🛡️ Guardian</div><div class="d">Deterministic gate: no code injection, structure can't break, sanitised. <b>Disposes</b>.</div><span class="tag">the write-safety boundary</span></div>
+      <div class="arrow">→</div>
+      <div class="box"><div class="t">📝 Draft</div><div class="d">Staged edits + structural changes. Previewed live. Nothing public yet.</div><span class="tag">pending · not live</span></div>
+    </div>
+  </div>
+  <div class="down">↓ <span class="mono" style="font-size:12px;color:var(--ink3)">Publish</span></div>
+
+  <!-- LANE 3: PUBLISH -->
+  <div class="lane l3">
+    <div class="lane-h"><span class="num">3</span><h2>Version &amp; Deploy</h2><span class="cap">// immutable history → atomic release</span></div>
+    <div class="row">
+      <div class="box"><div class="t">🕘 Version timeline</div><div class="d">Every publish = immutable full snapshot. Undo / redo / jump to any version.</div><span class="tag">versions/&lt;seq&gt;.json</span></div>
+      <div class="arrow">→</div>
+      <div class="box accent"><div class="t">📦 Stage release</div><div class="d">Render a static bundle (content inlined) keyed by version. Immutable.</div><span class="tag">releases/&lt;seq&gt;/index.html</span></div>
+      <div class="arrow">→</div>
+      <div class="box accent"><div class="t">⚡ Activate (atomic)</div><div class="d">Flip <b>one pointer</b>. Can't half-deploy. Rollback = flip back.</div><span class="tag">releases/current.json</span></div>
+    </div>
+  </div>
+  <div class="down">↓</div>
+
+  <!-- LANE 4: SERVE -->
+  <div class="lane l4">
+    <div class="lane-h"><span class="num">4</span><h2>Serve Live</h2><span class="cap">// fast static, SEO-safe, unbreakable</span></div>
+    <div class="row">
+      <div class="box live"><div class="t">🟢 Live release</div><div class="d">Read pointer → serve immutable file. No runtime render on the hot path.</div><span class="tag">GET /live/&lt;name&gt;</span></div>
+      <div class="arrow">→</div>
+      <div class="box"><div class="t">🔗 Custom domain</div><div class="d">Client CNAME → our edge, auto-TLS. <span class="mono" style="font-size:11px">(prod)</span></div><span class="tag">acme.com → site → release</span></div>
+      <div class="arrow">→</div>
+      <div class="box live"><div class="t">🌍 Visitors</div><div class="d">Sub-50ms, cacheable, content in the HTML.</div><span class="tag">+ ⤓ Export static (eject)</span></div>
+    </div>
+  </div>
+
+  <!-- SAFETY SPINE -->
+  <div class="spine">
+    <h3>🛡️ The safety spine — why a non-technical client can't break anything</h3>
+    <p>Three independent guarantees run through every lane:</p>
+    <ul>
+      <li><b>Frozen template</b> — the AI/client never writes HTML or CSS, only fills tagged content slots. Layout damage is structurally impossible.</li>
+      <li><b>Guardian</b> — every write (click, chat, AI) passes one deterministic validator: blocks injection, re-renders to prove all sections survive, caps blast radius.</li>
+      <li><b>Versioned + atomic deploy</b> — bad publish? One-click rollback re-points to a prior immutable release. The live site never half-changes.</li>
+    </ul>
+  </div>
+
+  <!-- PRODUCTION MAPPING -->
+  <div class="prod">
+    <h3>Local today → Production drop-in (one seam: the DeployAdapter)</h3>
+    <table>
+      <tr><th>Layer</th><th>Local (running now)</th><th>Production</th></tr>
+      <tr><td>CMS app + editor + console</td><td>Node/Express · :4321</td><td>Vercel</td></tr>
+      <tr><td>Control plane (sites, versions, tokens, audit)</td><td>JSON per site</td><td>Supabase Postgres + RLS</td></tr>
+      <tr><td>Release bundles</td><td><span class="mono">releases/&lt;seq&gt;/</span></td><td>Supabase Storage / R2</td></tr>
+      <tr><td>Live serving · custom domains · TLS</td><td><span class="mono">/live/:name</span></td><td>Cloudflare for SaaS (edge Worker)</td></tr>
+      <tr><td>Deploy seam</td><td class="yes">LocalAdapter ✓</td><td>CloudflareAdapter — same interface</td></tr>
+      <tr><td>Client magic links</td><td>shown in console</td><td>Resend / Postmark email</td></tr>
+      <tr><td>Monthly billing</td><td>—</td><td>Stripe subscription</td></tr>
+    </table>
+  </div>
+</div>
+</body>
+</html>

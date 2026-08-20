@@ -1,0 +1,23 @@
+node_modules/
+.env
+cms-config.json
+.DS_Store
+*.log
+
+# per-site runtime / sensitive data (regenerated, or private to a running instance)
+sites/**/access.json
+sites/**/draft.json
+sites/**/forms.json
+sites/**/review.json
+sites/**/audit.log
+sites/**/releases/
+sites/**/uploads/
+dist/
+rocket-src/
+content.snapshots/
+.claude/
+site/
+site-rocket/
+rocket-src
+/content.json
+/schema.json
