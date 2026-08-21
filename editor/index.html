@@ -360,7 +360,9 @@ function showLogin(me){
 async function init(){
   const me=await (await fetch('/api/me?site='+SITE+KQ())).json();
   if(me.locked){return showLogin(me);}   // site is password-protected and we don't have a valid key yet
-  planner=me.plannerMode; const isOwner=me.role==='owner'; IS_OWNER=isOwner; REQUIRE_APPROVAL=!!me.requireApproval;
+  // Branch on `staff`, not role==='owner' — admins and editors are team members
+  // and must get the team UI, never the approval-gated client one.
+  planner=me.plannerMode; const isOwner=me.staff!==undefined?!!me.staff:me.role==='owner'; IS_OWNER=isOwner; REQUIRE_APPROVAL=!!me.requireApproval;
   if(!isOwner){const needsApproval=REQUIRE_APPROVAL;$('#publishBtn').textContent=needsApproval?'Submit for review':'Publish';$('#publishBtn').title=needsApproval?'Send your changes to the agency to approve':'Publish your changes live';$('#auditBtn').style.display='none';}
   if(isOwner){
     const meta=await (await fetch('/api/sites')).json();
@@ -483,8 +485,11 @@ async function loadAudit(){
   const r=await (await fetch('/api/audit?site='+SITE+KQ())).json();
   const ICON={publish:'🚀',save:'💾',submit:'📤',approve:'✅',reject:'🚫',restore:'⏱',handoff:'🔑'};
   const p=$('#auditPanel');
-  const rows=(r.entries||[]).map(e=>{const who=e.role==='client'?'Client':'You';const when=e.at?new Date(e.at).toLocaleString():'';
-    let txt={publish:`${who} published`,save:`${who} saved a draft`,submit:'Client submitted for review',approve:'You approved & published',reject:'You rejected a review',restore:`${who} restored v${e.version}`,handoff:'Client link issued'}[e.action]||`${who} ${e.action}`;
+  const rows=(r.entries||[]).map(e=>{
+    // Name the person when the entry has one; older lines only carry a role.
+    const who=e.actor&&e.actor.name?esc(e.actor.name):(e.role==='client'?'Client':'You');
+    const when=e.at?new Date(e.at).toLocaleString():'';
+    let txt={publish:`${who} published`,save:`${who} saved a draft`,submit:`${who} submitted for review`,approve:`${who} approved & published`,reject:`${who} rejected a review`,restore:`${who} restored v${e.version}`,handoff:`${who} issued a client link`,'set-password':`${who} set a client password`,resync:`${who} re-synced the site`}[e.action]||`${who} ${e.action}`;
     if(e.summary)txt+=` — ${esc(e.summary)}`;if(e.note)txt+=` — “${esc(e.note)}”`;
     return `<div class="aitem"><span class="ic">${ICON[e.action]||'•'}</span><span class="w">${esc(txt)}<span class="t">${esc(when)}</span></span></div>`;}).join('');
   p.innerHTML='<h4>Activity log</h4>'+(rows?`<div class="alog">${rows}</div>`:'<div class="selnote">No activity yet.</div>');

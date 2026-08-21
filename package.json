@@ -6,7 +6,8 @@
   "scripts": {
     "build-model": "node build-model.mjs",
     "start": "node --env-file-if-exists=.env server.mjs",
-    "test:approval": "bash test/run.sh"
+    "test": "bash test/run.sh",
+    "team": "node scripts/team.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.40.0",

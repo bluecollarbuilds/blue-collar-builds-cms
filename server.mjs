@@ -15,7 +15,8 @@
 import express from 'express';
 import { load } from 'cheerio';
 import { readFileSync, writeFileSync as _wfs, mkdirSync, readdirSync, existsSync, rmSync as _rm } from 'node:fs';
-import { store, initStore, hydrateToFs } from './lib/store.mjs';
+import { store, initStore, hydrateToFs, PERSISTED_PREFIXES } from './lib/store.mjs';
+import { memberByKey, touchMember, atLeast, listMembers, publicMember, addMember, rotateKey, revokeMember, setRole, ROLES } from './lib/team.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { render } from './lib/render.mjs';
@@ -40,7 +41,10 @@ mkdirSync(SITES_DIR, { recursive: true });
    every write/delete under sites/ is mirrored to the DB in real time, and a fresh
    host hydrates from the DB on boot — so the data lives in Mongo, portable across hosts. */
 const relOf = (p) => { const s = String(p); if (!s.startsWith(ROOT)) return null; return s.slice(ROOT.length).replace(/^[/\\]/, '').replace(/\\/g, '/'); };
-const mirrorable = (rel) => rel && rel.startsWith('sites/') && !rel.includes('/releases/');
+// What gets pushed up to Mongo. PERSISTED_PREFIXES is shared with hydrateToFs()
+// so the write side and the read-back side can't drift apart — anything mirrored
+// up must come back down on a fresh host. Releases are rebuildable, so excluded.
+const mirrorable = (rel) => !!rel && PERSISTED_PREFIXES.some((p) => rel.startsWith(p)) && !rel.includes('/releases/');
 function mirrorWrite(p) {
   if (store.mode !== 'mongodb') return; const rel = relOf(p); if (!mirrorable(rel)) return;
   (async () => { try {
@@ -244,10 +248,17 @@ function restoreVersion(name, seq) {
   return true;
 }
 
-function auditLog(name, entry) {
+/* One line per action, per site. `actor` identifies the person — with team keys
+   in play, a bare role no longer says who did anything. Older lines predate the
+   actor field and carry only `role`; readers must tolerate both. */
+function auditLog(name, actor, entry) {
   const p = join(siteDir(name), 'audit.log');
-  writeFileSync(p, (existsSync(p) ? readFileSync(p, 'utf8') : '') + JSON.stringify({ at: new Date().toISOString(), ...entry }) + '\n');
+  const a = actor || {};
+  const line = { at: new Date().toISOString(), actor: { id: a.id || null, name: a.name || null, role: a.role || 'owner' }, role: a.role || 'owner', ...entry };
+  writeFileSync(p, (existsSync(p) ? readFileSync(p, 'utf8') : '') + JSON.stringify(line) + '\n');
 }
+/* The resolved actor, or a safe default for paths that run before/without auth. */
+const actorOf = (req) => req.actor || { id: null, name: null, role: req.role || 'owner' };
 
 // boot
 {
@@ -277,16 +288,62 @@ const get = (req) => req.query.site || req.body?.site;
 const pageOf = (req, s) => { const p = req.query.page || req.body?.page || s.home; return s.pages[p] || s.draft[p] ? p : s.home; };
 const need = (req, res) => { const s = sites[get(req)]; if (!s) res.status(404).json({ error: `Unknown site "${get(req)}"` }); return s; };
 const providedKey = (req) => req.query.key || req.headers['x-edit-key'] || req.body?.key;
-const isOwner = (req) => providedKey(req) === ADMIN_KEY;
-function authWrite(req, res, next) {
+
+const STAFF_ROLES = ['owner', 'admin', 'editor'];
+const isStaff = (role) => STAFF_ROLES.includes(role);
+
+/* Resolve the caller to an actor, first match winning:
+     1. ADMIN_KEY        → root owner. Break-glass: works even if the member
+                           store is empty, corrupt, or unreachable.
+     2. a member key     → that member, at their own role
+     3. the site's token → the client for this one site
+     4. anything else    → role 'none'
+   Memoised on `req` so a request crossing several guards only looks up once. */
+async function resolveActor(req) {
+  if (req.actor) return req.actor;
+  const key = providedKey(req);
+  let actor = { id: null, name: null, role: 'none' };
+  if (key && key === ADMIN_KEY) {
+    actor = { id: 'root', name: 'Owner key', role: 'owner' };
+  } else if (key) {
+    const m = await memberByKey(key);
+    if (m) {
+      actor = { id: m.id, name: m.name, role: m.role };
+      touchMember(m.id);                                  // fire-and-forget activity stamp
+    } else {
+      const s = sites[get(req)];
+      if (s?.access?.tokenHash && sha256(key) === s.access.tokenHash) {
+        actor = { id: null, name: s.access.clientName || 'Client', role: 'client' };
+      }
+    }
+  }
+  req.actor = actor;
+  req.role = actor.role;                                  // kept for existing call sites
+  return actor;
+}
+
+async function authWrite(req, res, next) {
   const s = sites[get(req)];
   if (!s) return next();
-  if (isOwner(req)) { req.role = 'owner'; return next(); }
-  if (!s.access?.tokenHash) { req.role = 'owner'; return next(); }
-  if (providedKey(req) && sha256(providedKey(req)) === s.access.tokenHash) { req.role = 'client'; return next(); }
+  const a = await resolveActor(req);
+  if (isStaff(a.role) || a.role === 'client') return next();
+  // A site that was never handed off has no gate — preserves the local/dev case
+  // where you edit straight after ingesting, before any access is configured.
+  if (!s.access?.tokenHash) { req.actor = { id: null, name: 'Local', role: 'owner' }; req.role = 'owner'; return next(); }
   return res.status(401).json({ error: 'This site requires a valid editor link.' });
 }
-function requireOwner(req, res, next) { if (isOwner(req)) return next(); return res.status(401).json({ error: 'Owner key required.' }); }
+
+/* Guard factory. owner ≥ admin ≥ editor, so requireRole('admin') admits owners. */
+function requireRole(needed) {
+  return async (req, res, next) => {
+    const a = await resolveActor(req);
+    if (atLeast(a.role, needed)) return next();
+    return res.status(401).json({ error: `This action needs ${needed} access or higher.` });
+  };
+}
+const requireOwner = requireRole('owner');   // credentials + team management
+const requireAdmin = requireRole('admin');   // client relationships
+const requireStaff = requireRole('editor');  // any team member
 
 function injectEditor(html, schema) {
   const richIds = Object.entries(schema).filter(([, d]) => d.rich).map(([id]) => id);
@@ -444,16 +501,24 @@ app.get('/api/sites', (_req, res) => res.json({
 }));
 
 // Who am I? owner (agency, sees all sites) vs client (one site, simple editor).
-app.get('/api/me', (req, res) => {
+app.get('/api/me', async (req, res) => {
   const s = sites[get(req)];
-  const key = providedKey(req);
-  let role = 'none';
-  if (key === ADMIN_KEY) role = 'owner';
-  else if (s && s.access?.tokenHash && key && sha256(key) === s.access.tokenHash) role = 'client';
-  else if (s && !s.access?.tokenHash) role = 'owner'; // not handed off yet → dev/owner
+  const a = await resolveActor(req);
+  let role = a.role;
+  if (role === 'none' && s && !s.access?.tokenHash) role = 'owner'; // not handed off yet → dev/owner
   // 'locked' = the site has a password set but no/wrong key was given → show the login gate
   const locked = role === 'none' && !!(s && s.access?.tokenHash);
-  res.json({ role, locked, hasAccess: !!(s && s.access?.tokenHash), requireApproval: !!(s && s.access?.requireApproval), clientName: s?.access?.clientName || null, site: get(req), plannerMode: plannerMode() });
+  res.json({
+    role,
+    // `staff` is what the editor should branch on, not role === 'owner' — admins
+    // and editors are team members too and must get the team UI, never the gated
+    // client one.
+    staff: isStaff(role),
+    canApprove: isStaff(role),
+    actor: { id: a.id, name: a.name, role },
+    locked, hasAccess: !!(s && s.access?.tokenHash), requireApproval: !!(s && s.access?.requireApproval),
+    clientName: s?.access?.clientName || null, site: get(req), plannerMode: plannerMode(),
+  });
 });
 
 app.get('/api/pages', (req, res) => {
@@ -461,7 +526,7 @@ app.get('/api/pages', (req, res) => {
   res.json({ order: s.order, home: s.home, pages: s.order.map((slug) => ({ slug, ...s.pagesMeta[slug], home: slug === s.home, dirty: !!s.draft[slug] })) });
 });
 
-app.post('/api/ingest', requireOwner, async (req, res) => {
+app.post('/api/ingest', requireStaff, async (req, res) => {
   const name = String(req.body?.name || '').replace(/[^a-z0-9_-]/gi, '');
   if (!name) return res.status(400).json({ error: 'Need a site name.' });
   let html = req.body?.html, baseUrl = req.body?.baseUrl;
@@ -482,7 +547,7 @@ app.post('/api/ingest', requireOwner, async (req, res) => {
 
 // Re-sync: re-ingest a REDESIGNED template for an existing site WITHOUT losing the client's edits.
 // Matches each edited slot to a slot in the new design by role + content, carries the value over.
-app.post('/api/resync', requireOwner, async (req, res) => {
+app.post('/api/resync', requireStaff, async (req, res) => {
   const name = String(req.body?.site || req.body?.name || '').replace(/[^a-z0-9_-]/gi, '');
   const s = sites[name]; if (!s) return res.status(404).json({ error: 'Unknown site.' });
   const slug = (req.body?.page && s.pages[req.body.page]) ? req.body.page : s.home;
@@ -500,7 +565,7 @@ app.post('/api/resync', requireOwner, async (req, res) => {
   s.pages[slug] = { templateHtml: tagged.templateHtml, schema: tagged.schema, content, sections: tagged.sections, collections: tagged.collections };
   writePage(name, slug, s.pages[slug]);
   saveVersion(name, `re-synced "${slug}" to a new design · kept ${carried.length} client edit${carried.length !== 1 ? 's' : ''}${dropped.length ? ` · ${dropped.length} to review` : ''}`);
-  auditLog(name, { role: 'owner', action: 'resync', page: slug, kept: carried.length, dropped: dropped.length });
+  auditLog(name, actorOf(req), { action: 'resync', page: slug, kept: carried.length, dropped: dropped.length });
   const vercel = await deployVercel(name);
   res.json({ ok: true, page: slug, kept: carried.length, dropped, vercel });
 });
@@ -579,7 +644,7 @@ function stageDraft(name, pendingByPage) {
   return { ok: true, saved };
 }
 // Commit staged draft + pending edits → one immutable version (does NOT deploy — caller does).
-function applyAndCommit(name, pendingByPage, role) {
+function applyAndCommit(name, pendingByPage, actor) {
   const s = sites[name];
   const touched = new Set([...Object.keys(s.draft), ...Object.keys(pendingByPage).filter((sl) => Object.keys(pendingByPage[sl] || {}).length)]);
   if (!touched.size) return { error: 'Nothing to publish.' };
@@ -606,7 +671,7 @@ function applyAndCommit(name, pendingByPage, role) {
   if (touched.size > 1) bits.push(`${touched.size} pages`);
   const summary = bits.join(' · ') || 'Published';
   saveVersion(name, summary);
-  auditLog(name, { role: role || 'owner', action: 'publish', version: s.head, summary });
+  auditLog(name, actor, { action: 'publish', version: s.head, summary });
   return { ok: true, summary, totalEdits, head: s.head };
 }
 // ─── approval gate (client edits wait for owner sign-off before going live) ───
@@ -622,7 +687,7 @@ app.post('/api/save', authWrite, (req, res) => {
   const r = stageDraft(get(req), pendingByPage);
   if (r.error) return res.status(400).json({ error: r.error, errors: r.errors });
   if (!r.saved && !hasDraft(s)) return res.status(400).json({ error: 'Nothing to save.' });
-  auditLog(get(req), { role: req.role || 'owner', action: 'save', saved: r.saved });
+  auditLog(get(req), actorOf(req), { action: 'save', saved: r.saved });
   res.json({ ok: true, saved: r.saved });
 });
 
@@ -636,7 +701,7 @@ function stageForReview(req, res, pendingByPage) {
   if (!hasDraft(s)) { res.status(400).json({ error: 'Nothing to submit.' }); return false; }
   const note = String(req.body?.note || '').slice(0, 500);
   setReview(name, { pending: true, by: req.role || 'client', at: new Date().toISOString(), note });
-  auditLog(name, { role: req.role || 'client', action: 'submit', note });
+  auditLog(name, actorOf(req), { action: 'submit', note });
   return true;
 }
 /* Is this request a client edit on a site whose owner must sign off first?
@@ -652,31 +717,48 @@ app.post('/api/submit-review', authWrite, (req, res) => {
   res.json({ ok: true });
 });
 app.get('/api/review', (req, res) => { const s = need(req, res); if (!s) return; res.json(getReview(get(req))); });
-app.post('/api/review/approve', requireOwner, async (req, res) => {
+app.post('/api/review/approve', requireStaff, async (req, res) => {
   const s = need(req, res); if (!s) return;
-  const r = applyAndCommit(get(req), {}, 'owner');   // the staged draft holds the client's changes
+  const r = applyAndCommit(get(req), {}, actorOf(req));   // the staged draft holds the client's changes
   if (r.error) return res.status(400).json({ error: r.error, errors: r.errors });
   clearReview(get(req));
-  auditLog(get(req), { role: 'owner', action: 'approve', version: s.head });
+  auditLog(get(req), actorOf(req), { action: 'approve', version: s.head });
   const vercel = await deployVercel(get(req));
   res.json({ ok: true, head: r.head, vercel });
 });
-app.post('/api/review/reject', requireOwner, (req, res) => {
+app.post('/api/review/reject', requireStaff, (req, res) => {
   const s = need(req, res); if (!s) return;
   const note = String(req.body?.note || '').slice(0, 500);
   if (req.body?.discard) clearDrafts(get(req));
   clearReview(get(req));
-  auditLog(get(req), { role: 'owner', action: 'reject', note });
+  auditLog(get(req), actorOf(req), { action: 'reject', note });
   res.json({ ok: true });
 });
 
 // Activity feed: the audit trail, newest first (owner only).
-app.get('/api/audit', requireOwner, (req, res) => {
+const readAudit = (name) => {
+  const f = join(siteDir(name), 'audit.log');
+  if (!existsSync(f)) return [];
+  return readFileSync(f, 'utf8').trim().split('\n').filter(Boolean)
+    .map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+};
+app.get('/api/audit', requireStaff, async (req, res) => {
   const s = need(req, res); if (!s) return;
-  const f = join(siteDir(get(req)), 'audit.log');
-  const lines = existsSync(f) ? readFileSync(f, 'utf8').trim().split('\n').filter(Boolean) : [];
-  const entries = lines.map((l) => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean).reverse().slice(0, 200);
-  res.json({ entries });
+  const a = await resolveActor(req);
+  let entries = readAudit(get(req)).reverse();
+  // Editors see their own actions only; admins and owners see everything.
+  if (!atLeast(a.role, 'admin')) entries = entries.filter((e) => e.actor?.id && e.actor.id === a.id);
+  res.json({ entries: entries.slice(0, 200), scope: atLeast(a.role, 'admin') ? 'all' : 'self' });
+});
+
+/* Cross-site activity — "what did my team do this week", which the per-site log
+   cannot answer. Admin and above, since it spans every client. */
+app.get('/api/activity', requireAdmin, (req, res) => {
+  const limit = Math.min(Number(req.query.limit) || 200, 1000);
+  const entries = [];
+  for (const name of Object.keys(sites)) for (const e of readAudit(name)) entries.push({ ...e, site: name });
+  entries.sort((x, y) => String(y.at).localeCompare(String(x.at)));
+  res.json({ entries: entries.slice(0, limit) });
 });
 
 // ─── forms: live-site submissions captured into an in-product inbox ───
@@ -711,7 +793,7 @@ app.post('/api/publish', authWrite, async (req, res) => {
     if (!stageForReview(req, res, pendingByPage)) return;
     return res.json({ ok: true, pendingReview: true });
   }
-  const r = applyAndCommit(get(req), pendingByPage, req.role);
+  const r = applyAndCommit(get(req), pendingByPage, actorOf(req));
   if (r.error) return res.status(400).json({ error: r.error, errors: r.errors });
   clearReview(get(req));                                   // an owner publish also clears any pending review
   const vercel = await deployVercel(get(req));             // push to the agency's Vercel if connected
@@ -724,7 +806,7 @@ app.post('/api/version/restore', authWrite, (req, res) => {
   const s = need(req, res); if (!s) return;
   const seq = Number(req.body?.seq);
   if (!restoreVersion(get(req), seq)) return res.status(400).json({ error: `No version ${seq}.` });
-  auditLog(get(req), { role: req.role || 'owner', action: 'restore', version: seq });
+  auditLog(get(req), actorOf(req), { action: 'restore', version: seq });
   res.json({ ok: true, head: s.head });
 });
 app.post('/api/rollback', authWrite, (req, res) => {
@@ -793,28 +875,28 @@ app.post('/api/pages/home', authWrite, (req, res) => {
 });
 
 /* ───── OWNER / ADMIN ───── */
-app.post('/api/admin/handoff', requireOwner, (req, res) => {
+app.post('/api/admin/handoff', requireAdmin, (req, res) => {
   const name = String(req.body?.site || '').replace(/[^a-z0-9_-]/gi, '');
   const s = sites[name]; if (!s) return res.status(404).json({ error: 'Unknown site.' });
   const token = randomBytes(24).toString('base64url');
   s.access = { ...(s.access || {}), tokenHash: sha256(token), clientName: req.body?.clientName || null, customDomain: req.body?.customDomain || null, createdAt: new Date().toISOString() };
   writeFileSync(join(siteDir(name), 'access.json'), JSON.stringify(s.access, null, 2));
-  auditLog(name, { role: 'owner', action: 'handoff', client: s.access.clientName });
+  auditLog(name, actorOf(req), { action: 'handoff', client: s.access.clientName });
   res.json({ ok: true, clientLink: `/editor/?site=${name}&key=${token}`, liveUrl: `/live/${name}` });
 });
 // Owner sets a chosen PASSWORD for a site — the client types it into a login gate (never needs to be in the URL).
-app.post('/api/admin/set-password', requireOwner, (req, res) => {
+app.post('/api/admin/set-password', requireAdmin, (req, res) => {
   const name = String(req.body?.site || '').replace(/[^a-z0-9_-]/gi, '');
   const s = sites[name]; if (!s) return res.status(404).json({ error: 'Unknown site.' });
   const pw = String(req.body?.password || '');
   if (pw.length < 4) return res.status(400).json({ error: 'Password must be at least 4 characters.' });
   s.access = { ...(s.access || {}), tokenHash: sha256(pw), clientName: req.body?.clientName || s.access?.clientName || null, requireApproval: req.body?.requireApproval != null ? !!req.body.requireApproval : !!s.access?.requireApproval, mode: 'password', createdAt: new Date().toISOString() };
   writeFileSync(join(siteDir(name), 'access.json'), JSON.stringify(s.access, null, 2));
-  auditLog(name, { role: 'owner', action: 'set-password', client: s.access.clientName });
+  auditLog(name, actorOf(req), { action: 'set-password', client: s.access.clientName });
   res.json({ ok: true, loginLink: `/editor/?site=${name}`, liveUrl: `/live/${name}` });
 });
 // Toggle whether this client's changes need owner approval before going live.
-app.post('/api/admin/approval', requireOwner, (req, res) => {
+app.post('/api/admin/approval', requireAdmin, (req, res) => {
   const name = String(req.body?.site || '').replace(/[^a-z0-9_-]/gi, '');
   const s = sites[name]; if (!s) return res.status(404).json({ error: 'Unknown site.' });
   if (!s.access) s.access = { createdAt: new Date().toISOString() };
@@ -863,8 +945,35 @@ app.post('/api/admin/config', requireOwner, async (req, res) => {
   res.json({ ok: true, provider: aiCreds().provider, vercelAccount: getConfig().vercelAccount || null });
 });
 
+/* ───── TEAM (owner only) ─────
+   A member's key is shown exactly once, at creation or rotation — only its hash
+   is kept, so it can never be read back, only replaced. */
+app.get('/api/admin/team', requireOwner, async (_req, res) => {
+  res.json({ members: (await listMembers()).map(publicMember), roles: ROLES });
+});
+app.post('/api/admin/team/add', requireOwner, async (req, res) => {
+  try {
+    const { member, key } = await addMember({ name: req.body?.name, email: req.body?.email, role: req.body?.role });
+    res.json({ ok: true, member, key, warning: 'Copy this key now — it cannot be shown again.' });
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+app.post('/api/admin/team/rotate', requireOwner, async (req, res) => {
+  try {
+    const { member, key } = await rotateKey(String(req.body?.id || ''));
+    res.json({ ok: true, member, key, warning: 'Copy this key now — it cannot be shown again.' });
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+app.post('/api/admin/team/revoke', requireOwner, async (req, res) => {
+  try { res.json({ ok: true, member: await revokeMember(String(req.body?.id || '')) }); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
+app.post('/api/admin/team/role', requireOwner, async (req, res) => {
+  try { res.json({ ok: true, member: await setRole(String(req.body?.id || ''), String(req.body?.role || '')) }); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
+
 // Link a site to a Vercel project + deploy on demand.
-app.post('/api/admin/site-vercel', requireOwner, async (req, res) => {
+app.post('/api/admin/site-vercel', requireAdmin, async (req, res) => {
   const s = sites[String(req.body?.site || '').replace(/[^a-z0-9_-]/gi, '')]; if (!s) return res.status(404).json({ error: 'Unknown site.' });
   const name = String(req.body.site).replace(/[^a-z0-9_-]/gi, '');
   s.vercel = { ...(s.vercel || {}), project: String(req.body?.project || '').trim() };
@@ -873,7 +982,7 @@ app.post('/api/admin/site-vercel', requireOwner, async (req, res) => {
   res.json({ ok: true, project: s.vercel.project });
 });
 
-app.post('/api/admin/export', requireOwner, (req, res) => {
+app.post('/api/admin/export', requireStaff, (req, res) => {
   const name = String(req.body?.site || '').replace(/[^a-z0-9_-]/gi, '');
   if (!sites[name]) return res.status(404).json({ error: 'Unknown site.' });
   try { const out = join(ROOT, 'dist', name); const r = deployer.exportTo(siteDir(name), out); res.json({ ok: true, dir: out, files: r.files }); }

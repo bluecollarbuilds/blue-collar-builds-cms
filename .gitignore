@@ -4,6 +4,9 @@ cms-config.json
 .DS_Store
 *.log
 
+# team members (key hashes + roles) — private to a running instance, lives in the DB
+team/
+
 # per-site runtime / sensitive data (regenerated, or private to a running instance)
 sites/**/access.json
 sites/**/draft.json
