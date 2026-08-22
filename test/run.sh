@@ -11,7 +11,7 @@ export PORT="${PORT:-4477}"
 export ADMIN_KEY="${ADMIN_KEY:-test-owner-key}"
 LOG=$(mktemp)
 
-scrub(){ rm -rf sites/acme sites/tmp1 sites/tmp2 sites/tmp3 team dist; }
+scrub(){ rm -rf sites/acme sites/tmp1 sites/tmp2 sites/tmp3 sites/x team dist; }
 cleanup(){ [ -n "${SRV:-}" ] && kill "$SRV" 2>/dev/null; scrub; rm -f "$LOG"; }
 trap cleanup EXIT
 
@@ -29,7 +29,7 @@ fi
 
 rc=0
 suites=("$@")
-[ ${#suites[@]} -eq 0 ] && suites=(approval-gate team-roles)
+[ ${#suites[@]} -eq 0 ] && suites=(approval-gate team-roles team-console)
 for suite in "${suites[@]}"; do
   echo; echo "############ $suite ############"
   bash "test/$suite.sh" || rc=1

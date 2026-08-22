@@ -12,6 +12,7 @@
   header{display:flex;align-items:center;gap:13px;padding:20px 30px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(10,10,12,.8);backdrop-filter:blur(12px);z-index:10}
   header .logo{width:24px;height:24px} header h1{font-size:17px;font-weight:600;margin:0;letter-spacing:-.02em} header .tag{font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.09em;border-left:1px solid var(--line);padding-left:13px}
   header .sp{flex:1} .keybox{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--ink-3)} .keybox input{background:var(--panel-2);border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:8px;color:var(--ink);padding:8px 11px;font:inherit;font-size:12px;width:150px}
+  .whoami{font-size:11.5px;color:var(--ink-3)} .whoami b{color:var(--ink-2)} .rolepill{font-size:10px;padding:2px 7px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em;background:var(--panel-2);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink-2);margin-left:5px}.rolepill.owner{color:#9bc1ff;box-shadow:inset 0 0 0 1px rgba(10,114,239,.4)}
   .wrap{max-width:920px;margin:0 auto;padding:30px}
   .card{background:var(--panel);border-radius:16px;box-shadow:inset 0 0 0 1px var(--line);padding:22px 24px;margin-bottom:18px}
   .card h2{font-size:16px;margin:0 0 4px;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
@@ -36,17 +37,36 @@
   .handoff .lk{display:none} .handoff .lk.show{display:block} .handoff .lkrow{display:flex;gap:8px;margin-top:9px} .handoff input{flex:1;background:#000;border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:8px;color:#9bc1ff;padding:9px 11px;font-family:"Geist Mono",monospace;font-size:12px}
   .appr{display:flex;align-items:center;gap:9px;margin-top:11px;font-size:12.5px;color:var(--ink-2);cursor:pointer}.appr input{flex:0 0 auto;width:16px;height:16px;accent-color:var(--blue);cursor:pointer}.appr span{line-height:1.4}
   .empty{color:var(--ink-3);font-size:14px;padding:34px;text-align:center}
+  /* team */
+  .tmadd{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .tmadd input{background:var(--panel-2);border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:9px;color:var(--ink);padding:10px 12px;font:inherit;font-size:13px}
+  .tmadd input#tmName{flex:1;min-width:150px} .tmadd input#tmEmail{flex:0 0 210px}
+  .tmadd select{background:var(--panel-2);border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:9px;color:var(--ink);padding:10px 12px;font:inherit;font-size:13px}
+  .tmrow{display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:12px;background:var(--panel-2);box-shadow:inset 0 0 0 1px var(--line);margin-bottom:8px}
+  .tmrow .who{flex:1;min-width:0} .tmrow .nm{font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px} .tmrow .em{font-size:12px;color:var(--ink-3);margin-top:2px}
+  .tmrow .seen{font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+  .tmrow.revoked{opacity:.55}
+  .tmrow select{background:var(--panel-3);border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:8px;color:var(--ink);padding:6px 9px;font:inherit;font-size:12px}
+  .tmrow .gh-sm{background:var(--panel-3);color:var(--ink-2);box-shadow:inset 0 0 0 1px var(--line);border:0;border-radius:8px;padding:6px 11px;font:500 12px 'Geist';cursor:pointer}.tmrow .gh-sm:hover{box-shadow:inset 0 0 0 1px #3a3a44}
+  .tmrow .gh-danger{color:#ff9c8f}
+  .keyreveal{display:none;background:#0e0e12;border-radius:12px;box-shadow:inset 0 0 0 1px rgba(39,201,63,.35);padding:15px 17px;margin-bottom:16px}
+  .keyreveal.show{display:block}
+  .keyreveal .kt{font-size:13px;font-weight:600;margin-bottom:3px;color:#9be8ab} .keyreveal p{font-size:12.5px;color:var(--ink-3);margin:0 0 10px;line-height:1.5}
+  .keyreveal .lkrow{display:flex;gap:8px} .keyreveal input{flex:1;background:#000;border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:8px;color:#9be8ab;padding:9px 11px;font-family:"Geist Mono",monospace;font-size:12px}
+  .ownerlock{color:var(--ink-3);font-size:13.5px;padding:18px 4px}
+  .ownerOnly{display:none}
 </style>
 </head>
 <body>
   <header>
     <svg class="logo" viewBox="0 0 24 24" fill="none"><path d="M3 20 L12 4 L21 20 Z" fill="#f0f0f2"/><path d="M12 4 L21 20" stroke="#0a0a0c" stroke-width="1.5"/></svg>
     <h1>Agency Console</h1><span class="tag">AI CMS</span><span class="sp"></span>
-    <div class="keybox">owner key <input id="key" placeholder="owner-dev"></div>
+    <span class="whoami" id="whoami"></span>
+    <div class="keybox">your key <input id="key" placeholder="owner-dev"></div>
   </header>
   <div class="wrap">
     <!-- AI key -->
-    <div class="card">
+    <div class="card ownerOnly" id="aiCard">
       <h2>🤖 AI editing <span class="stat" id="aiStatus">…</span></h2>
       <p class="sub">Powers the “describe a change” chat. Click-to-edit works without it. Your key is stored on your server and never shown again.</p>
       <div class="provs" id="provs">
@@ -60,7 +80,7 @@
       </div>
     </div>
     <!-- Vercel -->
-    <div class="card">
+    <div class="card ownerOnly" id="vcCard">
       <h2>▲ Vercel hosting <span class="stat" id="vcStatus">…</span></h2>
       <p class="sub">Connect your Vercel once. Then every client <b>Publish</b> auto-deploys to that client's live Vercel site — no Git, no rebuilds. Create a token at <span class="mono">vercel.com/account/tokens</span>.</p>
       <div class="row">
@@ -68,6 +88,27 @@
         <div class="fld" style="flex:0 0 210px"><label>Team ID <span style="color:var(--ink-3)">(optional)</span></label><input id="vcTeam" placeholder="team_…  or leave blank"></div>
         <button class="btnp" id="vcSave" style="align-self:flex-end">Connect</button>
       </div>
+    </div>
+    <!-- Team -->
+    <div class="card ownerOnly" id="teamCard">
+      <h2>👥 Team</h2>
+      <p class="sub">Give each person on your team their own key instead of sharing this one. <b>Editor</b> — devs: edit, publish, ingest, approve client submissions. <b>Admin</b> — PM: the above, plus client links, passwords, the approval toggle, and linking a site's Vercel project. <b>Owner</b>: everything, including this panel and the credentials above.</p>
+      <div class="tmadd">
+        <input id="tmName" placeholder="Name">
+        <input id="tmEmail" placeholder="Email (optional)">
+        <select id="tmRole">
+          <option value="editor">Editor</option>
+          <option value="admin">Admin</option>
+          <option value="owner">Owner</option>
+        </select>
+        <button class="btnp" onclick="addMember()">Add member</button>
+      </div>
+      <div class="keyreveal" id="keyReveal">
+        <div class="kt">✓ Key created — copy it now</div>
+        <p>This is shown once and can't be recovered, only rotated. Send it to them privately; they sign in with it at this same console URL.</p>
+        <div class="lkrow"><input id="keyRevealVal" readonly><button class="ghost" onclick="copy(this)">Copy key</button></div>
+      </div>
+      <div id="teamList"><div class="empty">Loading…</div></div>
     </div>
     <p class="sub" style="margin:26px 4px 14px;font-size:14px;color:var(--ink-2)">Every website you manage — add one, and if it belongs to a client, set a password to hand it over.</p>
     <div class="card" style="margin-bottom:16px">
@@ -192,7 +233,82 @@ $('#aiSave').onclick=async()=>{
   const r=await (await fetch('/api/admin/config',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({provider,model:$('#aiModel').value||undefined,apiKey:$('#aiKey').value||undefined})})).json();
   if(r.error){alert(r.error);return;}$('#aiKey').value='';$('#aiSave').textContent='Saved ✓';setTimeout(()=>$('#aiSave').textContent='Save key',1400);loadAi();
 };
-load();loadAi();
+
+/* ── whoami / role gating ──
+   The console is shared by the whole team now, not just the owner. Cards for
+   credentials (AI key, Vercel token) and team management only render for an
+   owner key — an admin/editor key still drives everything site-level below. */
+let ME=null;
+async function loadMe(){
+  const r=await (await fetch('/api/me',{headers:{'x-edit-key':keyEl.value}})).json();
+  ME=r;
+  const w=$('#whoami');
+  w.innerHTML=(r.role==='none')?'not signed in'
+    :`signed in as <b>${esc((r.actor&&r.actor.name)||(r.role==='owner'?'Owner key':r.role))}</b><span class="rolepill${r.role==='owner'?' owner':''}">${esc(r.role)}</span>`;
+  const isOwner=r.role==='owner';
+  // .ownerOnly is hidden by a stylesheet rule, not an inline style, so an empty
+  // string here would not override it — it has to be an explicit value.
+  document.querySelectorAll('.ownerOnly').forEach(el=>el.style.display=isOwner?'block':'none');
+  return r;
+}
+
+/* ── team ── */
+async function loadTeam(){
+  if(!ME||ME.role!=='owner')return;
+  const r=await (await fetch('/api/admin/team',{headers:{'x-edit-key':keyEl.value}})).json();
+  const list=$('#teamList');
+  if(r.error){list.innerHTML=`<div class="empty">${esc(r.error)}</div>`;return;}
+  if(!r.members.length){list.innerHTML='<div class="empty">No team members yet — everyone shares your owner key until you add some.</div>';return;}
+  list.innerHTML=r.members.map(m=>`
+    <div class="tmrow ${m.revokedAt?'revoked':''}">
+      <div class="who">
+        <div class="nm">${esc(m.name)}${m.revokedAt?'<span class="rolepill">revoked</span>':''}</div>
+        <div class="em">${esc(m.email||'no email on file')}</div>
+      </div>
+      <select onchange="changeRole('${esc(m.id)}',this.value)" ${m.revokedAt?'disabled':''}>
+        <option value="editor" ${m.role==='editor'?'selected':''}>Editor</option>
+        <option value="admin" ${m.role==='admin'?'selected':''}>Admin</option>
+        <option value="owner" ${m.role==='owner'?'selected':''}>Owner</option>
+      </select>
+      <span class="seen">${m.lastSeenAt?'last seen '+new Date(m.lastSeenAt).toLocaleDateString():'never signed in'}</span>
+      ${m.revokedAt
+        ? `<button class="gh-sm" onclick="rotateMember('${esc(m.id)}','${esc(m.name)}')">Reissue key</button>`
+        : `<button class="gh-sm" onclick="rotateMember('${esc(m.id)}','${esc(m.name)}')">Rotate key</button><button class="gh-sm gh-danger" onclick="revokeMemberUi('${esc(m.id)}','${esc(m.name)}')">Revoke</button>`}
+    </div>`).join('');
+}
+function showKey(key){
+  $('#keyRevealVal').value=key;
+  $('#keyReveal').classList.add('show');
+  $('#keyReveal').scrollIntoView({behavior:'smooth',block:'center'});
+}
+async function addMember(){
+  const name=$('#tmName').value.trim(), email=$('#tmEmail').value.trim(), role=$('#tmRole').value;
+  if(!name){alert('Give them a name.');return;}
+  const r=await (await fetch('/api/admin/team/add',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({name,email:email||undefined,role})})).json();
+  if(r.error){alert(r.error);return;}
+  $('#tmName').value='';$('#tmEmail').value='';$('#tmRole').value='editor';
+  showKey(r.key);loadTeam();
+}
+async function rotateMember(id,name){
+  if(!confirm(`Issue a new key for ${name}? Their current key stops working immediately.`))return;
+  const r=await (await fetch('/api/admin/team/rotate',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({id})})).json();
+  if(r.error){alert(r.error);return;}
+  showKey(r.key);loadTeam();
+}
+async function revokeMemberUi(id,name){
+  if(!confirm(`Revoke ${name}'s access? Their key stops working immediately — you can reissue a new one later.`))return;
+  const r=await (await fetch('/api/admin/team/revoke',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({id})})).json();
+  if(r.error){alert(r.error);return;}
+  loadTeam();
+}
+async function changeRole(id,role){
+  const r=await (await fetch('/api/admin/team/role',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({id,role})})).json();
+  if(r.error){alert(r.error);loadTeam();}
+}
+
+async function boot(){ await loadMe(); load(); loadAi(); loadTeam(); }
+keyEl.addEventListener('change', boot);
+boot();
 </script>
 </body>
 </html>
