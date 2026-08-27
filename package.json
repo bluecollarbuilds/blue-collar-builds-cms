@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "type": "module",
   "description": "AI-native CMS \u2014 clients edit their site by chatting; the AI never writes HTML, only safe ops against a locked content model.",
+  "engines": {
+    "node": ">=20.12"
+  },
   "scripts": {
     "build-model": "node build-model.mjs",
     "start": "node --env-file-if-exists=.env server.mjs",
