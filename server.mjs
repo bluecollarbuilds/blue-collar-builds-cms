@@ -345,6 +345,9 @@ app.use('/api/forms', (req, res, next) => {
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
+// Served so the console can zip a picked folder in the browser — that way you
+// choose the dist/ folder itself and never have to make a .zip by hand.
+app.use('/vendor/fflate.js', express.static(join(ROOT, 'node_modules/fflate/esm/browser.js')));
 app.use('/assets', express.static(join(ROOT, 'site/assets')));
 app.use('/editor', express.static(join(ROOT, 'editor')));
 app.use('/admin', express.static(join(ROOT, 'admin')));

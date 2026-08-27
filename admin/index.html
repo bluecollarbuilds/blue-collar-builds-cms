@@ -58,7 +58,12 @@
   .bundlebox .bh{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
   .rec{font-size:10px;text-transform:uppercase;letter-spacing:.05em;background:rgba(39,201,63,.14);color:#9be8ab;padding:2px 8px;border-radius:999px}
   .warn{font-size:10px;text-transform:uppercase;letter-spacing:.05em;background:rgba(255,91,79,.12);color:#ff9c8f;padding:2px 8px;border-radius:999px}
-  .bundlebox input[type=file]{flex:1;color:var(--ink-2);font:inherit;font-size:12.5px}
+  .pickrow{display:flex;align-items:center;gap:11px;flex-wrap:wrap;margin-top:9px}
+  .pickrow .sp{flex:1} .pickrow .or{font-size:12px;color:var(--ink-3)}
+  .pick{cursor:pointer} .pick span{display:inline-flex;align-items:center;gap:7px;background:var(--panel-2);box-shadow:inset 0 0 0 1px rgba(39,201,63,.35);border-radius:9px;padding:9px 14px;font:500 13px 'Geist';color:var(--ink)}
+  .pick:hover span{box-shadow:inset 0 0 0 1px rgba(39,201,63,.6)}
+  .pick.alt span{box-shadow:inset 0 0 0 1px var(--line);color:var(--ink-2);font-size:12.5px}
+  .pick.on span{background:rgba(39,201,63,.1)}
   .bstat{font-size:12.5px;color:var(--ink-3);margin-top:9px;line-height:1.5}
   .urlfallback{background:#0e0e12;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line);padding:15px 17px;opacity:.85}
   .urlfallback .bh{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
@@ -136,7 +141,15 @@
       <p class="sub" style="margin:0 0 13px;font-size:13px;color:var(--ink-3)"><b>Upload the built folder</b> — this is the reliable way. Run your build (Astro: <span class="mono">npm run build</span>), zip the <span class="mono">dist/</span> folder, and drop it below. Every file ships exactly as built, so scripts, menus and responsive images keep working. Capturing from a live URL is a fallback: it cannot keep JavaScript, so anything interactive breaks.</p>
       <div class="bundlebox">
         <div class="bh">📦 From the built folder <span class="rec">recommended</span></div>
-        <div class="lkrow"><input id="bName" placeholder="site name (e.g. acme)" style="flex:0 0 200px"><input type="file" id="bZip" accept=".zip,application/zip"><button class="btnp" onclick="ingestBundle()">Upload &amp; ingest</button></div>
+        <div class="lkrow"><input id="bName" placeholder="site name (e.g. acme)" style="flex:0 0 200px"></div>
+        <div class="pickrow">
+          <label class="pick"><input type="file" id="bDir" webkitdirectory directory multiple hidden><span>📁 Choose your <b>dist</b> folder</span></label>
+          <span class="or">or</span>
+          <label class="pick alt"><input type="file" id="bZip" accept=".zip,application/zip" hidden><span>a .zip of it</span></label>
+          <span class="sp"></span>
+          <button class="btnp" id="bGo" onclick="ingestBundle()" disabled>Upload &amp; ingest</button>
+        </div>
+        <div id="bPicked" class="bstat"></div>
         <div id="bStat" class="bstat"></div>
       </div>
       <div class="urlfallback">
@@ -256,14 +269,49 @@ function selectedUrls(){
     .filter(c=>c.checked).map(c=>discovered[+c.dataset.pi].url);
 }
 
+/* Picking the folder is the point — the browser zips it here so nobody has to
+   make a .zip by hand. A ready-made .zip is still accepted. */
+let pickedDir=null, pickedZip=null;
+function onPick(){
+  const d=$('#bDir').files, z=$('#bZip').files[0];
+  pickedDir=(d&&d.length)?d:null; pickedZip=z||null;
+  $('#bDir').closest('.pick').classList.toggle('on',!!pickedDir);
+  $('#bZip').closest('.pick').classList.toggle('on',!!pickedZip&&!pickedDir);
+  const p=$('#bPicked');
+  if(pickedDir){
+    const bytes=[...pickedDir].reduce((n,f)=>n+f.size,0);
+    const root=(pickedDir[0].webkitRelativePath||'').split('/')[0];
+    const html=[...pickedDir].filter(f=>/\.html?$/i.test(f.name)).length;
+    p.style.color=html?'var(--ink-2)':'#ffd9a8';
+    p.innerHTML=`📁 <b>${esc(root||'folder')}</b> — ${pickedDir.length} files · ${html} page${html!==1?'s':''} · ${(bytes/1048576).toFixed(1)} MB`
+      +(html?'':'<br>No .html files in there — pick the <b>built output</b> folder (dist), not the project root.');
+  } else if(pickedZip){ p.style.color='var(--ink-2)'; p.textContent=`🗜 ${pickedZip.name} — ${(pickedZip.size/1048576).toFixed(1)} MB`; }
+  else p.textContent='';
+  $('#bGo').disabled=!(pickedDir||pickedZip);
+}
+async function zipPickedFolder(files){
+  const { zipSync } = await import('/vendor/fflate.js');
+  const entries={};
+  for(const f of files){
+    // Drop the wrapper directory the picker includes, and skip OS noise.
+    const rel=(f.webkitRelativePath||f.name).split('/').slice(1).join('/');
+    if(!rel||/(^|\/)(\.DS_Store|Thumbs\.db)$/i.test(rel))continue;
+    entries[rel]=new Uint8Array(await f.arrayBuffer());
+  }
+  return new Blob([zipSync(entries)],{type:'application/zip'});
+}
 async function ingestBundle(){
-  const name=$('#bName').value.trim(), f=$('#bZip').files[0];
+  const name=$('#bName').value.trim();
   if(!name){alert('Give the site a short name (e.g. acme).');return;}
-  if(!f){alert('Choose the zipped build folder (dist.zip).');return;}
+  if(!pickedDir&&!pickedZip){alert('Choose your built dist folder (or a .zip of it).');return;}
   const st=$('#bStat');
+  st.style.color='var(--ink-3)';
+  let f;
+  if(pickedDir){ st.textContent=`Packaging ${pickedDir.length} files…`; f=await zipPickedFolder(pickedDir); }
+  else f=pickedZip;
   const send=async(replace)=>await (await fetch(`/api/ingest-bundle?name=${encodeURIComponent(name)}${replace?'&replace=1':''}`,
     {method:'POST',headers:{'Content-Type':'application/zip','x-edit-key':keyEl.value},body:f})).json();
-  st.style.color='var(--ink-3)';st.textContent=`Uploading ${(f.size/1048576).toFixed(1)} MB…`;
+  st.textContent=`Uploading ${(f.size/1048576).toFixed(1)} MB…`;
   let r=await send(false);
   if(r.exists){
     if(!confirm(`"${name}" already exists.\n\nRebuilding it from this bundle REPLACES its pages and version history. The client's password and Vercel link are kept.\n\nContinue?`)){st.textContent='';return;}
@@ -272,7 +320,9 @@ async function ingestBundle(){
   if(r.error){st.style.color='#ff8a7a';st.textContent='Error: '+r.error;return;}
   st.style.color='#9be8ab';
   st.innerHTML=`✓ <b>${r.pages}</b> page${r.pages!==1?'s':''} · <b>${r.assets}</b> asset${r.assets!==1?'s':''} · ${r.fields} editable fields · ${(r.bytes/1048576).toFixed(1)} MB<br><span style="color:var(--ink-3)">Scripts and images kept exactly as built.</span>`;
-  $('#bName').value='';$('#bZip').value='';
+  $('#bName').value='';$('#bZip').value='';$('#bDir').value='';
+  pickedDir=pickedZip=null;$('#bPicked').textContent='';$('#bGo').disabled=true;
+  document.querySelectorAll('.pick').forEach(el=>el.classList.remove('on'));
   load();
 }
 async function ingestSite(){
@@ -438,6 +488,7 @@ async function changeRole(id,role){
   if(r.error){alert(r.error);loadTeam();}
 }
 
+$('#bDir').onchange=onPick; $('#bZip').onchange=onPick;
 async function boot(){ await loadMe(); load(); loadAi(); loadTeam(); }
 keyEl.addEventListener('change', boot);
 boot();
