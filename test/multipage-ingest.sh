@@ -110,6 +110,32 @@ chk "editor can capture"        "$(code "$B/api/pages/add?key=$EK&site=multi" "$
 chk "editor can discover"       "$(code "$B/api/discover?key=$EK" "$(printf '{"url":"%s"}' "$F")")" "200"
 j "$B/api/admin/set-password?key=$OK" '{"site":"multi","password":"clientpw123"}' > /dev/null
 chk "client CANNOT discover"    "$(code "$B/api/discover?key=clientpw123" "$(printf '{"url":"%s"}' "$F")")" "401"
+chk "client CANNOT capture from a URL" "$(code "$B/api/pages/add?site=multi&key=clientpw123" "$(printf '{"url":"%s/about"}' "$F")")" "401"
+chk "client can still add a blank page" "$(code "$B/api/pages/add?site=multi&key=clientpw123" '{"title":"Client Page","template":"blank"}')" "200"
+
+echo
+echo "── the home page is the anchor: a dead FIRST url fails the ingest ──"
+DEAD=$(j "$B/api/ingest?key=$OK" "$(printf '{"name":"deadhome","urls":["%s/nope-404","%s/about"]}' "$F" "$F")")
+chk "ingest refused"            "$(printf '%s' "$DEAD" | py '"yes" if d.get("error") and "home page" in d["error"] else "no"')" "yes"
+chk "no half-site left behind"  "$(curl -s -o /dev/null -w '%{http_code}' "$B/api/pages?site=deadhome&key=$OK")" "404"
+
+echo
+echo "── replacing a site keeps its client access and Vercel link ──"
+j "$B/api/admin/site-vercel?key=$OK" '{"site":"multi","project":"multi-vercel-proj"}' > /dev/null
+REP=$(j "$B/api/ingest?key=$OK" "$(printf '{"name":"multi","replace":true,"urls":["%s/","%s/about"]}' "$F" "$F")")
+chk "replace succeeded"         "$(printf '%s' "$REP" | py 'd.get("ok")')" "True"
+INFO=$(curl -s "$B/api/sites?key=$OK" | py 'json.dumps(next(x for x in d["sites"] if x["name"]=="multi"))')
+chk "client access survived"    "$(printf '%s' "$INFO" | py 'd["handedOff"]')" "True"
+chk "vercel link survived"      "$(printf '%s' "$INFO" | py 'd["vercelProject"]')" "multi-vercel-proj"
+chk "client key still works"    "$(code "$B/api/save?site=multi&key=clientpw123" '{"pages":{}}')" "400"   # 400 'nothing to save' = authenticated
+
+echo
+echo "── offboarding: sites can be removed, carefully ──"
+chk "editor cannot delete"      "$(code "$B/api/admin/site-delete?key=$EK" '{"site":"multi","confirm":"multi"}')" "401"
+chk "wrong confirmation refused" "$(code "$B/api/admin/site-delete?key=$OK" '{"site":"multi","confirm":"mulit"}')" "400"
+chk "correct confirmation deletes" "$(code "$B/api/admin/site-delete?key=$OK" '{"site":"multi","confirm":"multi"}')" "200"
+chk "the site is gone"          "$(curl -s -o /dev/null -w '%{http_code}' "$B/api/pages?site=multi&key=$OK")" "404"
+chk "unknown site delete is 404" "$(code "$B/api/admin/site-delete?key=$OK" '{"site":"multi","confirm":"multi"}')" "404"
 
 echo
 echo "════ $pass passed, $fail failed ════"

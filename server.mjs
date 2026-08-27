@@ -29,10 +29,17 @@ import { applyStructure } from './lib/structure.mjs';
 import { deployer, vercelDeploy, vercelWhoami } from './lib/deploy.mjs';
 import { effectiveSeo, SEO_FIELDS, STYLE_SPEC, sectionList } from './lib/fields.mjs';
 import { getConfig, setConfig, aiCreds } from './lib/config.mjs';
-import { randomBytes, createHash } from 'node:crypto';
+import { randomBytes, createHash, timingSafeEqual } from 'node:crypto';
 
 const ADMIN_KEY = process.env.ADMIN_KEY || 'owner-dev';
+/* Dev mode = nobody set a real key. Some conveniences (editing a site that has
+   no access configured yet, without any key at all) only make sense on a laptop;
+   on a deployed instance they would make every not-yet-handed-off site
+   world-editable, so they are gated on this. */
+const DEV_MODE = ADMIN_KEY === 'owner-dev';
 const sha256 = (s) => createHash('sha256').update(String(s)).digest('hex');
+// Constant-time comparison — a plain === leaks match length/prefix via timing.
+const keyEquals = (a, b) => timingSafeEqual(createHash('sha256').update(String(a)).digest(), createHash('sha256').update(String(b)).digest());
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const SITES_DIR = join(ROOT, 'sites');
 mkdirSync(SITES_DIR, { recursive: true });
@@ -305,7 +312,10 @@ const actorOf = (req) => req.actor || { id: null, name: null, role: req.role || 
 /* ───────────────────────────── app ───────────────────────────── */
 const app = express();
 app.use(express.json({ limit: '16mb' }));
-app.use((req, res, next) => {
+app.set('trust proxy', 1);                    // behind the host's proxy, req.ip = the visitor
+// CORS is open ONLY for form capture — live client sites post here from their own
+// domains. Nothing else is meant to be called cross-origin, so nothing else gets it.
+app.use('/api/forms', (req, res, next) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Headers', 'Content-Type');
   res.set('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
@@ -324,6 +334,29 @@ const providedKey = (req) => req.query.key || req.headers['x-edit-key'] || req.b
 const STAFF_ROLES = ['owner', 'admin', 'editor'];
 const isStaff = (role) => STAFF_ROLES.includes(role);
 
+/* ── brute-force limiting ──
+   Client passwords can be short, so unlimited guessing is not acceptable. Only
+   FAILED attempts count (a key was presented and matched nothing); once an IP is
+   over the limit, every keyed request from it is refused until the window rolls,
+   valid keys included — that lockout is the point of the brake. */
+const AUTH_WINDOW_MS = 10 * 60 * 1000;
+const AUTH_MAX_FAILS = Number(process.env.CMS_AUTH_RATE_LIMIT || 60);
+const authFails = new Map();                       // ip -> { n, at }
+function recordAuthFail(ip) {
+  if (authFails.size > 5000) { const cut = Date.now() - AUTH_WINDOW_MS; for (const [k, v] of authFails) if (v.at < cut) authFails.delete(k); }
+  const e = authFails.get(ip);
+  if (!e || Date.now() - e.at > AUTH_WINDOW_MS) authFails.set(ip, { n: 1, at: Date.now() });
+  else e.n++;
+}
+function rateLimited(req, res) {
+  const e = authFails.get(req.ip);
+  if (providedKey(req) && e && Date.now() - e.at <= AUTH_WINDOW_MS && e.n >= AUTH_MAX_FAILS) {
+    res.status(429).json({ error: 'Too many failed sign-in attempts from this address — wait a few minutes and try again.' });
+    return true;
+  }
+  return false;
+}
+
 /* Resolve the caller to an actor, first match winning:
      1. ADMIN_KEY        → root owner. Break-glass: works even if the member
                            store is empty, corrupt, or unreachable.
@@ -335,7 +368,7 @@ async function resolveActor(req) {
   if (req.actor) return req.actor;
   const key = providedKey(req);
   let actor = { id: null, name: null, role: 'none' };
-  if (key && key === ADMIN_KEY) {
+  if (key && keyEquals(key, ADMIN_KEY)) {
     actor = { id: 'root', name: 'Owner key', role: 'owner' };
   } else if (key) {
     const m = await memberByKey(key);
@@ -346,6 +379,8 @@ async function resolveActor(req) {
       const s = sites[get(req)];
       if (s?.access?.tokenHash && sha256(key) === s.access.tokenHash) {
         actor = { id: null, name: s.access.clientName || 'Client', role: 'client' };
+      } else {
+        recordAuthFail(req.ip);                           // a key was presented and matched nothing
       }
     }
   }
@@ -357,17 +392,20 @@ async function resolveActor(req) {
 async function authWrite(req, res, next) {
   const s = sites[get(req)];
   if (!s) return next();
+  if (rateLimited(req, res)) return;
   const a = await resolveActor(req);
   if (isStaff(a.role) || a.role === 'client') return next();
-  // A site that was never handed off has no gate — preserves the local/dev case
-  // where you edit straight after ingesting, before any access is configured.
-  if (!s.access?.tokenHash) { req.actor = { id: null, name: 'Local', role: 'owner' }; req.role = 'owner'; return next(); }
+  // Keyless editing of a site with no access configured is a LAPTOP convenience.
+  // On a deployed instance (a real ADMIN_KEY is set) it would make every
+  // not-yet-handed-off site editable by anyone who guesses its name.
+  if (DEV_MODE && !s.access?.tokenHash) { req.actor = { id: null, name: 'Local', role: 'owner' }; req.role = 'owner'; return next(); }
   return res.status(401).json({ error: 'This site requires a valid editor link.' });
 }
 
 /* Guard factory. owner ≥ admin ≥ editor, so requireRole('admin') admits owners. */
 function requireRole(needed) {
   return async (req, res, next) => {
+    if (rateLimited(req, res)) return;
     const a = await resolveActor(req);
     if (atLeast(a.role, needed)) return next();
     return res.status(401).json({ error: `This action needs ${needed} access or higher.` });
@@ -524,7 +562,7 @@ app.get('/s/:name', (req, res) => {
   res.type('html').send(html);
 });
 
-app.get('/api/sites', (_req, res) => res.json({
+app.get('/api/sites', requireStaff, (_req, res) => res.json({
   plannerMode: plannerMode(),
   // Sites that failed to load are reported rather than silently missing, so a
   // broken one is visible in the console instead of looking deleted.
@@ -537,10 +575,11 @@ app.get('/api/sites', (_req, res) => res.json({
 
 // Who am I? owner (agency, sees all sites) vs client (one site, simple editor).
 app.get('/api/me', async (req, res) => {
+  if (rateLimited(req, res)) return;
   const s = sites[get(req)];
   const a = await resolveActor(req);
   let role = a.role;
-  if (role === 'none' && s && !s.access?.tokenHash) role = 'owner'; // not handed off yet → dev/owner
+  if (DEV_MODE && role === 'none' && s && !s.access?.tokenHash) role = 'owner'; // laptop only — see authWrite
   // 'locked' = the site has a password set but no/wrong key was given → show the login gate
   const locked = role === 'none' && !!(s && s.access?.tokenHash);
   res.json({
@@ -556,7 +595,7 @@ app.get('/api/me', async (req, res) => {
   });
 });
 
-app.get('/api/pages', (req, res) => {
+app.get('/api/pages', authWrite, (req, res) => {
   const s = need(req, res); if (!s) return;
   res.json({ order: s.order, home: s.home, pages: s.order.map((slug) => ({ slug, ...s.pagesMeta[slug], home: slug === s.home, dirty: !!s.draft[slug] })) });
 });
@@ -567,12 +606,41 @@ app.get('/api/pages', (req, res) => {
    server-rendered and static sites (Astro, Next, Hugo, plain HTML) come through whole. */
 const FETCH_TIMEOUT_MS = 15000;
 const MAX_PAGES = 40;                       // cap per ingest, so one call can't run away
+const MAX_FETCH_BYTES = 8 * 1024 * 1024;    // a real page is well under this
 const ASSET_RE = /\.(png|jpe?g|gif|svg|webp|avif|ico|pdf|zip|css|js|mjs|json|txt|woff2?|ttf|otf|eot|mp4|webm|mp3|wav|dmg|exe)$/i;
 
+/* The server fetches URLs people type in. It must never be usable to read the
+   host's own network — localhost, the cloud metadata service, internal services.
+   Hostname-literal checks (not full DNS pinning); URL capture is staff-only, so
+   this is a second layer, not the only one. Tests opt out to reach their local
+   fixture server via CMS_ALLOW_PRIVATE_FETCH=1. */
+const PRIVATE_HOST_RE = /^(localhost|.*\.(local|localhost|internal|home\.arpa))$/i;
+function isPrivateIp(h) {
+  const m = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (m) {
+    const [a, b] = [Number(m[1]), Number(m[2])];
+    return a === 0 || a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127);
+  }
+  return /^(::1?|::ffff:.*|f[cd][0-9a-f]{2}:.*|fe80:.*)$/i.test(h);
+}
+function assertFetchableUrl(u) {
+  if (process.env.CMS_ALLOW_PRIVATE_FETCH === '1') return;
+  const url = new URL(u);
+  if (!/^https?:$/.test(url.protocol)) throw new Error('only http(s) URLs can be fetched');
+  const host = url.hostname.replace(/^\[|\]$/g, '');
+  if (PRIVATE_HOST_RE.test(host) || isPrivateIp(host)) throw new Error('that address is not reachable from here');
+}
+
 async function fetchText(url) {
+  assertFetchableUrl(url);
   const r = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS), redirect: 'follow' });
+  assertFetchableUrl(r.url || url);          // a redirect must not smuggle us somewhere private
   if (!r.ok) throw new Error('HTTP ' + r.status);
-  return { text: await r.text(), type: r.headers.get('content-type') || '' };
+  const len = Number(r.headers.get('content-length') || 0);
+  if (len > MAX_FETCH_BYTES) throw new Error('page too large to ingest');
+  const text = await r.text();
+  if (text.length > MAX_FETCH_BYTES) throw new Error('page too large to ingest');
+  return { text, type: r.headers.get('content-type') || '' };
 }
 async function fetchHtml(url) {
   const { text, type } = await fetchText(url);
@@ -689,9 +757,28 @@ app.post('/api/ingest', requireStaff, async (req, res) => {
   const good = fetched.filter((f) => f.ok);
   const failed = fetched.filter((f) => !f.ok).map(({ url, error }) => ({ url, error }));
   if (!good.length) return res.status(400).json({ error: `Could not fetch ${failed[0].url} — ${failed[0].error}`, failed });
+  // The FIRST url is the home page — the anchor everything else hangs off. If it
+  // failed, refusing beats silently promoting some subpage to home.
+  if (!fetched[0].ok) {
+    return res.status(400).json({ error: `The first URL is the home page and it could not be fetched (${fetched[0].error}) — fix that one and retry.`, failed });
+  }
+
+  // Replacing a site keeps its RELATIONSHIPS even though its content restarts:
+  // the client's password/link and the Vercel project it deploys to. Losing
+  // those on a repair re-ingest would lock the client out and break publishing.
+  // Read them from disk, not just memory — a broken site being repaired was
+  // never loaded, but its access.json may still be there.
+  const readJsonIf = (p) => { try { return existsSync(p) ? JSON.parse(readFileSync(p, 'utf8')) : null; } catch { return null; } };
+  const prior = {
+    access: sites[name]?.access ?? readJsonIf(join(siteDir(name), 'access.json')),
+    vercel: sites[name]?.vercel ?? (readJsonIf(join(siteDir(name), 'site.json'))?.vercel || null),
+  };
 
   rmSync(siteDir(name), { recursive: true, force: true });   // fresh site
-  const s = sites[name] = { pages: {}, order: [], home: 'home', pagesMeta: {}, draft: {}, versions: [], head: -1, access: null };
+  delete brokenSites[name];                                  // a re-ingest is the repair path
+  const s = sites[name] = { pages: {}, order: [], home: 'home', pagesMeta: {}, draft: {}, versions: [], head: -1, access: prior.access, vercel: prior.vercel };
+  mkdirSync(siteDir(name), { recursive: true });
+  if (prior.access) writeFileSync(join(siteDir(name), 'access.json'), JSON.stringify(prior.access, null, 2));
 
   const added = [];
   good.forEach((f, i) => {
@@ -743,7 +830,7 @@ app.post('/api/resync', requireStaff, async (req, res) => {
   res.json({ ok: true, page: slug, kept: carried.length, dropped, vercel });
 });
 
-app.get('/api/state', (req, res) => {
+app.get('/api/state', authWrite, (req, res) => {
   const s = need(req, res); if (!s) return;
   const slug = pageOf(req, s);
   const a = pageState(s, slug);
@@ -764,7 +851,7 @@ app.post('/api/plan', authWrite, async (req, res) => {
   res.json({ summary, plannerMode: plannerMode(), diff: g.diff, candidate: g.candidate, ok: g.ok, errors: g.errors, warnings: g.warnings });
 });
 
-app.post('/api/render', (req, res) => {
+app.post('/api/render', authWrite, (req, res) => {
   const s = need(req, res); if (!s) return;
   const a = pageState(s, pageOf(req, s));
   const merged = req.body?.content && typeof req.body.content === 'object' ? { ...a.content, ...req.body.content } : a.content;
@@ -889,7 +976,7 @@ app.post('/api/submit-review', authWrite, (req, res) => {
   if (!stageForReview(req, res, pendingByPage)) return;
   res.json({ ok: true });
 });
-app.get('/api/review', (req, res) => { const s = need(req, res); if (!s) return; res.json(getReview(get(req))); });
+app.get('/api/review', authWrite, (req, res) => { const s = need(req, res); if (!s) return; res.json(getReview(get(req))); });
 app.post('/api/review/approve', requireStaff, async (req, res) => {
   const s = need(req, res); if (!s) return;
   const r = applyAndCommit(get(req), {}, actorOf(req));   // the staged draft holds the client's changes
@@ -973,7 +1060,7 @@ app.post('/api/publish', authWrite, async (req, res) => {
   res.json({ ok: true, head: r.head, published: r.totalEdits, liveUrl: `/live/${get(req)}`, vercel });
 });
 
-app.get('/api/versions', (req, res) => { const s = need(req, res); if (!s) return; res.json({ head: s.head, versions: s.versions }); });
+app.get('/api/versions', authWrite, (req, res) => { const s = need(req, res); if (!s) return; res.json({ head: s.head, versions: s.versions }); });
 
 app.post('/api/version/restore', authWrite, (req, res) => {
   const s = need(req, res); if (!s) return;
@@ -1001,6 +1088,10 @@ app.post('/api/pages/add', authWrite, async (req, res) => {
   // site later get pulled in.
   let captured = null, title, slug;
   if (fromUrl) {
+    // Capture-from-URL makes the SERVER fetch an address the caller chose. That
+    // stays a staff tool — a client link must never be able to aim our fetcher.
+    // Clients keep the blank/article templates below.
+    if (!isStaff(req.role)) return res.status(401).json({ error: 'Only team members can capture pages from a URL.' });
     try { new URL(fromUrl); } catch { return res.status(400).json({ error: 'That does not look like a URL.' }); }
     let html;
     try { html = await fetchHtml(fromUrl); }
@@ -1168,6 +1259,21 @@ app.post('/api/admin/team/revoke', requireOwner, async (req, res) => {
 app.post('/api/admin/team/role', requireOwner, async (req, res) => {
   try { res.json({ ok: true, member: await setRole(String(req.body?.id || ''), String(req.body?.role || '')) }); }
   catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+/* Offboard a site entirely — content, versions, uploads, forms, access, and the
+   database copy (the rm is mirrored). The one genuinely destructive admin action,
+   so the exact name must be typed back. The client's live Vercel deployment is
+   NOT touched; their site keeps serving until repointed. */
+app.post('/api/admin/site-delete', requireAdmin, (req, res) => {
+  const name = String(req.body?.site || '').replace(/[^a-z0-9_-]/gi, '');
+  if (!sites[name] && !brokenSites[name]) return res.status(404).json({ error: 'Unknown site.' });
+  if (String(req.body?.confirm || '') !== name) return res.status(400).json({ error: 'Type the site name exactly to confirm deletion.' });
+  rmSync(siteDir(name), { recursive: true, force: true });
+  delete sites[name];
+  delete brokenSites[name];
+  console.log(`[admin] site "${name}" deleted by ${req.actor?.name || 'owner'}`);
+  res.json({ ok: true });
 });
 
 // Link a site to a Vercel project + deploy on demand.

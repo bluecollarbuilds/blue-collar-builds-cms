@@ -51,7 +51,7 @@ if [ "$up" != "yes" ]; then echo "--- boot log ---"; cat "$BOOTLOG"; echo "═�
 
 echo
 echo "── the healthy site is unaffected ──"
-S=$(curl -s "$B/api/sites")
+S=$(curl -s "$B/api/sites?key=$K")
 chk "healthy site loaded"        "$(printf '%s' "$S" | py '"yes" if any(x["name"]=="healthy" for x in d["sites"]) else "no"')" "yes"
 chk "wrecked site not served"    "$(printf '%s' "$S" | py '"yes" if not any(x["name"]=="wrecked" for x in d["sites"]) else "no"')" "yes"
 chk "wrecked site is reported"   "$(printf '%s' "$S" | py '"yes" if any(x["name"]=="wrecked" for x in d.get("broken",[])) else "no"')" "yes"
@@ -69,7 +69,7 @@ HTML='<html><head><title>Repaired</title></head><body><main><h1>Repaired</h1></m
 RES=$(curl -s -X POST "$B/api/ingest?key=$K" -H 'Content-Type: application/json' \
   -d "$(printf '{"name":"wrecked","html":%s}' "$(printf '%s' "$HTML" | python3 -c 'import json,sys;print(json.dumps(sys.stdin.read()))')")")
 chk "re-ingest succeeds"          "$(printf '%s' "$RES" | py 'd.get("ok")')" "True"
-chk "repaired site now serves"    "$(curl -s "$B/api/sites" | py '"yes" if any(x["name"]=="wrecked" for x in d["sites"]) else "no"')" "yes"
+chk "repaired site now serves"    "$(curl -s "$B/api/sites?key=$K" | py '"yes" if any(x["name"]=="wrecked" for x in d["sites"]) else "no"')" "yes"
 
 echo
 echo "════ $pass passed, $fail failed ════"

@@ -365,7 +365,7 @@ async function init(){
   planner=me.plannerMode; const isOwner=me.staff!==undefined?!!me.staff:me.role==='owner'; IS_OWNER=isOwner; REQUIRE_APPROVAL=!!me.requireApproval;
   if(!isOwner){const needsApproval=REQUIRE_APPROVAL;$('#publishBtn').textContent=needsApproval?'Submit for review':'Publish';$('#publishBtn').title=needsApproval?'Send your changes to the agency to approve':'Publish your changes live';$('#auditBtn').style.display='none';}
   if(isOwner){
-    const meta=await (await fetch('/api/sites')).json();
+    const meta=await (await fetch('/api/sites',{headers:{'x-edit-key':KEY}})).json();
     const names=meta.sites.map(s=>s.name);
     if(!names.length){bubble('bot','No sites yet.');return;}
     if(!names.includes(SITE))SITE=names[0];
@@ -395,14 +395,14 @@ async function loadPages(){
   $('#liveLink').href='/live/'+SITE+(PAGE===d.home?'':'/'+PAGE);
   renderPages();updateBar();await loadPreview();
 }
-let newTpl='blank';
+let newTpl='blank';  // clients only ever see blank/article; 'url' is staff-only
 function renderPages(){
   const p=$('#pagesPanel');
   p.innerHTML='<h4>Pages</h4>'+pagesList.map(pg=>`<div class="pg ${pg.slug===PAGE?'cur':''}"><span class="nm" data-go="${pg.slug}">${esc(pg.title)} ${pg.home?'<span class="hm">● home</span>':''}<span class="pth">${esc(pg.path)}</span></span>${pg.home?'':`<span class="ico" title="Set as home" data-home="${pg.slug}">⌂</span><span class="ico" title="Delete" data-del="${pg.slug}">🗑</span>`}</div>`).join('')+
     `<div class="addbox">
        <div class="addlbl">Add a new page</div>
        <div class="tplrow">
-         <button class="tpl ${newTpl==='url'?'on':''}" data-tpl="url"><b>From my site</b><span>Capture a live page</span></button>
+         ${IS_OWNER?`<button class="tpl ${newTpl==='url'?'on':''}" data-tpl="url"><b>From my site</b><span>Capture a live page</span></button>`:''}
          <button class="tpl ${newTpl==='blank'?'on':''}" data-tpl="blank"><b>Blank</b><span>Title + subheading</span></button>
          <button class="tpl ${newTpl==='article'?'on':''}" data-tpl="article"><b>Article</b><span>Blog-style post</span></button>
        </div>

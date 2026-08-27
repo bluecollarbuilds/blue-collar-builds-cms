@@ -143,10 +143,20 @@ function selProv(p){provider=p;$('#provs').querySelectorAll('.prov').forEach(x=>
 $('#provs').querySelectorAll('.prov').forEach(el=>el.onclick=()=>selProv(el.dataset.p));
 
 async function load(){
-  const d=await (await fetch('/api/sites')).json();
+  const d=await (await fetch('/api/sites',{headers:{'x-edit-key':keyEl.value}})).json();
   const list=$('#list');
-  if(!d.sites.length){list.innerHTML='<div class="empty">No sites yet. Capture one into the CMS to begin.</div>';return;}
-  list.innerHTML=d.sites.map(s=>`
+  if(d.error){list.innerHTML=`<div class="empty">${esc(d.error)}</div>`;return;}
+  const canAdmin=ME&&(ME.role==='owner'||ME.role==='admin');
+  // Sites that failed to load are shown, not hidden — a broken site must look
+  // broken, never deleted. Re-ingesting under the same name repairs it.
+  const brokenHtml=(d.broken||[]).map(b=>`
+    <div class="site" style="box-shadow:inset 0 0 0 1px rgba(255,91,79,.5)">
+      <div class="hd"><h3>${esc(b.name)}</h3><span class="pill" style="background:rgba(255,91,79,.14);color:#ff9c8f">⚠ failed to load</span></div>
+      <div class="meta">${esc(b.error)} — re-ingest it under the same name to repair it${canAdmin?', or remove it':''}.</div>
+      ${canAdmin?`<div class="acts"><button class="ghost" onclick="removeSite('${esc(b.name)}')">🗑 Remove site</button></div>`:''}
+    </div>`).join('');
+  if(!d.sites.length&&!brokenHtml){list.innerHTML='<div class="empty">No sites yet. Capture one into the CMS to begin.</div>';return;}
+  list.innerHTML=brokenHtml+d.sites.map(s=>`
     <div class="site" data-site="${esc(s.name)}">
       <div class="hd"><h3>${esc(s.name)}</h3>${s.handedOff?`<span class="pill off">● live with client${s.client?' · '+esc(s.client):''}</span>`:'<span class="pill dft">not handed off</span>'}</div>
       <div class="meta">${s.pages} page${s.pages!==1?'s':''} · ${s.versions} version${s.versions!==1?'s':''} in history</div>
@@ -154,6 +164,7 @@ async function load(){
         <a class="ghost" href="/live/${encodeURIComponent(s.name)}" target="_blank">🌐 View live site</a>
         <a class="ghost" href="/editor/?site=${encodeURIComponent(s.name)}&key=${encodeURIComponent(keyEl.value)}" target="_blank">✎ Open editor</a>
         <button class="ghost" onclick="exportSite('${esc(s.name)}')">⤓ Export static</button>
+        ${canAdmin?`<button class="ghost" style="color:#ff9c8f" onclick="removeSite('${esc(s.name)}')">🗑 Remove</button>`:''}
       </div>
       <div class="handoff">
         <div class="ht">🔑 Client access${s.handedOff?` · <span style="color:#9be8ab">● set${s.authMode==='password'?' (password)':''}</span>`:''}</div>
@@ -268,6 +279,14 @@ async function handoff(name){
   const r=await (await fetch('/api/admin/handoff',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({site:name,clientName})})).json();
   if(r.error){alert(r.error);return;}
   const box=$('#lk-'+name);box.classList.add('show');box.querySelector('input').value=origin+r.clientLink;load();
+}
+async function removeSite(name){
+  const typed=prompt(`This permanently deletes "${name}" from the CMS — content, versions, forms and the client's access. Their live Vercel site is NOT touched.\n\nType the site name to confirm:`);
+  if(typed===null)return;
+  if(typed!==name){alert('Name did not match — nothing was deleted.');return;}
+  const r=await (await fetch('/api/admin/site-delete',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({site:name,confirm:typed})})).json();
+  if(r.error){alert(r.error);return;}
+  load();
 }
 async function exportSite(name){
   const r=await (await fetch('/api/admin/export',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({site:name})})).json();

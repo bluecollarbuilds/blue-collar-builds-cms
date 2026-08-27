@@ -13,6 +13,15 @@ HTML='<html><head><title>T</title></head><body><main><h1>Original Headline</h1><
 
 echo "── setup ──"
 j "$B/api/ingest?key=$OK" "$(printf '{"name":"acme","html":%s}' "$(printf '%s' "$HTML" | python3 -c 'import json,sys;print(json.dumps(sys.stdin.read()))')")" > /dev/null
+
+echo
+echo "── prod mode: a freshly ingested site with NO password is not world-open ──"
+# The window between ingest and handoff used to grant role 'owner' to anyone at
+# all. With a real ADMIN_KEY configured, keyless access must be refused.
+chk "keyless publish refused"    "$(curl -s -o /dev/null -w '%{http_code}' -X POST "$B/api/publish?site=acme" -H 'Content-Type: application/json' -d '{"pages":{}}')" "401"
+chk "keyless state read refused" "$(curl -s -o /dev/null -w '%{http_code}' "$B/api/state?site=acme")" "401"
+
+echo
 # publish once as owner so a live release exists
 j "$B/api/publish?key=$OK&site=acme" '{"pages":{}}' > /dev/null
 # hand off with a password + approval REQUIRED
@@ -42,7 +51,7 @@ chk "response flags pendingReview" "$PEND" "True"
 
 echo
 echo "── the edit must be queued, not discarded ──"
-RV=$(curl -s "$B/api/review?site=acme" | python3 -c 'import json,sys;print(json.load(sys.stdin).get("pending",False))')
+RV=$(curl -s "$B/api/review?site=acme&key=$OK" | python3 -c 'import json,sys;print(json.load(sys.stdin).get("pending",False))')
 chk "review is pending" "$RV" "True"
 
 echo
