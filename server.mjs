@@ -17,6 +17,7 @@ import { load } from 'cheerio';
 import { readFileSync, writeFileSync as _wfs, mkdirSync, readdirSync, existsSync, rmSync as _rm } from 'node:fs';
 import { store, initStore, hydrateToFs, closeStore, PERSISTED_PREFIXES } from './lib/store.mjs';
 import { createMirrorQueue } from './lib/mirror-queue.mjs';
+import { collectHtmlAssets, collectCssAssets, resolveAssetUrls, assetPathOf, ASSET_MARK } from './lib/assets.mjs';
 import { memberByKey, touchMember, atLeast, listMembers, publicMember, addMember, rotateKey, revokeMember, setRole, ROLES } from './lib/team.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -161,6 +162,16 @@ function siteFiles(name) {
   const files = s.order.map((slug) => ({ file: fileFor(s, slug), data: publishedPageHtml(name, slug) }));
   files.push({ file: 'sitemap.xml', data: sitemapXml(name) });
   files.push({ file: 'robots.txt', data: robotsTxt(name) });
+  // The site's own CSS, fonts and images, at their original paths. A Vercel
+  // deployment REPLACES the site, so omitting these would delete the styling the
+  // pages above depend on.
+  for (const rel of assetList(name)) {
+    if (rel.toLowerCase().endsWith('.css')) {
+      files.push({ file: rel, data: resolveAssetUrls(readFileSync(assetFile(name, rel), 'utf8'), '') });
+    } else {
+      files.push({ file: rel, data: readFileSync(assetFile(name, rel)).toString('base64'), encoding: 'base64' });
+    }
+  }
   const up = join(siteDir(name), 'uploads');
   if (existsSync(up)) for (const f of readdirSync(up)) files.push({ file: `u/${name}/${f}`, data: readFileSync(join(up, f)).toString('base64'), encoding: 'base64' });
   return files;
@@ -224,15 +235,18 @@ function wireForms(html, name) {
   const script = `<script>(function(){var EP=${JSON.stringify(ep)};document.querySelectorAll('form').forEach(function(f){f.addEventListener('submit',function(e){e.preventDefault();var d={_page:location.pathname};new FormData(f).forEach(function(v,k){if(typeof v==='string')d[k]=v;});fetch(EP,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(function(){f.innerHTML='<p style="padding:18px;font-size:16px;text-align:center">✓ Thanks — we\\'ve got your message.</p>';}).catch(function(){});});});})();</script>`;
   return html.includes('</body>') ? html.replace('</body>', script + '</body>') : html + script;
 }
-function publishedPageHtml(name, slug) {
+function publishedPageHtml(name, slug, assetPrefix = '') {
   const p = sites[name].pages[slug];
-  return wireForms(withBase(render(p.templateHtml, p.schema, p.content)), name);
+  const html = wireForms(withBase(render(p.templateHtml, p.schema, p.content)), name);
+  // Mirrored assets are stored with an internal marker; point it at wherever
+  // this copy will actually be served from.
+  return resolveAssetUrls(html, assetPrefix);
 }
 
 /* ───── deploy: build the whole static site for a version ───── */
 function buildRelease(name, seq) {
   const s = sites[name];
-  const files = s.order.map((slug) => ({ path: fileFor(s, slug), content: publishedPageHtml(name, slug) }));
+  const files = s.order.map((slug) => ({ path: fileFor(s, slug), content: publishedPageHtml(name, slug, `/live/${name}`) }));
   deployer.stage(siteDir(name), seq, files);
   deployer.activate(siteDir(name), seq);
 }
@@ -565,11 +579,35 @@ app.get('/live/:name', (req, res) => {
   const html = deployer.liveHtml(siteDir(req.params.name), 'index.html');
   res.type('html').send(html || 'Not published yet');
 });
-app.get('/live/:name/:slug', (req, res) => {
-  if (!sites[req.params.name]) return res.status(404).send('Unknown site');
-  const html = deployer.liveHtml(siteDir(req.params.name), `${req.params.slug.replace(/[^a-z0-9_-]/gi, '')}.html`);
+app.get('/live/:name/:slug', (req, res, next) => {
+  const name = req.params.name;
+  if (!sites[name]) return res.status(404).send('Unknown site');
+  // A dotted segment is a file (main.css), not a page slug — let the asset
+  // handler below deal with it.
+  if (req.params.slug.includes('.')) return next();
+  const html = deployer.liveHtml(siteDir(name), `${req.params.slug.replace(/[^a-z0-9_-]/gi, '')}.html`);
   if (!html) return res.status(404).send('No such page');
   res.type('html').send(html);
+});
+
+/* Mirrored assets for the CMS preview and the editor iframe. The deployed copy
+   serves these from the site root instead; here they hang under /live/<name>/
+   so several sites can be previewed from one host. */
+const ASSET_TYPES = { css: 'text/css', js: 'text/javascript', svg: 'image/svg+xml', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', avif: 'image/avif', ico: 'image/x-icon', woff: 'font/woff', woff2: 'font/woff2', ttf: 'font/ttf', otf: 'font/otf', json: 'application/json', mp4: 'video/mp4', webm: 'video/webm', txt: 'text/plain' };
+app.get('/live/:name/*', (req, res) => {
+  const name = req.params.name;
+  if (!sites[name]) return res.status(404).send('Unknown site');
+  const rel = String(req.params[0] || '');
+  // Confine to the assets directory — no traversal out of it.
+  if (!rel || rel.split('/').some((seg) => seg === '..' || seg === '.' || seg === '')) return res.sendStatus(404);
+  const file = assetFile(name, rel);
+  if (!file.startsWith(assetsDir(name)) || !existsSync(file)) return res.sendStatus(404);
+  const ext = rel.split('.').pop().toLowerCase();
+  if (ASSET_TYPES[ext]) res.type(ASSET_TYPES[ext]);
+  // A stylesheet references its own fonts and images, so it carries the marker
+  // internally and must be resolved just like a page.
+  if (ext === 'css') return res.send(resolveAssetUrls(readFileSync(file, 'utf8'), `/live/${name}`));
+  res.send(readFileSync(file));
 });
 
 // Editable preview of a page.
@@ -734,6 +772,117 @@ async function discoverPages(startUrl) {
   return [...found].sort((a, b) => a.length - b.length || a.localeCompare(b));
 }
 
+/* ───── asset mirroring ─────
+   A publish replaces the client's whole Vercel deployment, so the bundle has to
+   contain everything the pages need — otherwise publishing deletes the very CSS
+   the published HTML links to. Capture downloads the site's own assets here;
+   siteFiles() ships them back out at their original paths. */
+const MAX_ASSETS = 300;
+const MAX_ASSET_BYTES = 8 * 1024 * 1024;
+const assetsDir = (name) => join(siteDir(name), 'assets');
+const assetFile = (name, path) => join(assetsDir(name), path);
+
+async function fetchBinary(url) {
+  assertFetchableUrl(url);
+  const r = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS), redirect: 'follow' });
+  assertFetchableUrl(r.url || url);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const buf = Buffer.from(await r.arrayBuffer());
+  if (buf.length > MAX_ASSET_BYTES) throw new Error('asset too large');
+  return { buf, type: r.headers.get('content-type') || '' };
+}
+
+const saveAsset = (name, path, buf) => {
+  const p = assetFile(name, path);
+  mkdirSync(dirname(p), { recursive: true });
+  writeFileSync(p, buf);
+};
+
+/**
+ * Download every same-origin asset `templateHtml` references, plus whatever the
+ * stylesheets themselves pull in (fonts, background images, @imports), and
+ * rewrite the HTML to point at our copies. Returns the rewritten HTML — assets
+ * that could not be fetched keep their original absolute URL, so a failure
+ * degrades to "loads from the old host" rather than "broken link".
+ */
+async function captureAssets(name, tagged, baseUrl) {
+  let origin;
+  try { origin = new URL(baseUrl).origin; } catch { return { saved: 0, failed: [] }; }
+
+  const $ = load(tagged.templateHtml, { decodeEntities: false });
+  const { urls, rewrite } = collectHtmlAssets($, origin);
+
+  // Tagged images do not keep their URL in the template — autotag moves it into
+  // `content` as an editable field — so those have to be mirrored as well, or the
+  // page's own photos still point at the host we just replaced.
+  const contentImages = [];
+  for (const [id, def] of Object.entries(tagged.schema || {})) {
+    if (def?.type !== 'image') continue;
+    const val = tagged.content?.[id];
+    if (typeof val === 'string' && assetPathOf(val, origin)) contentImages.push([id, val]);
+  }
+
+  const kept = new Set();
+  const failed = [];
+  const cssQueue = [];
+  let budget = MAX_ASSETS;
+
+  const grab = async (url) => {
+    if (kept.has(url) || budget <= 0) return;
+    const path = assetPathOf(url, origin);
+    if (!path) return;
+    budget--;
+    try {
+      const { buf, type } = await fetchBinary(url);
+      kept.add(url);
+      if (/text\/css/i.test(type) || /\.css$/i.test(path)) cssQueue.push({ url, path, css: buf.toString('utf8') });
+      else saveAsset(name, path, buf);
+    } catch (e) { failed.push({ url, error: e.message }); }
+  };
+
+  await mapLimit([...urls, ...contentImages.map(([, u]) => u)], 6, grab);
+
+  // Stylesheets are saved only after their own references are resolved, so the
+  // stored CSS points at our copies of the fonts and images it needs.
+  for (let depth = 0; depth < 3 && cssQueue.length; depth++) {
+    const batch = cssQueue.splice(0, cssQueue.length);
+    const nested = [];
+    for (const sheet of batch) {
+      const { urls: inner } = collectCssAssets(sheet.css, sheet.url, origin);
+      nested.push(...inner);
+    }
+    await mapLimit([...new Set(nested)], 6, grab);
+    for (const sheet of batch) {
+      const { rewrite: rw } = collectCssAssets(sheet.css, sheet.url, origin);
+      saveAsset(name, sheet.path, Buffer.from(rw(kept), 'utf8'));
+      kept.add(sheet.url);
+    }
+  }
+
+  rewrite(kept);
+  for (const [id, url] of contentImages) {
+    if (kept.has(url)) tagged.content[id] = ASSET_MARK + assetPathOf(url, origin);
+  }
+  tagged.templateHtml = $.html();
+  return { saved: kept.size, failed };
+}
+
+/** Every mirrored asset, as repo-relative paths ("_astro/main.css"). */
+function assetList(name) {
+  const root = assetsDir(name);
+  if (!existsSync(root)) return [];
+  const out = [];
+  const walk = (dir, rel) => {
+    for (const d of readdirSync(dir, { withFileTypes: true })) {
+      const child = join(dir, d.name);
+      const childRel = rel ? `${rel}/${d.name}` : d.name;
+      if (d.isDirectory()) walk(child, childRel); else out.push(childRel);
+    }
+  };
+  walk(root, '');
+  return out;
+}
+
 /* List the pages of a live site without ingesting anything, so the console can
    offer them for selection. */
 app.post('/api/discover', requireStaff, async (req, res) => {
@@ -802,10 +951,20 @@ app.post('/api/ingest', requireStaff, async (req, res) => {
   if (prior.access) writeFileSync(join(siteDir(name), 'access.json'), JSON.stringify(prior.access, null, 2));
 
   const added = [];
-  good.forEach((f, i) => {
+  const assetFailures = [];
+  let assetCount = 0;
+  for (const [i, f] of good.entries()) {
     const isHome = i === 0;                                  // the first page that loaded becomes home
     const slug = isHome ? 'home' : uniqueSlug(slugFromUrl(f.url), s.pagesMeta);
     const tagged = autotag(f.html, f.url || req.body?.baseUrl);
+    // Mirror the CSS/images/fonts this page needs. Without this, publishing (a
+    // full deployment replacement) would delete them and strip the site bare.
+    const base = f.url || req.body?.baseUrl;
+    if (base) {
+      const cap = await captureAssets(name, tagged, base);
+      assetCount += cap.saved;
+      assetFailures.push(...cap.failed);
+    }
     writePage(name, slug, tagged);
     s.order.push(slug);
     s.pagesMeta[slug] = {
@@ -813,7 +972,7 @@ app.post('/api/ingest', requireStaff, async (req, res) => {
       path: isHome ? '/' : `/${slug}`,
     };
     added.push({ slug, url: f.url, title: s.pagesMeta[slug].title, fields: Object.keys(tagged.schema).length });
-  });
+  }
 
   writeCfg(name);
   loadSite(name);
@@ -822,6 +981,8 @@ app.post('/api/ingest', requireStaff, async (req, res) => {
     pages: added.length,
     fields: added.reduce((n, a) => n + a.fields, 0),
     collections: (sites[name].pages[sites[name].home]?.collections || []).length,
+    assets: assetList(name).length,
+    assetFailures: assetFailures.slice(0, 10),
     added, failed,
   });
 });
@@ -876,7 +1037,7 @@ app.post('/api/render', authWrite, (req, res) => {
   const s = need(req, res); if (!s) return;
   const a = pageState(s, pageOf(req, s));
   const merged = req.body?.content && typeof req.body.content === 'object' ? { ...a.content, ...req.body.content } : a.content;
-  let html = withBase(render(a.templateHtml, a.schema, merged));
+  let html = resolveAssetUrls(withBase(render(a.templateHtml, a.schema, merged)), `/live/${get(req)}`);
   if (req.query.edit) html = injectEditor(html, a.schema);
   res.type('html').send(html);
 });
@@ -1101,6 +1262,7 @@ app.post('/api/rollback', authWrite, (req, res) => {
 /* ───── PAGE MANAGEMENT (WordPress-style) — auto-versioned + deployed ───── */
 app.post('/api/pages/add', authWrite, async (req, res) => {
   const s = need(req, res); if (!s) return;
+  const name = get(req);
   const fromUrl = String(req.body?.url || '').trim();
 
   // From a URL: capture a page that already exists on the live site, exactly as
@@ -1118,6 +1280,7 @@ app.post('/api/pages/add', authWrite, async (req, res) => {
     try { html = await fetchHtml(fromUrl); }
     catch (e) { return res.status(400).json({ error: `Could not fetch that URL — ${e.message}` }); }
     captured = autotag(html, fromUrl);
+    await captureAssets(name, captured, fromUrl);             // assets mirrored, as in ingest
     slug = cleanSlug(req.body?.slug || slugFromUrl(fromUrl), `page-${s.order.length}`);
     title = String(req.body?.title || titleFromHtml(html, prettify(slug))).slice(0, 60);
   } else {
@@ -1280,6 +1443,25 @@ app.post('/api/admin/team/revoke', requireOwner, async (req, res) => {
 app.post('/api/admin/team/role', requireOwner, async (req, res) => {
   try { res.json({ ok: true, member: await setRole(String(req.body?.id || ''), String(req.body?.role || '')) }); }
   catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+/* Exactly what a publish would ship to Vercel, without deploying it. A deployment
+   REPLACES the site, so being able to confirm the bundle carries the stylesheets
+   and images — not just the HTML — is what stops a publish from stripping a live
+   client site bare. */
+app.get('/api/admin/deploy-preview', requireStaff, (req, res) => {
+  const name = String(req.query.site || '').replace(/[^a-z0-9_-]/gi, '');
+  if (!sites[name]) return res.status(404).json({ error: 'Unknown site.' });
+  const files = siteFiles(name);
+  const index = files.find((f) => f.file === 'index.html');
+  res.json({
+    ok: true,
+    count: files.length,
+    files: files.map((f) => f.file),
+    assets: assetList(name).length,
+    bytes: files.reduce((n, f) => n + Buffer.byteLength(String(f.data)), 0),
+    indexHtml: index ? String(index.data) : null,
+  });
 });
 
 /* Offboard a site entirely — content, versions, uploads, forms, access, and the

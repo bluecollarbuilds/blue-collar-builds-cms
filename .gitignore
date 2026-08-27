@@ -15,6 +15,7 @@ sites/**/review.json
 sites/**/audit.log
 sites/**/releases/
 sites/**/uploads/
+sites/**/assets/          # mirrored site CSS/images — re-captured on ingest
 dist/
 rocket-src/
 content.snapshots/

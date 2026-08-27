@@ -11,7 +11,10 @@ const PORT = Number(process.argv[2] || 4600);
 const ORIGIN = `http://localhost:${PORT}`;
 
 const page = (title, body) => `<!doctype html><html><head><title>${title}</title>
-<meta name="description" content="${title} description"></head>
+<meta name="description" content="${title} description">
+<link rel="stylesheet" href="/_astro/main.abc123.css">
+<link rel="icon" href="/favicon.svg">
+</head>
 <body><header><nav>
   <a href="/">Home</a><a href="/about">About</a><a href="/services">Services</a>
   <a href="/services/plumbing">Plumbing</a><a href="/contact">Contact</a>
@@ -19,7 +22,7 @@ const page = (title, body) => `<!doctype html><html><head><title>${title}</title
 </nav></header><main>${body}</main><footer><p>© Fixture Co</p></footer></body></html>`;
 
 const PAGES = {
-  '/':                  page('Fixture Co — Home',      '<h1>Welcome to Fixture Co</h1><p>We do the thing.</p><img src="/hero.png" alt="Hero">'),
+  '/':                  page('Fixture Co — Home',      '<h1>Welcome to Fixture Co</h1><p>We do the thing.</p><img src="/_astro/hero.png" alt="Hero">'),
   '/about':             page('About Fixture Co',       '<h1>About us</h1><p>Founded in a garage.</p>'),
   '/services':          page('Our Services',           '<h1>Services</h1><p>Everything you need.</p>'),
   '/services/plumbing': page('Plumbing — Fixture Co',  '<h1>Plumbing</h1><p>Pipes and such.</p>'),
@@ -36,6 +39,16 @@ const server = createServer((req, res) => {
   const path = new URL(req.url, ORIGIN).pathname.replace(/(.)\/$/, '$1');
 
   if (path === '/sitemap.xml') return send(res, 200, SITEMAP, 'application/xml');
+  // Assets, as a real build emits them: a stylesheet that itself references a
+  // font and a background image, plus a favicon and an <img>.
+  if (path === '/_astro/main.abc123.css') return send(res, 200,
+    `@font-face{font-family:Fix;src:url('/_astro/fix.woff2') format('woff2')}\n` +
+    `body{font-family:Fix;background:url("/_astro/bg.png") repeat;color:#123}\n` +
+    `h1{color:rebeccapurple}\n`, 'text/css');
+  if (path === '/_astro/fix.woff2')  return sendBin(res, 'FONTDATA', 'font/woff2');
+  if (path === '/_astro/bg.png')     return sendBin(res, 'PNGDATA',  'image/png');
+  if (path === '/_astro/hero.png')   return sendBin(res, 'HERODATA', 'image/png');
+  if (path === '/favicon.svg')       return send(res, 200, '<svg xmlns="http://www.w3.org/2000/svg"/>', 'image/svg+xml');
   if (path === '/brochure.pdf') return send(res, 200, '%PDF-1.4 not really', 'application/pdf');
   if (path === '/moved') { res.writeHead(302, { Location: '/about' }); return res.end(); }
   if (path === '/slow') return setTimeout(() => send(res, 200, page('Slow', '<h1>Slow</h1>')), 30000);
@@ -46,6 +59,10 @@ const server = createServer((req, res) => {
 function send(res, code, body, type = 'text/html; charset=utf-8') {
   res.writeHead(code, { 'Content-Type': type });
   res.end(body);
+}
+function sendBin(res, body, type) {
+  res.writeHead(200, { 'Content-Type': type });
+  res.end(Buffer.from(body));
 }
 
 server.listen(PORT, () => console.log(`fixture site on ${ORIGIN}`));
