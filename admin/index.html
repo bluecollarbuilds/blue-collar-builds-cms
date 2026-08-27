@@ -178,6 +178,12 @@ async function load(){
         <div class="ht">▲ Vercel project ${s.vercelUrl?`· <a href="${esc(s.vercelUrl)}" target="_blank" style="color:#9bc1ff;text-decoration:none">live ↗</a>`:''}</div>
         <p>The Vercel project this site deploys to whenever it's published.</p>
         <div class="lkrow"><input id="vc-${esc(s.name)}" value="${esc(s.vercelProject||'')}" placeholder="vercel-project-name"><button class="ghost" onclick="saveVercel('${esc(s.name)}',false)">Save</button><button class="btnp" onclick="saveVercel('${esc(s.name)}',true)">Save &amp; deploy</button></div>
+        <div style="margin-top:11px">
+          <div class="ht">🌐 Production domain</div>
+          <p>The live domain this site is served on — used for its <b>sitemap.xml</b> &amp; robots.txt so search engines get the right URLs. Leave blank to use the Vercel URL.</p>
+          <div class="lkrow"><input id="dm-${esc(s.name)}" value="${esc(s.domain||'')}" placeholder="cincinnatigutterguys.com"><button class="ghost" onclick="saveDomain('${esc(s.name)}')">Save domain</button></div>
+          <p style="margin:8px 0 0;font-size:11.5px">Sitemap will list: <span class="mono" style="color:#9bc1ff">${esc(s.sitemapBase||'')}/sitemap.xml</span></p>
+        </div>
       </div>
       <div class="handoff" style="margin-top:11px">
         <div class="ht">↻ Re-sync design <span style="color:var(--ink-3);font-weight:400">— after you've redesigned the code</span></div>
@@ -312,6 +318,13 @@ async function saveVercel(name,deploy){
   if(r.error){alert(r.error);return;}
   if(deploy){ if(r.deploy&&r.deploy.ok)alert('Deployed to Vercel:\n'+r.deploy.url); else if(r.deploy)alert('Deploy failed: '+r.deploy.error); else alert('Saved. Connect Vercel first to deploy.'); load(); }
   else alert('Saved.');
+}
+async function saveDomain(name){
+  const domain=document.querySelector('#dm-'+CSS.escape(name)).value.trim();
+  const r=await (await fetch('/api/admin/site-vercel',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({site:name,domain})})).json();
+  if(r.error){alert(r.error);return;}
+  alert('Saved. Sitemap will now list:\n'+r.sitemapBase+'/sitemap.xml\n\nRepublish the site for it to take effect on the live deploy.');
+  load();
 }
 $('#aiSave').onclick=async()=>{
   const r=await (await fetch('/api/admin/config',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({provider,model:$('#aiModel').value||undefined,apiKey:$('#aiKey').value||undefined})})).json();

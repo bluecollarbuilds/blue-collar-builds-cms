@@ -16,7 +16,7 @@ export CMS_ALLOW_PRIVATE_FETCH=1
 LOG=$(mktemp)
 FIXLOG=$(mktemp)
 
-scrub(){ rm -rf sites/acme sites/tmp1 sites/tmp2 sites/tmp3 sites/x sites/multi sites/mixed sites/deadhome team dist; }
+scrub(){ rm -rf sites/acme sites/tmp1 sites/tmp2 sites/tmp3 sites/x sites/multi sites/mixed sites/deadhome sites/smap team dist; }
 cleanup(){
   [ -n "${SRV:-}" ] && kill "$SRV" 2>/dev/null
   [ -n "${FIX:-}" ] && kill "$FIX" 2>/dev/null
@@ -47,7 +47,7 @@ fi
 
 rc=0
 suites=("$@")
-[ ${#suites[@]} -eq 0 ] && suites=(mirror-order boot-resilience auth-limit approval-gate team-roles team-console multipage-ingest)
+[ ${#suites[@]} -eq 0 ] && suites=(mirror-order boot-resilience auth-limit approval-gate team-roles team-console multipage-ingest sitemap)
 for suite in "${suites[@]}"; do
   echo; echo "############ $suite ############"
   if [ -f "test/$suite.mjs" ]; then node "test/$suite.mjs" || rc=1

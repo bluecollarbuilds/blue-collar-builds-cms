@@ -113,7 +113,7 @@ function writePage(name, slug, p) {
 }
 function writeCfg(name) {
   const s = sites[name];
-  writeFileSync(join(siteDir(name), 'site.json'), JSON.stringify({ order: s.order, home: s.home, pages: s.pagesMeta, vercel: s.vercel || null }, null, 2));
+  writeFileSync(join(siteDir(name), 'site.json'), JSON.stringify({ order: s.order, home: s.home, pages: s.pagesMeta, vercel: s.vercel || null, domain: s.domain || null }, null, 2));
 }
 
 /* ───── drafts: staged-but-not-live edits, persisted so a Save survives reload/restart ───── */
@@ -128,10 +128,18 @@ function clearDrafts(name) {
   s.draft = {};
 }
 
-// Best-known public base URL for a site (owner can set s.domain; else last Vercel URL; else placeholder).
+/* Best-known public base URL for a site, most-authoritative first:
+     1. an explicit production domain the agency set          (s.domain)
+     2. the custom domain captured when the client was handed off (access.customDomain)
+     3. the last Vercel deployment URL                        (a real, if ugly, URL)
+     4. a placeholder guess from the internal name            (last resort)
+   This is what the sitemap's <loc> entries and robots.txt use, so getting it
+   right is what makes the generated sitemap point at the client's real site
+   rather than a preview URL or a wrong .com guess. */
 function siteBase(name) {
   const s = sites[name];
-  let b = s.domain || (s.vercel?.lastUrl ? s.vercel.lastUrl : '') || `https://${name}.com`;
+  let b = s.domain || s.access?.customDomain || (s.vercel?.lastUrl || '') || `https://${name}.example`;
+  b = String(b).trim();
   if (!/^https?:\/\//.test(b)) b = 'https://' + b;
   return b.replace(/\/+$/, '');
 }
@@ -195,7 +203,7 @@ function loadSite(name) {
   const pages = {};
   for (const slug of cfg.order) pages[slug] = readPage(name, slug);
   sites[name] = {
-    pages, order: cfg.order, home: cfg.home, pagesMeta: cfg.pages, vercel: cfg.vercel || null,
+    pages, order: cfg.order, home: cfg.home, pagesMeta: cfg.pages, vercel: cfg.vercel || null, domain: cfg.domain || null,
     draft: {}, versions: [], head: -1,
     access: existsSync(join(dir, 'access.json')) ? JSON.parse(readFileSync(join(dir, 'access.json'), 'utf8')) : null,
   };
@@ -539,6 +547,19 @@ function injectEditor(html, schema) {
 app.get('/', (_req, res) => res.redirect('/editor/'));
 
 // LIVE site (static release). Home + each page.
+// SEO files, served from the CMS preview too — not just in the Vercel bundle —
+// so the sitemap can be verified before and after handoff. Regenerated live from
+// the current page list, so they are never stale.
+app.get('/live/:name/sitemap.xml', (req, res) => {
+  const name = req.params.name;
+  if (!sites[name]) return res.status(404).send('Unknown site');
+  res.type('application/xml').send(sitemapXml(name));
+});
+app.get('/live/:name/robots.txt', (req, res) => {
+  const name = req.params.name;
+  if (!sites[name]) return res.status(404).send('Unknown site');
+  res.type('text/plain').send(robotsTxt(name));
+});
 app.get('/live/:name', (req, res) => {
   if (!sites[req.params.name]) return res.status(404).send('Unknown site');
   const html = deployer.liveHtml(siteDir(req.params.name), 'index.html');
@@ -569,7 +590,7 @@ app.get('/api/sites', requireStaff, (_req, res) => res.json({
   broken: Object.entries(brokenSites).map(([name, error]) => ({ name, error })),
   sites: Object.keys(sites).map((name) => {
     const s = sites[name];
-    return { name, pages: s.order.length, handedOff: !!s.access?.tokenHash, authMode: s.access?.mode || (s.access?.tokenHash ? 'link' : null), client: s.access?.clientName || null, requireApproval: !!s.access?.requireApproval, versions: s.versions.length, vercelProject: s.vercel?.project || null, vercelUrl: s.vercel?.lastUrl || null };
+    return { name, pages: s.order.length, handedOff: !!s.access?.tokenHash, authMode: s.access?.mode || (s.access?.tokenHash ? 'link' : null), client: s.access?.clientName || null, requireApproval: !!s.access?.requireApproval, versions: s.versions.length, vercelProject: s.vercel?.project || null, vercelUrl: s.vercel?.lastUrl || null, domain: s.domain || s.access?.customDomain || null, sitemapBase: siteBase(name) };
   }),
 }));
 
@@ -1281,9 +1302,15 @@ app.post('/api/admin/site-vercel', requireAdmin, async (req, res) => {
   const s = sites[String(req.body?.site || '').replace(/[^a-z0-9_-]/gi, '')]; if (!s) return res.status(404).json({ error: 'Unknown site.' });
   const name = String(req.body.site).replace(/[^a-z0-9_-]/gi, '');
   s.vercel = { ...(s.vercel || {}), project: String(req.body?.project || '').trim() };
+  // The production domain drives the sitemap/robots URLs. Accept it here (empty
+  // string clears it, falling back to the Vercel URL). Normalise off any scheme
+  // or trailing slash so siteBase() can prefix https:// cleanly.
+  if (req.body?.domain !== undefined) {
+    s.domain = String(req.body.domain || '').trim().replace(/^https?:\/\//, '').replace(/\/+$/, '') || null;
+  }
   writeCfg(name);
   if (req.body?.deploy) { const r = await deployVercel(name); return res.json({ ok: true, deploy: r }); }
-  res.json({ ok: true, project: s.vercel.project });
+  res.json({ ok: true, project: s.vercel.project, domain: s.domain, sitemapBase: siteBase(name) });
 });
 
 app.post('/api/admin/export', requireStaff, (req, res) => {
