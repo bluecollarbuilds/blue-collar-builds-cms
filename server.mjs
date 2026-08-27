@@ -15,7 +15,8 @@
 import express from 'express';
 import { load } from 'cheerio';
 import { readFileSync, writeFileSync as _wfs, mkdirSync, readdirSync, existsSync, rmSync as _rm } from 'node:fs';
-import { store, initStore, hydrateToFs, PERSISTED_PREFIXES } from './lib/store.mjs';
+import { store, initStore, hydrateToFs, closeStore, PERSISTED_PREFIXES } from './lib/store.mjs';
+import { createMirrorQueue } from './lib/mirror-queue.mjs';
 import { memberByKey, touchMember, atLeast, listMembers, publicMember, addMember, rotateKey, revokeMember, setRole, ROLES } from './lib/team.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -45,20 +46,38 @@ const relOf = (p) => { const s = String(p); if (!s.startsWith(ROOT)) return null
 // so the write side and the read-back side can't drift apart — anything mirrored
 // up must come back down on a fresh host. Releases are rebuildable, so excluded.
 const mirrorable = (rel) => !!rel && PERSISTED_PREFIXES.some((p) => rel.startsWith(p)) && !rel.includes('/releases/');
+/* Mirror operations run through ONE promise chain, so they reach Mongo in the
+   order the filesystem saw them. Firing them off independently raced: an ingest
+   does rmSync(siteDir) then immediately writes the new pages, and a delete that
+   landed after those writes wiped the fresh files — leaving a site.json in the
+   DB whose pages were gone, which then crashed every boot. */
+const mirrorQueue = createMirrorQueue({ onError: (label, e) => console.error('[mirror]', label, e.message) });
+const enqueueMirror = (label, fn) => mirrorQueue.enqueue(label, fn);
+/** Wait for every queued mirror write to reach the database. */
+const flushMirror = () => mirrorQueue.flush();
+
 function mirrorWrite(p) {
   if (store.mode !== 'mongodb') return; const rel = relOf(p); if (!mirrorable(rel)) return;
-  (async () => { try {
-    if (rel.endsWith('.json')) await store.putJSON(rel, JSON.parse(readFileSync(p, 'utf8')));
-    else if (/\.(html|log|txt)$/.test(rel)) await store.putText(rel, readFileSync(p, 'utf8'));
-    else await store.putBuf(rel, readFileSync(p));
-  } catch (e) { console.error('[mirror] write', rel, e.message); } })();
+  // Read the bytes NOW rather than inside the queued task — by the time the queue
+  // drains this file may already have been deleted or rewritten.
+  let put;
+  try {
+    if (rel.endsWith('.json')) { const v = JSON.parse(readFileSync(p, 'utf8')); put = () => store.putJSON(rel, v); }
+    else if (/\.(html|log|txt)$/.test(rel)) { const v = readFileSync(p, 'utf8'); put = () => store.putText(rel, v); }
+    else { const v = readFileSync(p); put = () => store.putBuf(rel, v); }
+  } catch (e) { return console.error('[mirror] read', rel, e.message); }
+  enqueueMirror(`write ${rel}`, put);
 }
-function mirrorDel(p) { if (store.mode !== 'mongodb') return; const rel = relOf(p); if (!mirrorable(rel)) return; store.del(rel).catch((e) => console.error('[mirror] del', rel, e.message)); }
+function mirrorDel(p) {
+  if (store.mode !== 'mongodb') return; const rel = relOf(p); if (!mirrorable(rel)) return;
+  enqueueMirror(`del ${rel}`, () => store.del(rel));
+}
 // mirror-aware drop-ins for the real fs calls (every existing call site uses these names unchanged)
 function writeFileSync(p, data, opts) { _wfs(p, data, opts); mirrorWrite(p); }
 function rmSync(p, opts) { _rm(p, opts); mirrorDel(p); }
 
 const sites = {}; // name -> { pages:{slug:{templateHtml,schema,content,sections,collections}}, order, home, pagesMeta, draft:{slug:state}, versions, head, access }
+const brokenSites = {}; // name -> why it could not be loaded, so the console can say so
 
 const siteDir = (name) => join(SITES_DIR, name.replace(/[^a-z0-9_-]/gi, ''));
 const pageDir = (name, slug) => join(siteDir(name), 'pages', String(slug).replace(/[^a-z0-9_-]/gi, ''));
@@ -267,7 +286,20 @@ const actorOf = (req) => req.actor || { id: null, name: null, role: req.role || 
     if (m.migrated) console.log(`MongoDB connected (db: ${m.db}) — migrated ${m.migrated} files from disk on first run.`);
     else { const n = await hydrateToFs(); console.log(`MongoDB connected (db: ${m.db}) — hydrated ${n} files from the database.`); }
   }
-  for (const d of readdirSync(SITES_DIR, { withFileTypes: true })) if (d.isDirectory()) loadSite(d.name);
+  // One unreadable site must never take the whole CMS down — every other client's
+  // editor and live site depend on this process starting. Skip it loudly instead.
+  for (const d of readdirSync(SITES_DIR, { withFileTypes: true })) {
+    if (!d.isDirectory()) continue;
+    try { loadSite(d.name); }
+    catch (e) {
+      brokenSites[d.name] = e.message;
+      console.error(`[boot] site "${d.name}" could not be loaded and was skipped — ${e.message}`);
+      console.error(`[boot] re-ingest it from the console to repair it (its pages are missing from storage).`);
+      delete sites[d.name];
+    }
+  }
+  const broken = Object.keys(brokenSites);
+  if (broken.length) console.error(`[boot] ${broken.length} site(s) skipped: ${broken.join(', ')}`);
 }
 
 /* ───────────────────────────── app ───────────────────────────── */
@@ -494,6 +526,9 @@ app.get('/s/:name', (req, res) => {
 
 app.get('/api/sites', (_req, res) => res.json({
   plannerMode: plannerMode(),
+  // Sites that failed to load are reported rather than silently missing, so a
+  // broken one is visible in the console instead of looking deleted.
+  broken: Object.entries(brokenSites).map(([name, error]) => ({ name, error })),
   sites: Object.keys(sites).map((name) => {
     const s = sites[name];
     return { name, pages: s.order.length, handedOff: !!s.access?.tokenHash, authMode: s.access?.mode || (s.access?.tokenHash ? 'link' : null), client: s.access?.clientName || null, requireApproval: !!s.access?.requireApproval, versions: s.versions.length, vercelProject: s.vercel?.project || null, vercelUrl: s.vercel?.lastUrl || null };
@@ -1153,8 +1188,23 @@ app.post('/api/admin/export', requireStaff, (req, res) => {
 });
 
 const PORT = process.env.PORT || 4321;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`AI CMS (multi-site · multi-page) on http://localhost:${PORT}/`);
   console.log(`  agency console : http://localhost:${PORT}/admin/?key=${ADMIN_KEY}`);
   console.log(`Sites: ${Object.keys(sites).join(', ') || '(none)'} | Planner: ${plannerMode()}`);
 });
+
+/* A redeploy sends SIGTERM. Queued mirror writes live only in this process, so
+   drain them before exiting or the last edits never reach the database. */
+let shuttingDown = false;
+for (const sig of ['SIGTERM', 'SIGINT']) {
+  process.on(sig, async () => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    server.close();
+    if (mirrorQueue.pending) console.log(`[shutdown] flushing ${mirrorQueue.pending} pending write(s) to the database…`);
+    try { await flushMirror(); } catch {}
+    try { await closeStore(); } catch {}
+    process.exit(0);
+  });
+}

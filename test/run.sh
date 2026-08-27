@@ -44,9 +44,10 @@ fi
 
 rc=0
 suites=("$@")
-[ ${#suites[@]} -eq 0 ] && suites=(approval-gate team-roles team-console multipage-ingest)
+[ ${#suites[@]} -eq 0 ] && suites=(mirror-order boot-resilience approval-gate team-roles team-console multipage-ingest)
 for suite in "${suites[@]}"; do
   echo; echo "############ $suite ############"
-  bash "test/$suite.sh" || rc=1
+  if [ -f "test/$suite.mjs" ]; then node "test/$suite.mjs" || rc=1
+  else bash "test/$suite.sh" || rc=1; fi
 done
 exit $rc
