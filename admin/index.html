@@ -54,6 +54,14 @@
   .keyreveal .kt{font-size:13px;font-weight:600;margin-bottom:3px;color:#9be8ab} .keyreveal p{font-size:12.5px;color:var(--ink-3);margin:0 0 10px;line-height:1.5}
   .keyreveal .lkrow{display:flex;gap:8px} .keyreveal input{flex:1;background:#000;border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:8px;color:#9be8ab;padding:9px 11px;font-family:"Geist Mono",monospace;font-size:12px}
   .ownerlock{color:var(--ink-3);font-size:13.5px;padding:18px 4px}
+  .bundlebox{background:#0e0e12;border-radius:12px;box-shadow:inset 0 0 0 1px rgba(39,201,63,.35);padding:15px 17px;margin-bottom:14px}
+  .bundlebox .bh{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .rec{font-size:10px;text-transform:uppercase;letter-spacing:.05em;background:rgba(39,201,63,.14);color:#9be8ab;padding:2px 8px;border-radius:999px}
+  .warn{font-size:10px;text-transform:uppercase;letter-spacing:.05em;background:rgba(255,91,79,.12);color:#ff9c8f;padding:2px 8px;border-radius:999px}
+  .bundlebox input[type=file]{flex:1;color:var(--ink-2);font:inherit;font-size:12.5px}
+  .bstat{font-size:12.5px;color:var(--ink-3);margin-top:9px;line-height:1.5}
+  .urlfallback{background:#0e0e12;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line);padding:15px 17px;opacity:.85}
+  .urlfallback .bh{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
   .ownerOnly{display:none}
   /* discovered pages */
   .disc{display:none;margin-top:11px;background:#0e0e12;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line);padding:13px 15px}
@@ -125,11 +133,19 @@
     <p class="sub" style="margin:26px 4px 14px;font-size:14px;color:var(--ink-2)">Every website you manage — add one, and if it belongs to a client, set a password to hand it over.</p>
     <div class="card" style="margin-bottom:16px">
       <h2 style="margin-top:0">➕ Add a website</h2>
-      <p class="sub" style="margin:0 0 13px;font-size:13px;color:var(--ink-3)">Paste the URL of a site you've already built &amp; deployed, then <b>Find pages</b> — it reads the site's sitemap (or its nav) so you can bring in every page at once, not just the home page. Set a password on its card below only if you're handing it to a client.</p>
+      <p class="sub" style="margin:0 0 13px;font-size:13px;color:var(--ink-3)"><b>Upload the built folder</b> — this is the reliable way. Run your build (Astro: <span class="mono">npm run build</span>), zip the <span class="mono">dist/</span> folder, and drop it below. Every file ships exactly as built, so scripts, menus and responsive images keep working. Capturing from a live URL is a fallback: it cannot keep JavaScript, so anything interactive breaks.</p>
+      <div class="bundlebox">
+        <div class="bh">📦 From the built folder <span class="rec">recommended</span></div>
+        <div class="lkrow"><input id="bName" placeholder="site name (e.g. acme)" style="flex:0 0 200px"><input type="file" id="bZip" accept=".zip,application/zip"><button class="btnp" onclick="ingestBundle()">Upload &amp; ingest</button></div>
+        <div id="bStat" class="bstat"></div>
+      </div>
+      <div class="urlfallback">
+        <div class="bh">🌐 …or capture from a live URL <span class="warn">loses JavaScript</span></div>
       <div class="lkrow"><input id="newName" placeholder="site name (e.g. acme)" style="flex:0 0 200px"><input id="newUrl" placeholder="https://the-site-you-built.com"><button class="ghost" id="findBtn" onclick="findPages()">🔎 Find pages</button></div>
       <div id="discovered" class="disc"></div>
       <textarea id="newHtml" placeholder="…or paste a single page's HTML here instead" style="width:100%;margin-top:9px;min-height:64px;background:#000;border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:8px;color:var(--ink-2);padding:10px 11px;font-family:monospace;font-size:12px;resize:vertical"></textarea>
-      <div style="display:flex;align-items:center;gap:12px;margin-top:11px"><button class="btnp" onclick="ingestSite()">Ingest site</button><span class="stat" id="ingestStat"></span></div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:11px"><button class="ghost" onclick="ingestSite()">Capture from URL</button><span class="stat" id="ingestStat"></span></div>
+      </div>
     </div>
     <div id="list"><div class="empty">Loading…</div></div>
   </div>
@@ -240,6 +256,25 @@ function selectedUrls(){
     .filter(c=>c.checked).map(c=>discovered[+c.dataset.pi].url);
 }
 
+async function ingestBundle(){
+  const name=$('#bName').value.trim(), f=$('#bZip').files[0];
+  if(!name){alert('Give the site a short name (e.g. acme).');return;}
+  if(!f){alert('Choose the zipped build folder (dist.zip).');return;}
+  const st=$('#bStat');
+  const send=async(replace)=>await (await fetch(`/api/ingest-bundle?name=${encodeURIComponent(name)}${replace?'&replace=1':''}`,
+    {method:'POST',headers:{'Content-Type':'application/zip','x-edit-key':keyEl.value},body:f})).json();
+  st.style.color='var(--ink-3)';st.textContent=`Uploading ${(f.size/1048576).toFixed(1)} MB…`;
+  let r=await send(false);
+  if(r.exists){
+    if(!confirm(`"${name}" already exists.\n\nRebuilding it from this bundle REPLACES its pages and version history. The client's password and Vercel link are kept.\n\nContinue?`)){st.textContent='';return;}
+    st.textContent='Replacing…'; r=await send(true);
+  }
+  if(r.error){st.style.color='#ff8a7a';st.textContent='Error: '+r.error;return;}
+  st.style.color='#9be8ab';
+  st.innerHTML=`✓ <b>${r.pages}</b> page${r.pages!==1?'s':''} · <b>${r.assets}</b> asset${r.assets!==1?'s':''} · ${r.fields} editable fields · ${(r.bytes/1048576).toFixed(1)} MB<br><span style="color:var(--ink-3)">Scripts and images kept exactly as built.</span>`;
+  $('#bName').value='';$('#bZip').value='';
+  load();
+}
 async function ingestSite(){
   const name=$('#newName').value.trim(), url=$('#newUrl').value.trim(), html=$('#newHtml').value.trim();
   if(!name){alert('Give the site a short name (e.g. acme).');return;}

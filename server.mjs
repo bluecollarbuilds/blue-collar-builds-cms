@@ -18,6 +18,7 @@ import { readFileSync, writeFileSync as _wfs, mkdirSync, readdirSync, existsSync
 import { store, initStore, hydrateToFs, closeStore, PERSISTED_PREFIXES } from './lib/store.mjs';
 import { createMirrorQueue } from './lib/mirror-queue.mjs';
 import { collectHtmlAssets, collectCssAssets, resolveAssetUrls, assetPathOf, ASSET_MARK } from './lib/assets.mjs';
+import { readBundle } from './lib/bundle.mjs';
 import { memberByKey, touchMember, atLeast, listMembers, publicMember, addMember, rotateKey, revokeMember, setRole, ROLES } from './lib/team.mjs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -144,7 +145,7 @@ function siteBase(name) {
   if (!/^https?:\/\//.test(b)) b = 'https://' + b;
   return b.replace(/\/+$/, '');
 }
-const pagePath = (s, slug) => (slug === s.home ? '/' : `/${slug}`);
+const pagePath = (s, slug) => s.pagesMeta?.[slug]?.path || (slug === s.home ? '/' : `/${slug}`);
 // SEO infra: sitemap.xml + robots.txt (auto-generated from the page list).
 function sitemapXml(name) {
   const s = sites[name], base = siteBase(name);
@@ -227,7 +228,7 @@ function loadSite(name) {
 /* ───── the page the editor is working against (draft if staged) ───── */
 const pageState = (s, slug) => s.draft[slug] || s.pages[slug];
 const hasDraft = (s) => Object.keys(s.draft).length > 0;
-const fileFor = (s, slug) => (slug === s.home ? 'index.html' : `${slug}.html`);
+const fileFor = (s, slug) => s.pagesMeta?.[slug]?.file || (slug === s.home ? 'index.html' : `${slug}.html`);
 
 // Inject a tiny script so live/deployed forms post submissions back to the CMS inbox.
 function wireForms(html, name) {
@@ -867,6 +868,33 @@ async function captureAssets(name, tagged, baseUrl) {
   return { saved: kept.size, failed };
 }
 
+/* A built bundle references its files as root-relative paths ("/_astro/main.css").
+   Those are correct once deployed at the domain root, but not under the CMS's
+   /live/<name>/ preview. Marking them lets the same page render correctly in both
+   places, using the machinery URL-capture already uses. The paths themselves are
+   never changed — only where they are resolved from. */
+const BUNDLE_ORIGIN = 'https://bundle.local';
+function markBundleAssets(tagged, have) {
+  const $ = load(tagged.templateHtml, { decodeEntities: false });
+  const { urls, rewrite } = collectHtmlAssets($, BUNDLE_ORIGIN, BUNDLE_ORIGIN + '/');
+  const present = new Set(urls.filter((u) => have.has(assetPathOf(u, BUNDLE_ORIGIN, BUNDLE_ORIGIN + '/'))));
+  rewrite(present);
+  tagged.templateHtml = $.html();
+  for (const [id, def] of Object.entries(tagged.schema || {})) {
+    if (def?.type !== 'image') continue;
+    const val = tagged.content?.[id];
+    if (typeof val !== 'string') continue;
+    let abs; try { abs = new URL(val, BUNDLE_ORIGIN + '/').href; } catch { continue; }
+    const path = assetPathOf(abs, BUNDLE_ORIGIN, BUNDLE_ORIGIN + '/');
+    if (path && have.has(path)) tagged.content[id] = ASSET_MARK + path;
+  }
+}
+/** Same treatment for a stylesheet's own url()/@import references. */
+function markBundleCss(css, cssPath, have) {
+  const { urls, rewrite } = collectCssAssets(css, `${BUNDLE_ORIGIN}/${cssPath}`, BUNDLE_ORIGIN);
+  return rewrite(new Set(urls.filter((u) => have.has(assetPathOf(u, BUNDLE_ORIGIN)))));
+}
+
 /** Every mirrored asset, as repo-relative paths ("_astro/main.css"). */
 function assetList(name) {
   const root = assetsDir(name);
@@ -893,6 +921,72 @@ app.post('/api/discover', requireStaff, async (req, res) => {
     const urls = (await discoverPages(url)).slice(0, MAX_PAGES);
     res.json({ ok: true, urls, pages: urls.map((u) => ({ url: u, slug: slugFromUrl(u), path: new URL(u).pathname || '/' })) });
   } catch (e) { res.status(400).json({ error: `Could not read that site — ${e.message}` }); }
+});
+
+/* ───── ingest from a built bundle (the reliable path) ─────
+   Takes the zipped output of a real build — dist/ from `astro build` — instead of
+   re-deriving the site from fetched HTML. Every file ships exactly as built, so
+   scripts, responsive images and anything else the build emitted keep working.
+   Raw body rather than JSON: a build with images easily exceeds a JSON limit and
+   base64 would inflate it by a third. */
+app.post('/api/ingest-bundle', requireStaff, express.raw({ type: ['application/zip', 'application/octet-stream'], limit: '200mb' }), async (req, res) => {
+  const name = String(req.query.name || '').replace(/[^a-z0-9_-]/gi, '');
+  if (!name) return res.status(400).json({ error: 'Need a site name.' });
+  if (!req.body || !req.body.length) return res.status(400).json({ error: 'No file received.' });
+  if (sites[name] && req.query.replace !== '1') {
+    return res.status(409).json({ exists: true, error: `"${name}" already exists. Confirm the replace to rebuild it from this bundle.` });
+  }
+
+  let bundle;
+  try { bundle = readBundle(req.body); }
+  catch (e) { return res.status(400).json({ error: e.message }); }
+
+  // Preserve the client relationship across a rebuild, as URL ingest does.
+  const readJsonIf = (p) => { try { return existsSync(p) ? JSON.parse(readFileSync(p, 'utf8')) : null; } catch { return null; } };
+  const prior = {
+    access: sites[name]?.access ?? readJsonIf(join(siteDir(name), 'access.json')),
+    vercel: sites[name]?.vercel ?? (readJsonIf(join(siteDir(name), 'site.json'))?.vercel || null),
+    domain: sites[name]?.domain ?? (readJsonIf(join(siteDir(name), 'site.json'))?.domain || null),
+  };
+
+  rmSync(siteDir(name), { recursive: true, force: true });
+  delete brokenSites[name];
+  const s = sites[name] = { pages: {}, order: [], home: 'home', pagesMeta: {}, draft: {}, versions: [], head: -1, access: prior.access, vercel: prior.vercel, domain: prior.domain };
+  mkdirSync(siteDir(name), { recursive: true });
+  if (prior.access) writeFileSync(join(siteDir(name), 'access.json'), JSON.stringify(prior.access, null, 2));
+
+  // Every non-HTML file, byte for byte — this IS the site's styling and imagery.
+  const have = new Set(bundle.assets.map((a) => a.path));
+  for (const a of bundle.assets) {
+    const isCss = a.path.toLowerCase().endsWith('.css');
+    saveAsset(name, a.path, isCss ? Buffer.from(markBundleCss(a.bytes.toString('utf8'), a.path, have), 'utf8') : a.bytes);
+  }
+
+  const added = [];
+  for (const [i, p] of bundle.pages.entries()) {
+    const isHome = i === 0;
+    const slug = isHome ? 'home' : uniqueSlug(cleanSlug(p.slug, `page-${i}`), s.pagesMeta);
+    // keepScripts: these are the site's own working scripts, not fetched markup.
+    // No baseUrl — the paths are already correct for the deployed root.
+    const tagged = autotag(p.html, null, { keepScripts: true });
+    markBundleAssets(tagged, have);
+    writePage(name, slug, tagged);
+    s.order.push(slug);
+    s.pagesMeta[slug] = { title: titleFromHtml(p.html, prettify(slug || 'home')), path: isHome ? '/' : p.route, file: p.file };
+    added.push({ slug, route: p.route, file: p.file, title: s.pagesMeta[slug].title, fields: Object.keys(tagged.schema).length });
+  }
+
+  writeCfg(name);
+  loadSite(name);
+  auditLog(name, actorOf(req), { action: 'ingest-bundle', pages: added.length, assets: bundle.assets.length });
+  res.json({
+    ok: true, name,
+    pages: added.length,
+    assets: bundle.assets.length,
+    bytes: bundle.bytes,
+    fields: added.reduce((n, a) => n + a.fields, 0),
+    added,
+  });
 });
 
 app.post('/api/ingest', requireStaff, async (req, res) => {

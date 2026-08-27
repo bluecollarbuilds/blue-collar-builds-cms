@@ -2,7 +2,7 @@
   "name": "northline-cms",
   "version": "0.1.0",
   "type": "module",
-  "description": "AI-native CMS \u2014 clients edit their site by chatting; the AI never writes HTML, only safe ops against a locked content model.",
+  "description": "AI-native CMS — clients edit their site by chatting; the AI never writes HTML, only safe ops against a locked content model.",
   "engines": {
     "node": ">=20.12"
   },
@@ -17,6 +17,7 @@
     "@anthropic-ai/sdk": "^0.40.0",
     "cheerio": "^1.0.0",
     "express": "^4.21.0",
+    "fflate": "^0.8.3",
     "mongodb": "^7.2.0"
   }
 }
