@@ -7,8 +7,9 @@
     "node": ">=20.12"
   },
   "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --env-file-if-exists=.env server.mjs",
     "build-model": "node build-model.mjs",
-    "start": "node --env-file-if-exists=.env server.mjs",
     "test": "bash test/run.sh",
     "team": "node scripts/team.mjs"
   },
