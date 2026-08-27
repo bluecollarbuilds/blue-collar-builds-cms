@@ -402,17 +402,25 @@ function renderPages(){
     `<div class="addbox">
        <div class="addlbl">Add a new page</div>
        <div class="tplrow">
+         <button class="tpl ${newTpl==='url'?'on':''}" data-tpl="url"><b>From my site</b><span>Capture a live page</span></button>
          <button class="tpl ${newTpl==='blank'?'on':''}" data-tpl="blank"><b>Blank</b><span>Title + subheading</span></button>
          <button class="tpl ${newTpl==='article'?'on':''}" data-tpl="article"><b>Article</b><span>Blog-style post</span></button>
        </div>
-       <input id="newPage" placeholder="Page title — e.g. About us">
-       <button id="addPage" class="addbtn">＋ Add page</button>
+       <input id="newPage" placeholder="${newTpl==='url'?'https://your-site.com/about':'Page title — e.g. About us'}">
+       <button id="addPage" class="addbtn">${newTpl==='url'?'⤓ Capture page':'＋ Add page'}</button>
      </div>`;
   p.querySelectorAll('[data-go]').forEach(e=>e.onclick=()=>switchPage(e.dataset.go));
   p.querySelectorAll('[data-home]').forEach(e=>e.onclick=()=>pageOp('/api/pages/home',{slug:e.dataset.home}));
   p.querySelectorAll('[data-del]').forEach(e=>e.onclick=()=>{if(confirm('Delete this page?'))pageOp('/api/pages/delete',{slug:e.dataset.del});});
-  p.querySelectorAll('[data-tpl]').forEach(e=>e.onclick=()=>{newTpl=e.dataset.tpl;p.querySelectorAll('[data-tpl]').forEach(x=>x.classList.toggle('on',x===e));});
-  const add=()=>{const t=$('#newPage').value.trim();if(t)pageOp('/api/pages/add',{title:t,template:newTpl});};
+  // Switching template re-renders so the input placeholder and button match it.
+  p.querySelectorAll('[data-tpl]').forEach(e=>e.onclick=()=>{newTpl=e.dataset.tpl;renderPages();});
+  const add=()=>{
+    const v=$('#newPage').value.trim(); if(!v)return;
+    // "From my site" captures a page that already exists on the live site, keeping
+    // its real layout — the other templates start from a blank slate.
+    if(newTpl==='url'){bubble('bot','⤓ Capturing that page…');pageOp('/api/pages/add',{url:v});}
+    else pageOp('/api/pages/add',{title:v,template:newTpl});
+  };
   $('#addPage').onclick=add;
   $('#newPage').addEventListener('keydown',e=>{if(e.key==='Enter')add();});
 }

@@ -526,23 +526,161 @@ app.get('/api/pages', (req, res) => {
   res.json({ order: s.order, home: s.home, pages: s.order.map((slug) => ({ slug, ...s.pagesMeta[slug], home: slug === s.home, dirty: !!s.draft[slug] })) });
 });
 
+/* ───── fetching live pages (shared by ingest, page-add and discovery) ─────
+   Sites are captured from their built output over plain HTTP — no repo, no build.
+   Note this never runs JavaScript, so a client-rendered SPA yields only its shell;
+   server-rendered and static sites (Astro, Next, Hugo, plain HTML) come through whole. */
+const FETCH_TIMEOUT_MS = 15000;
+const MAX_PAGES = 40;                       // cap per ingest, so one call can't run away
+const ASSET_RE = /\.(png|jpe?g|gif|svg|webp|avif|ico|pdf|zip|css|js|mjs|json|txt|woff2?|ttf|otf|eot|mp4|webm|mp3|wav|dmg|exe)$/i;
+
+async function fetchText(url) {
+  const r = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS), redirect: 'follow' });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return { text: await r.text(), type: r.headers.get('content-type') || '' };
+}
+async function fetchHtml(url) {
+  const { text, type } = await fetchText(url);
+  if (type && !/text\/html|application\/xhtml/i.test(type)) throw new Error(`not an HTML page (${type.split(';')[0]})`);
+  return text;
+}
+
+/** "https://x.com/services/plumbing/" → "services-plumbing"; a bare origin → "home". */
+function slugFromUrl(url) {
+  let path;
+  try { path = new URL(url).pathname; } catch { path = String(url); }
+  path = path.replace(/\/+$/, '').replace(/\.(html?|php)$/i, '');
+  return path.split('/').filter(Boolean).join('-').toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'home';
+}
+const cleanSlug = (raw, fallback) => String(raw || '').toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || fallback;
+const prettify = (slug) => slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+const titleFromHtml = (html, fallback) => {
+  try { const t = load(html)('head > title').first().text().trim(); if (t) return t.slice(0, 60); } catch {}
+  return fallback;
+};
+/** Free `slug` of collisions against pages already in `taken`. */
+function uniqueSlug(slug, taken) {
+  if (!taken[slug]) return slug;
+  for (let n = 2; ; n++) { const s = `${slug}-${n}`.slice(0, 40); if (!taken[s]) return s; }
+}
+
+/** Map with bounded concurrency, preserving input order. `fn` must not throw. */
+async function mapLimit(items, limit, fn) {
+  const out = new Array(items.length);
+  let next = 0;
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (next < items.length) { const i = next++; out[i] = await fn(items[i], i); }
+  }));
+  return out;
+}
+
+/* Find a site's other pages: its sitemap first (Astro, Next, Hugo and friends all
+   emit one), else the same-origin links on the page itself. Best-effort — the
+   caller decides what to actually ingest. */
+async function discoverPages(startUrl) {
+  const origin = new URL(startUrl).origin;
+  const found = new Set();
+  const keep = (href) => {
+    let u; try { u = new URL(href, startUrl); } catch { return; }
+    if (u.origin !== origin || !/^https?:$/.test(u.protocol)) return;
+    if (ASSET_RE.test(u.pathname)) return;
+    u.hash = ''; u.search = '';
+    found.add(u.href.replace(/(.)\/$/, '$1'));           // drop a trailing slash, keep "https://x.com/"
+  };
+  const locsOf = (xml) => { const $ = load(xml, { xmlMode: true }); return $('loc').map((_, el) => $(el).text().trim()).get(); };
+
+  for (const path of ['/sitemap-index.xml', '/sitemap.xml', '/sitemap-0.xml']) {
+    try {
+      const { text } = await fetchText(origin + path);
+      if (!/<(urlset|sitemapindex)/i.test(text)) continue;
+      if (/<sitemapindex/i.test(text)) {
+        for (const child of locsOf(text).slice(0, 5)) {
+          try { locsOf((await fetchText(child)).text).forEach(keep); } catch {}
+        }
+      } else locsOf(text).forEach(keep);
+      if (found.size) break;
+    } catch {}
+  }
+  if (!found.size) {                                      // no sitemap → read the page's own links
+    try { const $ = load(await fetchHtml(startUrl)); $('a[href]').each((_, el) => keep($(el).attr('href'))); } catch {}
+  }
+  keep(startUrl);                                         // the starting page always belongs
+  return [...found].sort((a, b) => a.length - b.length || a.localeCompare(b));
+}
+
+/* List the pages of a live site without ingesting anything, so the console can
+   offer them for selection. */
+app.post('/api/discover', requireStaff, async (req, res) => {
+  const url = String(req.body?.url || '').trim();
+  if (!url) return res.status(400).json({ error: 'Need a URL to look at.' });
+  try { new URL(url); } catch { return res.status(400).json({ error: 'That does not look like a URL.' }); }
+  try {
+    const urls = (await discoverPages(url)).slice(0, MAX_PAGES);
+    res.json({ ok: true, urls, pages: urls.map((u) => ({ url: u, slug: slugFromUrl(u), path: new URL(u).pathname || '/' })) });
+  } catch (e) { res.status(400).json({ error: `Could not read that site — ${e.message}` }); }
+});
+
 app.post('/api/ingest', requireStaff, async (req, res) => {
   const name = String(req.body?.name || '').replace(/[^a-z0-9_-]/gi, '');
   if (!name) return res.status(400).json({ error: 'Need a site name.' });
-  let html = req.body?.html, baseUrl = req.body?.baseUrl;
-  if (!html && req.body?.url) {                               // fetch the built site server-side
-    try { const u = String(req.body.url); const r = await fetch(u); if (!r.ok) throw new Error('HTTP ' + r.status); html = await r.text(); baseUrl = baseUrl || u; }
-    catch (e) { return res.status(400).json({ error: 'Could not fetch that URL — ' + e.message }); }
+
+  // Ingest always starts a site from scratch, so re-running it over a live site
+  // would destroy its content, version history and client edits. Make that an
+  // explicit choice rather than something a repeated name can do silently.
+  if (sites[name] && !req.body?.replace) {
+    return res.status(409).json({
+      exists: true,
+      error: `"${name}" already exists. To add more pages to it, use "Add page from URL" in its editor. To wipe it and start over, confirm the replace.`,
+    });
   }
-  if (!html) return res.status(400).json({ error: 'Provide a URL or paste the page HTML.' });
-  const { templateHtml, content, schema, sections, collections } = autotag(html, baseUrl);
-  const dir = siteDir(name);
-  rmSync(dir, { recursive: true, force: true }); // fresh site
-  writePage(name, 'home', { templateHtml, content, schema, sections, collections });
-  sites[name] = { pages: {}, order: ['home'], home: 'home', pagesMeta: { home: { title: req.body?.title || 'Home', path: '/' } }, draft: {}, versions: [], head: -1, access: null };
+
+  // Accept a list of URLs (multi-page), a single URL, or pasted HTML.
+  const raw = Array.isArray(req.body?.urls) ? req.body.urls : (req.body?.url ? [req.body.url] : []);
+  const urls = [...new Set(raw.map((u) => String(u || '').trim()).filter(Boolean))].slice(0, MAX_PAGES);
+  const pasted = req.body?.html;
+  if (!urls.length && !pasted) return res.status(400).json({ error: 'Provide a URL (or several), or paste the page HTML.' });
+
+  // Fetch everything up front — nothing is written until at least one page is good,
+  // so a dead URL can never leave a half-built site behind.
+  const fetched = (urls.length)
+    ? await mapLimit(urls, 4, async (u) => {
+        try { return { ok: true, url: u, html: await fetchHtml(u) }; }
+        catch (e) { return { ok: false, url: u, error: e.message }; }
+      })
+    : [{ ok: true, url: req.body?.baseUrl || null, html: pasted }];
+
+  const good = fetched.filter((f) => f.ok);
+  const failed = fetched.filter((f) => !f.ok).map(({ url, error }) => ({ url, error }));
+  if (!good.length) return res.status(400).json({ error: `Could not fetch ${failed[0].url} — ${failed[0].error}`, failed });
+
+  rmSync(siteDir(name), { recursive: true, force: true });   // fresh site
+  const s = sites[name] = { pages: {}, order: [], home: 'home', pagesMeta: {}, draft: {}, versions: [], head: -1, access: null };
+
+  const added = [];
+  good.forEach((f, i) => {
+    const isHome = i === 0;                                  // the first page that loaded becomes home
+    const slug = isHome ? 'home' : uniqueSlug(slugFromUrl(f.url), s.pagesMeta);
+    const tagged = autotag(f.html, f.url || req.body?.baseUrl);
+    writePage(name, slug, tagged);
+    s.order.push(slug);
+    s.pagesMeta[slug] = {
+      title: isHome ? (req.body?.title || titleFromHtml(f.html, 'Home')) : titleFromHtml(f.html, prettify(slug)),
+      path: isHome ? '/' : `/${slug}`,
+    };
+    added.push({ slug, url: f.url, title: s.pagesMeta[slug].title, fields: Object.keys(tagged.schema).length });
+  });
+
   writeCfg(name);
   loadSite(name);
-  res.json({ ok: true, name, pages: 1, fields: Object.keys(schema).length, collections: collections.length });
+  res.json({
+    ok: true, name,
+    pages: added.length,
+    fields: added.reduce((n, a) => n + a.fields, 0),
+    collections: (sites[name].pages[sites[name].home]?.collections || []).length,
+    added, failed,
+  });
 });
 
 // Re-sync: re-ingest a REDESIGNED template for an existing site WITHOUT losing the client's edits.
@@ -818,14 +956,34 @@ app.post('/api/rollback', authWrite, (req, res) => {
 });
 
 /* ───── PAGE MANAGEMENT (WordPress-style) — auto-versioned + deployed ───── */
-app.post('/api/pages/add', authWrite, (req, res) => {
+app.post('/api/pages/add', authWrite, async (req, res) => {
   const s = need(req, res); if (!s) return;
-  const title = String(req.body?.title || 'New Page').slice(0, 60);
-  let slug = String(req.body?.slug || title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || `page-${s.order.length}`;
-  if (s.pages[slug]) slug = `${slug}-${s.order.length}`;
+  const fromUrl = String(req.body?.url || '').trim();
+
+  // From a URL: capture a page that already exists on the live site, exactly as
+  // ingest does — but slotted into this site rather than replacing it. This is how
+  // a multi-page site gets its remaining pages, and how pages added to the real
+  // site later get pulled in.
+  let captured = null, title, slug;
+  if (fromUrl) {
+    try { new URL(fromUrl); } catch { return res.status(400).json({ error: 'That does not look like a URL.' }); }
+    let html;
+    try { html = await fetchHtml(fromUrl); }
+    catch (e) { return res.status(400).json({ error: `Could not fetch that URL — ${e.message}` }); }
+    captured = autotag(html, fromUrl);
+    slug = cleanSlug(req.body?.slug || slugFromUrl(fromUrl), `page-${s.order.length}`);
+    title = String(req.body?.title || titleFromHtml(html, prettify(slug))).slice(0, 60);
+  } else {
+    title = String(req.body?.title || 'New Page').slice(0, 60);
+    slug = cleanSlug(req.body?.slug || title, `page-${s.order.length}`);
+  }
+  slug = uniqueSlug(slug, s.pagesMeta);
+
   const template = req.body?.template || 'blank';
   const home = s.pages[s.home];
-  if (template === 'blank' || template === 'article') {
+  if (captured) {
+    s.pages[slug] = captured;
+  } else if (template === 'blank' || template === 'article') {
     // Build a new page reusing the site's head/header/footer (instant native styling),
     // swapping <main> for a starter layout, then autotag so it's fully editable.
     const $ = load(home.templateHtml, { decodeEntities: false });
@@ -845,8 +1003,13 @@ app.post('/api/pages/add', authWrite, (req, res) => {
   s.pagesMeta[slug] = { title, path: `/${slug}` };
   writePage(get(req), slug, s.pages[slug]);
   writeCfg(get(req));
-  saveVersion(get(req), `added page "${title}"`);
-  res.json({ ok: true, slug, liveUrl: `/live/${get(req)}/${slug}` });
+  saveVersion(get(req), captured ? `captured page "${title}" from ${fromUrl}` : `added page "${title}"`);
+  res.json({
+    ok: true, slug, title,
+    fields: Object.keys(s.pages[slug].schema).length,
+    captured: !!captured,
+    liveUrl: `/live/${get(req)}/${slug}`,
+  });
 });
 
 app.post('/api/pages/delete', authWrite, (req, res) => {

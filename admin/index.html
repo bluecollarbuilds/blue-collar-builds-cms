@@ -55,6 +55,18 @@
   .keyreveal .lkrow{display:flex;gap:8px} .keyreveal input{flex:1;background:#000;border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:8px;color:#9be8ab;padding:9px 11px;font-family:"Geist Mono",monospace;font-size:12px}
   .ownerlock{color:var(--ink-3);font-size:13.5px;padding:18px 4px}
   .ownerOnly{display:none}
+  /* discovered pages */
+  .disc{display:none;margin-top:11px;background:#0e0e12;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line);padding:13px 15px}
+  .disc.show{display:block}
+  .disc .dh{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-2);margin-bottom:9px}
+  .disc .dh b{color:var(--ink)} .disc .dh .sp{flex:1}
+  .disc .selall{background:none;border:0;color:#9bc1ff;font:500 12px 'Geist';cursor:pointer;padding:0}
+  .disc .plist{max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:1px}
+  .disc label{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:7px;cursor:pointer;font-size:12.5px}
+  .disc label:hover{background:var(--panel-2)}
+  .disc input[type=checkbox]{width:15px;height:15px;accent-color:var(--blue);cursor:pointer;flex:0 0 auto}
+  .disc .pu{font-family:"Geist Mono",monospace;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .disc .hm{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#9be8ab;flex:0 0 auto}
 </style>
 </head>
 <body>
@@ -113,9 +125,10 @@
     <p class="sub" style="margin:26px 4px 14px;font-size:14px;color:var(--ink-2)">Every website you manage — add one, and if it belongs to a client, set a password to hand it over.</p>
     <div class="card" style="margin-bottom:16px">
       <h2 style="margin-top:0">➕ Add a website</h2>
-      <p class="sub" style="margin:0 0 13px;font-size:13px;color:var(--ink-3)">Paste the URL of a site you've already built &amp; deployed (we fetch it &amp; make it editable), or paste its HTML. It becomes an editable site in your dashboard. Set a password on its card below only if you're handing it to a client.</p>
-      <div class="lkrow"><input id="newName" placeholder="site name (e.g. acme)" style="flex:0 0 200px"><input id="newUrl" placeholder="https://the-site-you-built.com  (or leave blank & paste HTML below)"></div>
-      <textarea id="newHtml" placeholder="…or paste the page's HTML here" style="width:100%;margin-top:9px;min-height:64px;background:#000;border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:8px;color:var(--ink-2);padding:10px 11px;font-family:monospace;font-size:12px;resize:vertical"></textarea>
+      <p class="sub" style="margin:0 0 13px;font-size:13px;color:var(--ink-3)">Paste the URL of a site you've already built &amp; deployed, then <b>Find pages</b> — it reads the site's sitemap (or its nav) so you can bring in every page at once, not just the home page. Set a password on its card below only if you're handing it to a client.</p>
+      <div class="lkrow"><input id="newName" placeholder="site name (e.g. acme)" style="flex:0 0 200px"><input id="newUrl" placeholder="https://the-site-you-built.com"><button class="ghost" id="findBtn" onclick="findPages()">🔎 Find pages</button></div>
+      <div id="discovered" class="disc"></div>
+      <textarea id="newHtml" placeholder="…or paste a single page's HTML here instead" style="width:100%;margin-top:9px;min-height:64px;background:#000;border:0;box-shadow:inset 0 0 0 1px var(--line);border-radius:8px;color:var(--ink-2);padding:10px 11px;font-family:monospace;font-size:12px;resize:vertical"></textarea>
       <div style="display:flex;align-items:center;gap:12px;margin-top:11px"><button class="btnp" onclick="ingestSite()">Ingest site</button><span class="stat" id="ingestStat"></span></div>
     </div>
     <div id="list"><div class="empty">Loading…</div></div>
@@ -175,15 +188,67 @@ async function resyncSite(name){
   $('#rs-'+name).value='';
   load();
 }
+/* ── page discovery ──
+   Most sites are multi-page, and ingest only takes the exact URLs it's given —
+   so offer the site's own page list rather than making anyone type them out. */
+let discovered=[];
+async function findPages(){
+  const url=$('#newUrl').value.trim();
+  if(!url){alert('Paste the site URL first.');return;}
+  const btn=$('#findBtn'), box=$('#discovered');
+  btn.textContent='Looking…';btn.disabled=true;
+  try{
+    const r=await (await fetch('/api/discover',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({url})})).json();
+    if(r.error){alert('Error: '+r.error);box.classList.remove('show');return;}
+    discovered=r.pages||[];
+    if(!discovered.length){box.classList.remove('show');alert('No other pages found — ingest will just take this one URL.');return;}
+    renderDiscovered();
+  } finally { btn.textContent='🔎 Find pages';btn.disabled=false; }
+}
+function renderDiscovered(){
+  const box=$('#discovered');
+  box.classList.add('show');
+  box.innerHTML=`
+    <div class="dh"><b>${discovered.length}</b> page${discovered.length!==1?'s':''} found<span class="sp"></span>
+      <button class="selall" onclick="toggleAllPages(true)">Select all</button>
+      <button class="selall" onclick="toggleAllPages(false)">None</button></div>
+    <div class="plist">${discovered.map((p,i)=>`
+      <label><input type="checkbox" data-pi="${i}" checked>
+        <span class="pu">${esc(p.path||'/')}</span>
+        ${i===0?'<span class="hm">home</span>':''}</label>`).join('')}</div>`;
+}
+function toggleAllPages(on){document.querySelectorAll('#discovered input[type=checkbox]').forEach(c=>c.checked=on);}
+function selectedUrls(){
+  return [...document.querySelectorAll('#discovered input[type=checkbox]')]
+    .filter(c=>c.checked).map(c=>discovered[+c.dataset.pi].url);
+}
+
 async function ingestSite(){
   const name=$('#newName').value.trim(), url=$('#newUrl').value.trim(), html=$('#newHtml').value.trim();
   if(!name){alert('Give the site a short name (e.g. acme).');return;}
-  if(!url&&!html){alert('Paste a URL or some HTML.');return;}
-  const st=$('#ingestStat');st.textContent='Ingesting…';
-  const r=await (await fetch('/api/ingest',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({name,url:url||undefined,html:html||undefined})})).json();
+  // Whatever is ticked in the discovered list wins; otherwise fall back to the
+  // single URL (or pasted HTML) the way this always worked.
+  const urls=$('#discovered').classList.contains('show')?selectedUrls():(url?[url]:[]);
+  if(!urls.length&&!html){alert('Paste a URL or some HTML.');return;}
+  const st=$('#ingestStat');
+  const send=async(replace)=>await (await fetch('/api/ingest',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},
+    body:JSON.stringify({name,urls:urls.length?urls:undefined,html:(!urls.length&&html)?html:undefined,replace:replace||undefined})})).json();
+
+  st.textContent=urls.length>1?`Ingesting ${urls.length} pages…`:'Ingesting…';
+  let r=await send(false);
+  // Ingest rebuilds a site from scratch, so re-using a name would wipe the old
+  // one — the server refuses until we confirm that's intended.
+  if(r.exists){
+    if(!confirm(`"${name}" already exists.\n\nRe-ingesting REPLACES it — all its content, version history and client edits are lost.\n\nTo add pages to it instead, cancel and use "Add page → From my site" in its editor.\n\nReplace it anyway?`)){st.textContent='';return;}
+    st.textContent='Replacing…';
+    r=await send(true);
+  }
   if(r.error){st.textContent='';alert('Error: '+r.error);return;}
-  st.textContent=`✓ Captured ${r.fields} editable fields`;
+  const failed=(r.failed||[]).length;
+  st.textContent=`✓ ${r.pages} page${r.pages!==1?'s':''} · ${r.fields} editable fields`+(failed?` · ${failed} failed`:'');
+  if(failed)alert('Some pages could not be fetched:\n\n'+r.failed.map(f=>`${f.url} — ${f.error}`).join('\n'));
   $('#newName').value='';$('#newUrl').value='';$('#newHtml').value='';
+  discovered=[];$('#discovered').classList.remove('show');$('#discovered').innerHTML='';
   load();
 }
 async function setPw(name){
