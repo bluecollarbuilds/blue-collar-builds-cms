@@ -47,7 +47,7 @@ fi
 
 rc=0
 suites=("$@")
-[ ${#suites[@]} -eq 0 ] && suites=(mirror-order boot-resilience auth-limit approval-gate team-roles team-console multipage-ingest sitemap assets bundle-ingest)
+[ ${#suites[@]} -eq 0 ] && suites=(mirror-order field-binding boot-resilience auth-limit approval-gate team-roles team-console multipage-ingest sitemap assets bundle-ingest)
 for suite in "${suites[@]}"; do
   echo; echo "############ $suite ############"
   if [ -f "test/$suite.mjs" ]; then node "test/$suite.mjs" || rc=1
