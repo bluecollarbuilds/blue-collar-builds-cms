@@ -115,7 +115,7 @@ function writePage(name, slug, p) {
 }
 function writeCfg(name) {
   const s = sites[name];
-  writeFileSync(join(siteDir(name), 'site.json'), JSON.stringify({ order: s.order, home: s.home, pages: s.pagesMeta, vercel: s.vercel || null, domain: s.domain || null }, null, 2));
+  writeFileSync(join(siteDir(name), 'site.json'), JSON.stringify({ order: s.order, home: s.home, pages: s.pagesMeta, vercel: s.vercel || null, domain: s.domain || null, staticRoot: s.staticRoot || '' }, null, 2));
 }
 
 /* ───── drafts: staged-but-not-live edits, persisted so a Save survives reload/restart ───── */
@@ -160,18 +160,28 @@ function robotsTxt(name) {
 // Build the full static bundle for a site (every page + uploaded images + SEO infra) for Vercel.
 function siteFiles(name) {
   const s = sites[name];
-  const files = s.order.map((slug) => ({ file: fileFor(s, slug), data: publishedPageHtml(name, slug) }));
-  files.push({ file: 'sitemap.xml', data: sitemapXml(name) });
-  files.push({ file: 'robots.txt', data: robotsTxt(name) });
-  // The site's own CSS, fonts and images, at their original paths. A Vercel
-  // deployment REPLACES the site, so omitting these would delete the styling the
-  // pages above depend on.
+  // Pages and assets sit under whatever root the build used; the payload keeps
+  // its own absolute-in-bundle paths. Reproducing the layout exactly is what
+  // lets Vercel still recognise its config.json and functions/.
+  const root = staticRootOf(name);
+  const at = (p) => root + p;
+  const files = s.order.map((slug) => ({ file: at(fileFor(s, slug)), data: publishedPageHtml(name, slug) }));
+  files.push({ file: at('sitemap.xml'), data: sitemapXml(name) });
+  files.push({ file: at('robots.txt'), data: robotsTxt(name) });
+  // The site's own CSS, fonts and images. A deployment REPLACES the site, so
+  // omitting these would delete the styling the pages above depend on.
   for (const rel of assetList(name)) {
     if (rel.toLowerCase().endsWith('.css')) {
-      files.push({ file: rel, data: resolveAssetUrls(readFileSync(assetFile(name, rel), 'utf8'), '') });
+      files.push({ file: at(rel), data: resolveAssetUrls(readFileSync(assetFile(name, rel), 'utf8'), '') });
     } else {
-      files.push({ file: rel, data: readFileSync(assetFile(name, rel)).toString('base64'), encoding: 'base64' });
+      files.push({ file: at(rel), data: readFileSync(assetFile(name, rel)).toString('base64'), encoding: 'base64' });
     }
+  }
+  // Redirects, headers, 404 rules and serverless functions — untouched. Without
+  // these a publish would strip a client's SEO redirects and break the endpoint
+  // their contact form posts to.
+  for (const rel of throughList(name)) {
+    files.push({ file: rel, data: readFileSync(throughFile(name, rel)).toString('base64'), encoding: 'base64' });
   }
   const up = join(siteDir(name), 'uploads');
   if (existsSync(up)) for (const f of readdirSync(up)) files.push({ file: `u/${name}/${f}`, data: readFileSync(join(up, f)).toString('base64'), encoding: 'base64' });
@@ -215,7 +225,7 @@ function loadSite(name) {
   const pages = {};
   for (const slug of cfg.order) pages[slug] = readPage(name, slug);
   sites[name] = {
-    pages, order: cfg.order, home: cfg.home, pagesMeta: cfg.pages, vercel: cfg.vercel || null, domain: cfg.domain || null,
+    pages, order: cfg.order, home: cfg.home, pagesMeta: cfg.pages, vercel: cfg.vercel || null, domain: cfg.domain || null, staticRoot: cfg.staticRoot || '',
     draft: {}, versions: [], head: -1,
     access: existsSync(join(dir, 'access.json')) ? JSON.parse(readFileSync(join(dir, 'access.json'), 'utf8')) : null,
   };
@@ -785,6 +795,31 @@ const MAX_ASSETS = 300;
 const MAX_ASSET_BYTES = 8 * 1024 * 1024;
 const assetsDir = (name) => join(siteDir(name), 'assets');
 const assetFile = (name, path) => join(assetsDir(name), path);
+/* Files the build produced that the CMS does not interpret — Vercel's
+   config.json (redirects, headers, 404s) and functions/ (the code behind
+   /api/* routes). Kept byte-for-byte and re-shipped on every publish, because a
+   deployment replaces the site and dropping them would delete a client's
+   redirects and their form endpoint. */
+const throughDir = (name) => join(siteDir(name), 'passthrough');
+const throughFile = (name, path) => join(throughDir(name), path);
+const listUnder = (root) => {
+  if (!existsSync(root)) return [];
+  const out = [];
+  const walk = (dir, rel) => {
+    for (const d of readdirSync(dir, { withFileTypes: true })) {
+      const childRel = rel ? `${rel}/${d.name}` : d.name;
+      if (d.isDirectory()) walk(join(dir, d.name), childRel); else out.push(childRel);
+    }
+  };
+  walk(root, '');
+  return out;
+};
+const throughList = (name) => listUnder(throughDir(name));
+/* Where inside the deployment the editable pages live ('' for a plain dist/,
+   '.vercel/output/static/' for a Vercel build output). Preserved from the
+   upload so the CMS re-creates the exact layout the build produced rather than
+   guessing a convention. */
+const staticRootOf = (name) => sites[name]?.staticRoot || '';
 
 async function fetchBinary(url) {
   assertFetchableUrl(url);
@@ -898,21 +933,8 @@ function markBundleCss(css, cssPath, have) {
   return rewrite(new Set(urls.filter((u) => have.has(assetPathOf(u, BUNDLE_ORIGIN)))));
 }
 
-/** Every mirrored asset, as repo-relative paths ("_astro/main.css"). */
-function assetList(name) {
-  const root = assetsDir(name);
-  if (!existsSync(root)) return [];
-  const out = [];
-  const walk = (dir, rel) => {
-    for (const d of readdirSync(dir, { withFileTypes: true })) {
-      const child = join(dir, d.name);
-      const childRel = rel ? `${rel}/${d.name}` : d.name;
-      if (d.isDirectory()) walk(child, childRel); else out.push(childRel);
-    }
-  };
-  walk(root, '');
-  return out;
-}
+/** Every mirrored asset, as paths relative to the static root ("_astro/main.css"). */
+const assetList = (name) => listUnder(assetsDir(name));
 
 /* List the pages of a live site without ingesting anything, so the console can
    offer them for selection. */
@@ -958,6 +980,15 @@ app.post('/api/ingest-bundle', requireStaff, express.raw({ type: ['application/z
   mkdirSync(siteDir(name), { recursive: true });
   if (prior.access) writeFileSync(join(siteDir(name), 'access.json'), JSON.stringify(prior.access, null, 2));
 
+  s.staticRoot = bundle.staticRoot || '';
+  // Carried verbatim: config.json (redirects/headers) and functions/ (the code
+  // behind /api routes). The CMS never interprets these, only preserves them.
+  for (const p of bundle.passthrough) {
+    const f = throughFile(name, p.path);
+    mkdirSync(dirname(f), { recursive: true });
+    writeFileSync(f, p.bytes);
+  }
+
   // Every non-HTML file, byte for byte — this IS the site's styling and imagery.
   const have = new Set(bundle.assets.map((a) => a.path));
   for (const a of bundle.assets) {
@@ -986,6 +1017,10 @@ app.post('/api/ingest-bundle', requireStaff, express.raw({ type: ['application/z
     ok: true, name,
     pages: added.length,
     assets: bundle.assets.length,
+    passthrough: bundle.passthrough.length,
+    functions: bundle.passthrough.filter((p) => p.path.includes('.func/')).length,
+    hasRoutingConfig: bundle.passthrough.some((p) => p.path.endsWith('config.json')),
+    staticRoot: bundle.staticRoot || '(bundle root)',
     bytes: bundle.bytes,
     fields: added.reduce((n, a) => n + a.fields, 0),
     added,
