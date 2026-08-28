@@ -10,7 +10,7 @@
  *
  *   node test/field-binding.mjs
  */
-import { readBindings, verifyBindings, getField, setField, parsePath, splitSource } from '../lib/bind.mjs';
+import { readBindings, verifyBindings, getField, setField, parsePath, splitSource, groupFields } from '../lib/bind.mjs';
 
 let pass = 0, fail = 0;
 const chk = (name, actual, expected) => {
@@ -121,6 +121,29 @@ console.log('\n── whitespace differs freely between JSON and HTML ──');
   // rendered text of a multi-node field is never byte-identical to the JSON.
   const html = `<body data-cms-source="p.json"><h1 data-cms="h">Two\n   Lines</h1></body>`;
   chk('collapsed whitespace still verifies', verifyBindings(html, { 'p.json': { h: 'Two Lines' } }).ok, 1);
+}
+
+console.log('\n── one field can render in several places ──');
+{
+  // The reference site's pricing labels appear once per tier. If the editor
+  // treats those as separate fields, editing one changes the copy but only
+  // repaints a third of the page — which reads as a broken site.
+  const html = `<body data-cms-source="p.json">
+    <span data-cms="pricing.annualLabel">per year</span>
+    <span data-cms="pricing.annualLabel">per year</span>
+    <span data-cms="pricing.annualLabel">per year</span>
+    <h2 data-cms="pricing.heading">Plans</h2></body>`;
+  const groups = groupFields(readBindings(html).bindings);
+  chk('repeats collapse into one field', groups.map((g) => g.path), ['pricing.annualLabel', 'pricing.heading']);
+  chk('the field knows all of its nodes', groups[0].nodes.length, 3);
+  chk('a field rendered once has one node', groups[1].nodes.length, 1);
+  chk('all three still verify', verifyBindings(html, { 'p.json': { pricing: { annualLabel: 'per year', heading: 'Plans' } } }).ok, 4);
+}
+{
+  // Same path, different files — two location pages sharing a section name.
+  const b = [{ source: 'a.json', path: 'hero.heading', text: 'A', index: 0 },
+             { source: 'b.json', path: 'hero.heading', text: 'B', index: 1 }];
+  chk('the same path in two files stays two fields', groupFields(b).length, 2);
 }
 
 console.log(`\n════ ${pass} passed, ${fail} failed ════`);
