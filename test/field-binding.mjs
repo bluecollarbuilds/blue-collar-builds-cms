@@ -11,6 +11,7 @@
  *   node test/field-binding.mjs
  */
 import { readBindings, verifyBindings, getField, setField, parsePath, splitSource, groupFields } from '../lib/bind.mjs';
+import { autotag } from '../lib/autotag.mjs';
 
 let pass = 0, fail = 0;
 const chk = (name, actual, expected) => {
@@ -144,6 +145,55 @@ console.log('\n── one field can render in several places ──');
   const b = [{ source: 'a.json', path: 'hero.heading', text: 'A', index: 0 },
              { source: 'b.json', path: 'hero.heading', text: 'B', index: 1 }];
   chk('the same path in two files stays two fields', groupFields(b).length, 2);
+}
+
+console.log('\n── ingest keeps what the site declares, and guesses only the rest ──');
+{
+  // The ingester used to stamp its own generated ids over every text element.
+  // On a site built to the contract that threw away the one piece of
+  // information publishing needs, so a declared field now always wins.
+  const html = `<html><head><title>T</title></head><body data-cms-source="pages/home.json">
+    <h1 data-cms="hero.heading">Clean Gutters <span>Every Season</span></h1>
+    <a data-cms="hero.primaryCta.label">Get A Quote</a>
+    <p data-cms="hero.highlights.1">Photos every visit</p>
+    <nav><a href="/x">Services</a></nav>
+  </body></html>`;
+  const { schema, content } = autotag(html, 'https://x.test', { keepScripts: true });
+  const bound = Object.entries(schema).filter(([, v]) => v.bound);
+
+  chk('declared fields keep their own identity', bound.map(([k]) => k).sort(),
+    ['pages/home.json#hero.heading', 'pages/home.json#hero.highlights.1', 'pages/home.json#hero.primaryCta.label']);
+  chk('each carries the file and path to write back to', schema['pages/home.json#hero.heading'].bound,
+    { source: 'pages/home.json', path: 'hero.heading' });
+  chk('the value is the whole field, not one of its nodes',
+    content['pages/home.json#hero.heading'], 'Clean Gutters Every Season');
+  chk('the path names the field better than the markup could',
+    schema['pages/home.json#hero.primaryCta.label'].label, 'Hero · Primary Cta · Label');
+  chk('an array position reads as a position', schema['pages/home.json#hero.highlights.1'].label, 'Hero · Highlights 2.');
+  // The emphasised <span> inside the heading is the exact case that would
+  // otherwise let a client edit half a headline.
+  chk('nothing inside a declared field is tagged separately',
+    Object.keys(schema).filter((k) => k.includes('#')).length, 3);
+  // Copy the site does not declare is still found, so an unconverted site
+  // keeps working exactly as before.
+  const guessed = Object.entries(schema).filter(([, v]) => !v.bound);
+  chk('undeclared copy is still found', guessed.some(([, v]) => v.label.includes('Services')), true);
+  chk('but is not marked publishable to the repo', guessed.every(([, v]) => !v.bound), true);
+}
+{
+  const html = `<body><h1>Just a page</h1><p>No contract here.</p></body>`;
+  const { schema } = autotag(html, '', { keepScripts: true });
+  chk('a site with no declared fields is untouched', Object.keys(schema).every((k) => k.startsWith('cms-')), true);
+  chk('and still fully editable', Object.keys(schema).length, 2);
+}
+{
+  // Two content files rendered on one page must not collide on a shared name.
+  const html = `<body data-cms-source="a.json">
+    <h1 data-cms="hero.heading">A</h1><h2 data-cms="b.json#hero.heading">B</h2></body>`;
+  const { schema, content } = autotag(html, '', { keepScripts: true });
+  chk('a field naming another file keys separately',
+    Object.keys(schema).sort(), ['a.json#hero.heading', 'b.json#hero.heading']);
+  chk('and keeps its own value', content['b.json#hero.heading'], 'B');
 }
 
 console.log(`\n════ ${pass} passed, ${fail} failed ════`);
