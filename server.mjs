@@ -26,6 +26,7 @@ import { render } from './lib/render.mjs';
 import { validate } from './lib/guardian.mjs';
 import { plan, plannerMode } from './lib/agent.mjs';
 import { autotag } from './lib/autotag.mjs';
+import { createGitHub, publishEdits, PublishRefused } from './lib/git-publish.mjs';
 import { resyncContent } from './lib/resync.mjs';
 import { applyStructure } from './lib/structure.mjs';
 import { deployer, vercelDeploy, vercelWhoami } from './lib/deploy.mjs';
@@ -115,7 +116,7 @@ function writePage(name, slug, p) {
 }
 function writeCfg(name) {
   const s = sites[name];
-  writeFileSync(join(siteDir(name), 'site.json'), JSON.stringify({ order: s.order, home: s.home, pages: s.pagesMeta, vercel: s.vercel || null, domain: s.domain || null, staticRoot: s.staticRoot || '' }, null, 2));
+  writeFileSync(join(siteDir(name), 'site.json'), JSON.stringify({ order: s.order, home: s.home, pages: s.pagesMeta, vercel: s.vercel || null, domain: s.domain || null, staticRoot: s.staticRoot || '', git: s.git || null }, null, 2));
 }
 
 /* ───── drafts: staged-but-not-live edits, persisted so a Save survives reload/restart ───── */
@@ -201,6 +202,46 @@ async function deployVercel(name) {
   } catch (e) { return { ok: false, error: e.message }; }
 }
 
+/**
+ * Commit a publish back to the site's own repository.
+ *
+ * This is the whole git-backed model in one function: the CMS writes the
+ * client's words into the JSON the site is built from, and stops. The host
+ * builds and deploys. Whatever the CMS gets wrong, it cannot reach into the
+ * built output — no stripped stylesheet, no deleted redirect, no broken form.
+ *
+ * A refusal here is not a failure to report loosely: the live site is fine and
+ * unchanged, and the client's words are still held in the CMS. What we owe them
+ * is an accurate reason.
+ */
+async function publishToGit(name, gitEdits, actor) {
+  const s = sites[name];
+  if (!s.git?.repo || !s.git?.token) return null;
+  if (!gitEdits.length) return { ok: true, changed: 0, skipped: 'no repository-backed fields changed' };
+
+  const gh = createGitHub({ token: s.git.token, repo: s.git.repo, branch: s.git.branch || 'main' });
+  const who = actor?.name || 'the CMS';
+  const what = gitEdits.length === 1 ? `Update ${gitEdits[0].path} from the CMS` : `Update ${gitEdits.length} fields from the CMS`;
+  try {
+    const r = await publishEdits({
+      gh, edits: gitEdits, contentRoot: s.git.contentRoot || 'src/content/',
+      message: `${what}\n\nPublished by ${who}.`,
+      // Attributed to the CMS rather than to a person: several people publish
+      // through it, and the audit log already records who did what.
+      author: { name: 'Blue Collar Builds CMS', email: 'cms@bluecollarbuilds.tech' },
+    });
+    s.git.lastPublish = { at: new Date().toISOString(), ok: true, changed: r.changed, commit: r.commit?.sha || null, url: r.commit?.url || null, by: who };
+    writeCfg(name);
+    return { ok: true, ...r };
+  } catch (e) {
+    const refused = e instanceof PublishRefused;
+    s.git.lastPublish = { at: new Date().toISOString(), ok: false, error: e.message, problems: refused ? e.problems : null, by: who };
+    writeCfg(name);
+    console.error(`[git] publish for "${name}" failed: ${e.message}`);
+    return { ok: false, error: e.message, problems: refused ? e.problems : null };
+  }
+}
+
 // Old single-page sites → migrate into pages/home and reseed the timeline.
 function migrate(name) {
   const dir = siteDir(name);
@@ -225,7 +266,7 @@ function loadSite(name) {
   const pages = {};
   for (const slug of cfg.order) pages[slug] = readPage(name, slug);
   sites[name] = {
-    pages, order: cfg.order, home: cfg.home, pagesMeta: cfg.pages, vercel: cfg.vercel || null, domain: cfg.domain || null, staticRoot: cfg.staticRoot || '',
+    pages, order: cfg.order, home: cfg.home, pagesMeta: cfg.pages, vercel: cfg.vercel || null, domain: cfg.domain || null, staticRoot: cfg.staticRoot || '', git: cfg.git || null,
     draft: {}, versions: [], head: -1,
     access: existsSync(join(dir, 'access.json')) ? JSON.parse(readFileSync(join(dir, 'access.json'), 'utf8')) : null,
   };
@@ -642,7 +683,9 @@ app.get('/api/sites', requireStaff, (_req, res) => res.json({
   broken: Object.entries(brokenSites).map(([name, error]) => ({ name, error })),
   sites: Object.keys(sites).map((name) => {
     const s = sites[name];
-    return { name, pages: s.order.length, handedOff: !!s.access?.tokenHash, authMode: s.access?.mode || (s.access?.tokenHash ? 'link' : null), client: s.access?.clientName || null, requireApproval: !!s.access?.requireApproval, versions: s.versions.length, vercelProject: s.vercel?.project || null, vercelUrl: s.vercel?.lastUrl || null, domain: s.domain || s.access?.customDomain || null, sitemapBase: siteBase(name) };
+    return { name, pages: s.order.length, handedOff: !!s.access?.tokenHash, authMode: s.access?.mode || (s.access?.tokenHash ? 'link' : null), client: s.access?.clientName || null, requireApproval: !!s.access?.requireApproval, versions: s.versions.length, vercelProject: s.vercel?.project || null, vercelUrl: s.vercel?.lastUrl || null, domain: s.domain || s.access?.customDomain || null, sitemapBase: siteBase(name),
+      // The token itself never leaves the server — only the fact that one is set.
+      git: s.git ? { repo: s.git.repo, branch: s.git.branch, contentRoot: s.git.contentRoot, connected: true, lastPublish: s.git.lastPublish || null } : null };
   }),
 }));
 
@@ -1223,6 +1266,7 @@ function applyAndCommit(name, pendingByPage, actor) {
   const touched = new Set([...Object.keys(s.draft), ...Object.keys(pendingByPage).filter((sl) => Object.keys(pendingByPage[sl] || {}).length)]);
   if (!touched.size) return { error: 'Nothing to publish.' };
   let totalEdits = 0, structural = false;
+  const gitEdits = [];
   for (const slug of touched) {
     if (!s.pages[slug]) continue;
     const base = s.draft[slug] || s.pages[slug];
@@ -1234,6 +1278,14 @@ function applyAndCommit(name, pendingByPage, actor) {
       const g = validate(changeset, base);
       if (!g.ok) return { error: `Blocked on "${slug}"`, errors: g.errors };
       finalContent = g.candidate; totalEdits += changeset.length;
+      // Fields the SITE declared carry the content file and path they came
+      // from, so they can be written back to the repository. `was` is what the
+      // CMS held when the client started editing — publishEdits refuses rather
+      // than overwrite if a developer has changed that field in the repo since.
+      for (const c of changeset) {
+        const bound = base.schema[c.id]?.bound;
+        if (bound?.source && bound?.path) gitEdits.push({ ...bound, value: c.value, was: base.content[c.id] });
+      }
     }
     s.pages[slug] = { templateHtml: base.templateHtml, schema: base.schema, sections: base.sections, collections: base.collections, content: finalContent };
     writePage(name, slug, s.pages[slug]);
@@ -1246,7 +1298,7 @@ function applyAndCommit(name, pendingByPage, actor) {
   const summary = bits.join(' · ') || 'Published';
   saveVersion(name, summary);
   auditLog(name, actor, { action: 'publish', version: s.head, summary });
-  return { ok: true, summary, totalEdits, head: s.head };
+  return { ok: true, summary, totalEdits, head: s.head, gitEdits };
 }
 // ─── approval gate (client edits wait for owner sign-off before going live) ───
 const reviewFile = (name) => join(siteDir(name), 'review.json');
@@ -1367,11 +1419,17 @@ app.post('/api/publish', authWrite, async (req, res) => {
     if (!stageForReview(req, res, pendingByPage)) return;
     return res.json({ ok: true, pendingReview: true });
   }
-  const r = applyAndCommit(get(req), pendingByPage, actorOf(req));
+  const name = get(req);
+  const r = applyAndCommit(name, pendingByPage, actorOf(req));
   if (r.error) return res.status(400).json({ error: r.error, errors: r.errors });
-  clearReview(get(req));                                   // an owner publish also clears any pending review
-  const vercel = await deployVercel(get(req));             // push to the agency's Vercel if connected
-  res.json({ ok: true, head: r.head, published: r.totalEdits, liveUrl: `/live/${get(req)}`, vercel });
+  clearReview(name);                                       // an owner publish also clears any pending review
+
+  // A site linked to its repository publishes THROUGH the repository. Uploading
+  // our own bundle as well would overwrite the host's real build with the CMS's
+  // reconstruction of it — the exact failure this whole model exists to end.
+  const git = await publishToGit(name, r.gitEdits, actorOf(req));
+  const vercel = git ? null : await deployVercel(name);
+  res.json({ ok: true, head: r.head, published: r.totalEdits, liveUrl: `/live/${name}`, vercel, git });
 });
 
 app.get('/api/versions', authWrite, (req, res) => { const s = need(req, res); if (!s) return; res.json({ head: s.head, versions: s.versions }); });
@@ -1625,6 +1683,45 @@ app.post('/api/admin/site-vercel', requireAdmin, async (req, res) => {
   writeCfg(name);
   if (req.body?.deploy) { const r = await deployVercel(name); return res.json({ ok: true, deploy: r }); }
   res.json({ ok: true, project: s.vercel.project, domain: s.domain, sitemapBase: siteBase(name) });
+});
+
+/**
+ * Link a site to the repository it is built from. The token is write-scoped to
+ * one repository, so a leaked or rotated credential affects that client alone.
+ * It is stored and never returned — every reader reports only whether one is
+ * set. Connecting verifies it by reading the branch, so a wrong token, repo or
+ * branch is caught here rather than at a client's first publish.
+ */
+app.post('/api/admin/site-git', requireAdmin, async (req, res) => {
+  const name = String(req.body?.site || '').replace(/[^a-z0-9_-]/gi, '');
+  const s = sites[name]; if (!s) return res.status(404).json({ error: 'Unknown site.' });
+
+  if (req.body?.disconnect) { s.git = null; writeCfg(name); return res.json({ ok: true, connected: false }); }
+
+  const repo = String(req.body?.repo || '').trim()
+    .replace(/^https?:\/\/github\.com\//, '').replace(/\.git$/, '').replace(/\/+$/, '');
+  const branch = String(req.body?.branch || 'main').trim() || 'main';
+  const contentRoot = String(req.body?.contentRoot || 'src/content/').trim().replace(/^\/+/, '').replace(/\/*$/, '/');
+  // An omitted token keeps the stored one, so a branch can be changed without
+  // re-pasting a credential.
+  const token = String(req.body?.token || '').trim() || s.git?.token || '';
+  if (!repo.includes('/')) return res.status(400).json({ error: 'Give the repository as owner/name, e.g. bluecollarbuilds/cincinnati-gutter-guys.' });
+  if (!token) return res.status(400).json({ error: 'Paste a GitHub token with Contents: read and write on that repository.' });
+
+  try {
+    const head = await createGitHub({ token, repo, branch }).head();
+    s.git = { repo, branch, contentRoot, token, connectedAt: new Date().toISOString(), lastPublish: s.git?.lastPublish || null };
+    writeCfg(name);
+    console.log(`[git] "${name}" linked to ${repo}#${branch} by ${req.actor?.name || 'admin'}`);
+    res.json({ ok: true, connected: true, repo, branch, contentRoot, head: head.sha.slice(0, 7) });
+  } catch (e) {
+    // The common failures, said plainly — an admin should not have to read HTTP.
+    const m = /Bad credentials/i.test(e.message) ? 'That token was rejected by GitHub. Check it was copied whole and has not expired.'
+      : /Not Found/i.test(e.message) ? `GitHub cannot see ${repo} on branch ${branch}. Check the name, the branch, and that the token grants access to this repository.`
+      : /Resource not accessible/i.test(e.message) ? 'That token can see the repository but cannot write to it. It needs Contents: read and write.'
+      : e.message;
+    res.status(400).json({ error: m });
+  }
 });
 
 app.post('/api/admin/export', requireStaff, (req, res) => {
