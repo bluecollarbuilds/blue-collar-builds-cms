@@ -215,12 +215,54 @@ async function load(){
         </div>
       </div>
       <div class="handoff" style="margin-top:11px">
+        <div class="ht">⌥ GitHub repository ${s.git?`· <span style="color:#9be8ab">● connected</span>`:'<span style="color:var(--ink-3);font-weight:400">— not connected</span>'}</div>
+        <p>Connected, publishing <b>commits the edit to this repo</b> and the host builds and deploys it — so a publish can never strip a style, drop a redirect or break a form. Not connected, the CMS deploys its own copy of the site instead. The token must be scoped to this one repository with <b>Contents: read and write</b>.</p>
+        <div class="lkrow"><input id="gr-${esc(s.name)}" value="${esc(s.git&&s.git.repo||'')}" placeholder="owner/repository"><input id="gb-${esc(s.name)}" style="max-width:120px" value="${esc(s.git&&s.git.branch||'main')}" placeholder="main"></div>
+        <div class="lkrow" style="margin-top:7px"><input id="gt-${esc(s.name)}" type="password" autocomplete="off" placeholder="${s.git?'token stored — paste a new one to replace it':'paste the GitHub token'}"><button class="btnp" onclick="saveGit('${esc(s.name)}')">${s.git?'Update':'Connect'}</button>${s.git?`<button class="ghost" onclick="disconnectGit('${esc(s.name)}')">Disconnect</button>`:''}</div>
+        ${gitStatus(s)}
+      </div>
+      <div class="handoff" style="margin-top:11px">
         <div class="ht">↻ Re-sync design <span style="color:var(--ink-3);font-weight:400">— after you've redesigned the code</span></div>
         <p>Rebuilt this site's design? Paste the new live URL (or its HTML) and we re-import it while <b>keeping every client edit</b> whose content still has a home in the new layout — so a code lift never destroys their work. It's saved as a version, so you can roll back.</p>
         <div class="lkrow"><input id="rs-${esc(s.name)}" placeholder="https://your-redesigned-site.com  (or paste HTML)"><button class="btnp" onclick="resyncSite('${esc(s.name)}')">Re-sync &amp; keep edits</button></div>
         <div id="rsout-${esc(s.name)}" style="display:none;margin-top:10px;font-size:12.5px;line-height:1.5"></div>
       </div>
     </div>`).join('');
+}
+/* A publish either reached the repository or it did not, and the difference
+   matters to whoever is standing in front of this screen. A failure shows the
+   reason in plain words right here rather than only in a log — the live site is
+   untouched either way, and the client's words are still held in the CMS. */
+function gitStatus(s){
+  if(!s.git) return '';
+  const p=s.git.lastPublish;
+  const where=`<p style="margin:8px 0 0;font-size:11.5px">Writing to <span class="mono" style="color:#9bc1ff">${esc(s.git.contentRoot||'src/content/')}</span> on <span class="mono" style="color:#9bc1ff">${esc(s.git.repo)}#${esc(s.git.branch)}</span></p>`;
+  if(!p) return where+'<p style="margin:5px 0 0;font-size:11.5px;color:var(--ink-3)">Nothing published through the repository yet.</p>';
+  const when=new Date(p.at).toLocaleString();
+  if(p.ok) return where+`<p style="margin:5px 0 0;font-size:11.5px;color:#9be8ab">● Last publish committed ${p.changed} file${p.changed===1?'':'s'} — ${esc(when)}${p.url?` · <a href="${esc(p.url)}" target="_blank" style="color:#9bc1ff;text-decoration:none">view commit ↗</a>`:''}</p>`;
+  return where+`<div style="margin-top:8px;padding:9px 11px;border-radius:6px;background:rgba(255,120,100,.12);border-left:3px solid #ff9c8f">
+    <div style="font-size:11.5px;font-weight:600;color:#ff9c8f">● Last publish did not reach the repository — ${esc(when)}</div>
+    <div style="font-size:12px;margin-top:4px;line-height:1.5">${esc(p.error||'')}</div>
+    <div style="font-size:11.5px;margin-top:5px;color:var(--ink-3)">The live site was not changed, and the edit is still saved in the CMS.</div>
+  </div>`;
+}
+async function saveGit(name){
+  const repo=document.querySelector('#gr-'+CSS.escape(name)).value.trim();
+  const branch=document.querySelector('#gb-'+CSS.escape(name)).value.trim()||'main';
+  const tokEl=document.querySelector('#gt-'+CSS.escape(name));
+  const btn=event.target; const was=btn.textContent; btn.textContent='Checking…'; btn.disabled=true;
+  const r=await (await fetch('/api/admin/site-git',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({site:name,repo,branch,token:tokEl.value||undefined})})).json();
+  btn.textContent=was; btn.disabled=false;
+  if(r.error){alert(r.error);return;}
+  tokEl.value='';                                   // never leave a credential on screen
+  alert('✓ Connected to '+r.repo+' ('+r.branch+') at commit '+r.head+'.\n\nPublishing this site now commits to that repository.');
+  load();
+}
+async function disconnectGit(name){
+  if(!confirm('Disconnect '+name+' from its repository?\n\nPublishing will go back to the CMS deploying its own copy of the site.'))return;
+  const r=await (await fetch('/api/admin/site-git',{method:'POST',headers:{'Content-Type':'application/json','x-edit-key':keyEl.value},body:JSON.stringify({site:name,disconnect:true})})).json();
+  if(r.error){alert(r.error);return;}
+  load();
 }
 async function resyncSite(name){
   const val=$('#rs-'+name).value.trim(); if(!val){alert('Paste the new design URL or its HTML.');return;}
