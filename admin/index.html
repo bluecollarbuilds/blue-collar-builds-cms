@@ -237,10 +237,22 @@ function gitStatus(s){
   if(!s.git) return '';
   const p=s.git.lastPublish;
   const where=`<p style="margin:8px 0 0;font-size:11.5px">Writing to <span class="mono" style="color:#9bc1ff">${esc(s.git.contentRoot||'src/content/')}</span> on <span class="mono" style="color:#9bc1ff">${esc(s.git.repo)}#${esc(s.git.branch)}</span></p>`;
-  if(!p) return where+'<p style="margin:5px 0 0;font-size:11.5px;color:var(--ink-3)">Nothing published through the repository yet.</p>';
+
+  /* The single number that says whether publishing can work at all. A site with
+     none of its fields connected accepts edits and publishes nothing, forever,
+     and the only symptom is a live site that never changes. */
+  const cov = s.boundFields
+    ? `<p style="margin:5px 0 0;font-size:11.5px;color:#9be8ab">● ${s.boundFields} of ${s.totalFields} fields publish to the repository</p>`
+    : `<div style="margin-top:8px;padding:9px 11px;border-radius:6px;background:rgba(255,120,100,.12);border-left:3px solid #ff9c8f">
+        <div style="font-size:11.5px;font-weight:600;color:#ff9c8f">● None of this site's ${s.totalFields} fields are connected to the repository</div>
+        <div style="font-size:12px;margin-top:4px;line-height:1.5">Publishing will save edits here but send nothing to the site. Either this build carries no CMS field attributes, or it was ingested before the CMS understood them — re-upload the built folder to fix it.</div>
+      </div>`;
+
+  if(!p) return where+cov+'<p style="margin:5px 0 0;font-size:11.5px;color:var(--ink-3)">Nothing published through the repository yet.</p>';
   const when=new Date(p.at).toLocaleString();
-  if(p.ok) return where+`<p style="margin:5px 0 0;font-size:11.5px;color:#9be8ab">● Last publish committed ${p.changed} file${p.changed===1?'':'s'} — ${esc(when)}${p.url?` · <a href="${esc(p.url)}" target="_blank" style="color:#9bc1ff;text-decoration:none">view commit ↗</a>`:''}</p>`;
-  return where+`<div style="margin-top:8px;padding:9px 11px;border-radius:6px;background:rgba(255,120,100,.12);border-left:3px solid #ff9c8f">
+  if(p.ok&&p.skipped) return where+cov+`<p style="margin:5px 0 0;font-size:11.5px;color:#f0b45a">● Last publish (${esc(when)}) contained nothing this repository holds — the edit was to copy that lives in the site's code, so it was saved here but not sent.</p>`;
+  if(p.ok) return where+cov+`<p style="margin:5px 0 0;font-size:11.5px;color:#9be8ab">● Last publish committed ${p.changed} file${p.changed===1?'':'s'} — ${esc(when)}${p.url?` · <a href="${esc(p.url)}" target="_blank" style="color:#9bc1ff;text-decoration:none">view commit ↗</a>`:''}</p>`;
+  return where+cov+`<div style="margin-top:8px;padding:9px 11px;border-radius:6px;background:rgba(255,120,100,.12);border-left:3px solid #ff9c8f">
     <div style="font-size:11.5px;font-weight:600;color:#ff9c8f">● Last publish did not reach the repository — ${esc(when)}</div>
     <div style="font-size:12px;margin-top:4px;line-height:1.5">${esc(p.error||'')}</div>
     <div style="font-size:11.5px;margin-top:5px;color:var(--ink-3)">The live site was not changed, and the edit is still saved in the CMS.</div>

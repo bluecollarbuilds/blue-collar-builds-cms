@@ -217,7 +217,13 @@ async function deployVercel(name) {
 async function publishToGit(name, gitEdits, actor) {
   const s = sites[name];
   if (!s.git?.repo || !s.git?.token) return null;
-  if (!gitEdits.length) return { ok: true, changed: 0, skipped: 'no repository-backed fields changed' };
+  if (!gitEdits.length) {
+    // Recorded, not silently returned: "nothing to send" and "never tried" look
+    // identical on the card otherwise, and they need completely different fixes.
+    s.git.lastPublish = { at: new Date().toISOString(), ok: true, changed: 0, skipped: true, by: actor?.name || 'the CMS' };
+    writeCfg(name);
+    return { ok: true, changed: 0, skipped: 'no repository-backed fields changed' };
+  }
 
   const gh = createGitHub({ token: s.git.token, repo: s.git.repo, branch: s.git.branch || 'main' });
   const who = actor?.name || 'the CMS';
@@ -683,7 +689,17 @@ app.get('/api/sites', requireStaff, (_req, res) => res.json({
   broken: Object.entries(brokenSites).map(([name, error]) => ({ name, error })),
   sites: Object.keys(sites).map((name) => {
     const s = sites[name];
-    return { name, pages: s.order.length, handedOff: !!s.access?.tokenHash, authMode: s.access?.mode || (s.access?.tokenHash ? 'link' : null), client: s.access?.clientName || null, requireApproval: !!s.access?.requireApproval, versions: s.versions.length, vercelProject: s.vercel?.project || null, vercelUrl: s.vercel?.lastUrl || null, domain: s.domain || s.access?.customDomain || null, sitemapBase: siteBase(name),
+    // How much of this site is publishable to its repository. Zero means the
+    // site was ingested from a build with no CMS attributes — or by a CMS old
+    // enough to have overwritten them — and every publish will quietly reach
+    // nothing. That is worth stating on the card rather than leaving someone to
+    // discover it one failed publish at a time.
+    let boundFields = 0, totalFields = 0;
+    for (const slug of s.order) {
+      const sc = s.pages[slug]?.schema || {};
+      for (const f of Object.values(sc)) { totalFields++; if (f.bound) boundFields++; }
+    }
+    return { name, pages: s.order.length, boundFields, totalFields, handedOff: !!s.access?.tokenHash, authMode: s.access?.mode || (s.access?.tokenHash ? 'link' : null), client: s.access?.clientName || null, requireApproval: !!s.access?.requireApproval, versions: s.versions.length, vercelProject: s.vercel?.project || null, vercelUrl: s.vercel?.lastUrl || null, domain: s.domain || s.access?.customDomain || null, sitemapBase: siteBase(name),
       // The token itself never leaves the server — only the fact that one is set.
       git: s.git ? { repo: s.git.repo, branch: s.git.branch, contentRoot: s.git.contentRoot, connected: true, lastPublish: s.git.lastPublish || null } : null };
   }),
