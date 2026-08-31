@@ -189,6 +189,7 @@
   /* toast */
   #toasts{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
   .toast{background:#16161a;color:var(--ink);font-size:13px;padding:11px 16px;border-radius:10px;box-shadow:0 10px 34px rgba(0,0,0,.5),inset 0 0 0 1px var(--line);display:flex;align-items:center;gap:10px;animation:tin .3s cubic-bezier(.2,0,0,1);pointer-events:auto}
+  .card.warn{box-shadow:inset 0 0 0 1px rgba(240,180,90,.45)} .card.warn h4{color:#f0b45a}
   .toast a{color:#9bc1ff;text-decoration:none;font-weight:600} @keyframes tin{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   /* selection chip in composer */
   .scope{display:none;align-items:center;gap:8px;background:rgba(10,114,239,.14);box-shadow:inset 0 0 0 1px rgba(10,114,239,.4);color:#cfe2ff;font-size:12px;padding:6px 10px;border-radius:8px;margin-bottom:9px}
@@ -552,10 +553,36 @@ async function publish(){
   if(r.pendingReview){pendingByPage={};hasDraft=true;reviewPending=true;updateBar();await loadPreview();
     return toast('📤 Sent to the agency for approval — you\'ll be live once they sign off.',5000);}
   if(r.ok){pendingByPage={};hasDraft=false;updateBar();await loadPreview();await loadVersions();
-    if(r.vercel&&r.vercel.ok)toast(`✓ Deployed to Vercel — <a href="${r.vercel.url}" target="_blank">view live ↗</a>`,4500);
+    // A repo-linked site publishes by committing; the host then builds it, which
+    // takes a minute or two. Saying "your site is live" the instant the commit
+    // lands would send the client to look at a page that has not changed yet.
+    if(r.git&&r.git.ok&&r.git.changed>0)
+      toast(`✓ Sent to your site — building now, live in a minute or two${r.git.url?` · <a href="${r.git.url}" target="_blank">see the change ↗</a>`:''}`,7000);
+    else if(r.git&&!r.git.ok)
+      notice('bad','⛔ Your change was saved but did not reach the site',[r.git.error,'The live site has not changed. Your words are safe here — try publishing again, and tell us if it keeps failing.']);
+    // Repo-linked, but nothing in this publish was content the site is built
+    // from. Claiming the site is live would be a plain untruth: it is unchanged.
+    else if(r.git)
+      toast('💾 Saved — but nothing in this change goes to the live site yet',5000);
+    else if(r.vercel&&r.vercel.ok)toast(`✓ Deployed to Vercel — <a href="${r.vercel.url}" target="_blank">view live ↗</a>`,4500);
     else if(r.vercel&&r.vercel.error)toast(`✓ Published · ⚠ Vercel: ${esc(r.vercel.error)}`,4500);
-    else toast(`✓ Your site is live — <a href="/live/${SITE}" target="_blank">view it ↗</a>`);}
+    else toast(`✓ Your site is live — <a href="/live/${SITE}" target="_blank">view it ↗</a>`);
+    // Some copy on the page comes from the site's code rather than its content,
+    // so there is nowhere in the repository to publish it to. Reporting a clean
+    // publish would leave the client hunting for a change that never appeared.
+    if(r.notPublished)
+      notice('warn',`⚠ ${r.notPublished.count} change${r.notPublished.count===1?'':'s'} could not go live yet`,
+        [r.notPublished.why, 'Saved but not published: ' + r.notPublished.fields.join(' · ')]);
+  }
   else{updateBar();const c=document.createElement('div');c.className='card bad';c.innerHTML=`<h4>⛔ Blocked by safety check</h4><div class="body">${(r.errors||[r.error]).map(x=>`<div class="err">${esc(x)}</div>`).join('')}</div>`;log.appendChild(c);}
+}
+/* A publish result the client has to actually read stays on screen, unlike a
+   toast. Used for the two cases where the live site is not what they expect:
+   a publish that did not reach the site, and edits that had nowhere to go. */
+function notice(kind,title,lines){
+  const c=document.createElement('div');c.className='card '+(kind==='bad'?'bad':'warn');
+  c.innerHTML=`<h4>${esc(title)}</h4><div class="body">${lines.filter(Boolean).map(x=>`<div class="err">${esc(x)}</div>`).join('')}</div>`;
+  log.appendChild(c);c.scrollIntoView({block:'nearest'});
 }
 async function discard(){pendingByPage={};hasDraft=false;sel=null;showScope();await fetch('/api/discard?site='+SITE+KQ(),{method:'POST'});updateBar();await loadPreview();toast('Changes discarded');}
 $('#saveBtn').onclick=save;$('#publishBtn').onclick=publish;$('#discardBtn').onclick=()=>{closeMenu();discard();};

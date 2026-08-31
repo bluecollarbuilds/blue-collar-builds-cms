@@ -1267,6 +1267,7 @@ function applyAndCommit(name, pendingByPage, actor) {
   if (!touched.size) return { error: 'Nothing to publish.' };
   let totalEdits = 0, structural = false;
   const gitEdits = [];
+  const unbound = [];
   for (const slug of touched) {
     if (!s.pages[slug]) continue;
     const base = s.draft[slug] || s.pages[slug];
@@ -1285,6 +1286,12 @@ function applyAndCommit(name, pendingByPage, actor) {
       for (const c of changeset) {
         const bound = base.schema[c.id]?.bound;
         if (bound?.source && bound?.path) gitEdits.push({ ...bound, value: c.value, was: base.content[c.id] });
+        // Copy the site does not declare — navigation, footer, anything written
+        // inline in a template rather than held in content. On a repo-linked
+        // site there is nowhere to publish it TO, and saying nothing would let a
+        // client change a nav label, be told it published, and find the live
+        // site unchanged.
+        else unbound.push(base.schema[c.id]?.label || c.id);
       }
     }
     s.pages[slug] = { templateHtml: base.templateHtml, schema: base.schema, sections: base.sections, collections: base.collections, content: finalContent };
@@ -1298,7 +1305,7 @@ function applyAndCommit(name, pendingByPage, actor) {
   const summary = bits.join(' · ') || 'Published';
   saveVersion(name, summary);
   auditLog(name, actor, { action: 'publish', version: s.head, summary });
-  return { ok: true, summary, totalEdits, head: s.head, gitEdits };
+  return { ok: true, summary, totalEdits, head: s.head, gitEdits, unbound };
 }
 // ─── approval gate (client edits wait for owner sign-off before going live) ───
 const reviewFile = (name) => join(siteDir(name), 'review.json');
@@ -1429,7 +1436,14 @@ app.post('/api/publish', authWrite, async (req, res) => {
   // reconstruction of it — the exact failure this whole model exists to end.
   const git = await publishToGit(name, r.gitEdits, actorOf(req));
   const vercel = git ? null : await deployVercel(name);
-  res.json({ ok: true, head: r.head, published: r.totalEdits, liveUrl: `/live/${name}`, vercel, git });
+  // On a repo-linked site the repository IS the live site, so an edit with no
+  // content field behind it goes nowhere. Say so rather than reporting a clean
+  // publish and leaving the client to notice their change never appeared.
+  const notPublished = git && r.unbound.length
+    ? { count: r.unbound.length, fields: r.unbound.slice(0, 8),
+        why: 'These are not stored in the site\u2019s content files \u2014 they come from its code. They are saved in the CMS, but will not appear on the live site until a developer moves them into content.' }
+    : null;
+  res.json({ ok: true, head: r.head, published: r.totalEdits, liveUrl: `/live/${name}`, vercel, git, notPublished });
 });
 
 app.get('/api/versions', authWrite, (req, res) => { const s = need(req, res); if (!s) return; res.json({ head: s.head, versions: s.versions }); });
